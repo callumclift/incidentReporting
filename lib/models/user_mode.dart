@@ -1,0 +1,1 @@
+enum UserMode { add, edit }

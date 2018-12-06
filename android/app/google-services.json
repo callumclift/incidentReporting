@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "213392944471",
+    "firebase_url": "https://incident-reporting-a5394.firebaseio.com",
+    "project_id": "incident-reporting-a5394",
+    "storage_bucket": "incident-reporting-a5394.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:213392944471:android:02b68124198f0316",
+        "android_client_info": {
+          "package_name": "com.ontrac.ontracincidentreporting"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "213392944471-kss3o7kc2cajqdnhb03ge6huj60cgplj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA63_QQy8HsLSud6pJaXnJdKbTHz3e4vj8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
