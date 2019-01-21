@@ -154,10 +154,9 @@ class _LocateUserState extends State<LocateUser> {
     print('this is the controller: ' + _locationInputController.text);
     return Column(
       children: <Widget>[
-        GestureDetector(
-          onTap: _getUserLocation,
-          child: Container(color: Colors.transparent ,child: IgnorePointer(child: TextFormField(
-            decoration: InputDecoration(labelText: 'Location', prefixIcon: IconButton(icon: Icon(Icons.location_on), onPressed: _getUserLocation),),
+        Row(children: <Widget>[
+          Flexible(child: TextFormField(enabled: false,
+            decoration: InputDecoration(labelText: 'Location'),
             controller: _locationInputController,
             validator: (String value) {
               if (value.trim().length <= 0 && value.isEmpty) {
@@ -171,8 +170,11 @@ class _LocateUserState extends State<LocateUser> {
             },
 
 
-          ),)),)
-        ,
+          )),
+
+          IconButton(icon: Icon(Icons.location_on, color: Color.fromARGB(255, 255, 147, 94),), onPressed: _getUserLocation)
+        ],),
+
         SizedBox(
           height: 10.0,
         ),
