@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:rxdart/subjects.dart';
-import '../scoped_models/main.dart';
+import '../scoped_models/users_model.dart';
 import '../widgets/ui_elements/adaptive_progress_indicator.dart';
 import '../models/auth.dart';
 import '../models/authenticated_user.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../shared/global_functions.dart';
+import '../shared/global_config.dart';
+import 'package:after_layout/after_layout.dart';
+
 
 class LoginPage extends StatefulWidget {
   @override
@@ -14,7 +20,7 @@ class LoginPage extends StatefulWidget {
   }
 }
 
-class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage> with AfterLayoutMixin<LoginPage> {
   Map<String, dynamic> _authFormData = {
     'username': null,
     'password': null,
@@ -25,38 +31,64 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   TextEditingController _passwordFieldController = TextEditingController();
   AnimationController _controller;
   Animation<Offset> _slideAnimation;
+  bool _rememberMe = false;
+
+  final FocusNode _emailFocusNode = new FocusNode();
+  final FocusNode _passwordFocusNode = new FocusNode();
+
+  Color _emailLabelColor = Colors.grey;
+  Color _passwordLabelColor = Colors.grey;
+
+
+
 
   @override
   void initState() {
     // TODO: implement initState
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 300),
-    );
-    _slideAnimation =
-        Tween<Offset>(begin: Offset(0.0, -2.0), end: Offset.zero).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.fastOutSlowIn,
-      ),
-    );
+    setupFocusNodes();
     super.initState();
   }
 
+  setupFocusNodes(){
+
+    _emailFocusNode.addListener((){
+      if(_emailFocusNode.hasFocus){
+        setState(() {
+          _emailLabelColor = orangeDesign1;
+        });
+      } else {
+        setState(() {
+          _emailLabelColor = Colors.grey;
+
+        });
+      }
+    });
+
+    _passwordFocusNode.addListener((){
+      if(_passwordFocusNode.hasFocus){
+        setState(() {
+          _passwordLabelColor = orangeDesign1;
+        });
+      } else {
+        setState(() {
+          _passwordLabelColor = Colors.grey;
+
+        });
+      }
+    });
+
+  }
 
   Widget _buildEmailTextField() {
-    return TextFormField(
-      decoration: InputDecoration(
+    return TextFormField(focusNode: _emailFocusNode,
+      decoration: InputDecoration(labelStyle: TextStyle(color: _emailLabelColor),
         labelText: 'Email/Username',
         filled: true,
-        fillColor: Colors.white,
+          fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
       ),
-      keyboardType: TextInputType.emailAddress,
       validator: (String value) {
-        if (value.isEmpty && value.trim().length <= 0 ||
-            !RegExp(r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
-                .hasMatch(value)) {
-          return 'Please enter a valid email';
+        if (value.isEmpty && value.trim().length <= 0) {
+          return 'Please enter a valid email/username';
         }
       },
       onSaved: (String value) {
@@ -66,10 +98,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   }
 
   Widget _buildPasswordTextField() {
-    return TextFormField(
+    return TextFormField(focusNode: _passwordFocusNode,
         controller: _passwordFieldController,
-        decoration: InputDecoration(
-            labelText: 'Password', filled: true, fillColor: Colors.white),
+        decoration: InputDecoration(labelStyle: TextStyle(color: _passwordLabelColor),
+            labelText: 'Password', fillColor: Colors.white, filled: true),
         obscureText: true,
         validator: (String value) {
           if (value.isEmpty && value.trim().length <= 0 || value.length < 8) {
@@ -79,23 +111,26 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         });
   }
 
+  Widget _buildRememberMeListTile(){
+    return CheckboxListTile(selected: true, activeColor: orangeDesign1,
+        title: new Text('Remember Me', style: TextStyle(color: Colors.black),),
+        value: _rememberMe,
+        onChanged: (bool value) =>
+            setState(() => _rememberMe = value));
+  }
 
-
-  void _submitForm(MainModel model) async {
+  void _submitForm(UsersModel model) async {
     if (!_authFormKey.currentState.validate()) {
       return;
     }
     _authFormKey.currentState.save();
-    print(_authFormData);
+    //print(_authFormData);
 
-    Map<String, dynamic> successInformation = await model.login(
-        _authFormData['username'], _authFormData['password']);
-
+    Map<String, dynamic> successInformation =
+        await model.login(_authFormData['username'], _authFormData['password'], _rememberMe);
 
     if (successInformation['success']) {
-
-
-     // Navigator.pushReplacementNamed(context, '/');
+      Navigator.pushReplacementNamed(context, '/raiseIncident');
     } else {
       showDialog(
           context: context,
@@ -118,13 +153,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double deviceHeight = MediaQuery.of(context).size.height;
-    final double targetWidth = deviceWidth > 768.0 ? 500.0 : deviceWidth * 0.9;
+    final double targetWidth = deviceWidth > 768.0 ? deviceWidth * 0.5 : deviceWidth * 0.9;
     final double targetHeight = deviceHeight * 0.4;
     print('[AuthPage] - build page');
+    print(_rememberMe);
 
     // TODO: implement build
     return Scaffold(
-        backgroundColor: Colors.deepOrange,
+        //backgroundColor: Theme.of(context).primaryColor,
 //        appBar: AppBar(
 //          title: Text('Login'),
 //        ),
@@ -133,7 +169,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               FocusScope.of(context).requestFocus(FocusNode());
             },
             child: Container(
-                decoration: BoxDecoration(
+                decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color.fromARGB(255, 255, 146, 92), Color.fromARGB(255, 103, 2, 69)])
                     //image: _buildBackgroundImage(),
                     ),
                 padding: EdgeInsets.all(10.0),
@@ -141,11 +177,11 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   child: SingleChildScrollView(
                     child: Container(
                       decoration: BoxDecoration(
-                          color: Colors.grey,
+                          color: Colors.white70,
                           borderRadius: BorderRadius.circular(10.0)),
                       padding: EdgeInsets.all(10.0),
+                      //height: MediaQuery.of(context).orientation == Orientation.portrait ? deviceHeight * 0.50 : deviceHeight* 0.85,
                       width: targetWidth,
-
                       child: Form(
                         key: _authFormKey,
                         child: Column(
@@ -154,6 +190,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                             Image.asset(
                               'assets/ontrac.png',
                               color: Colors.black,
+                              height: deviceHeight * 0.15,
                             ),
                             SizedBox(
                               height: 10.0,
@@ -163,20 +200,21 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               height: 10.0,
                             ),
                             _buildPasswordTextField(),
-                            SizedBox(
-                              height: 10.0,
-                            ),
-                            ScopedModelDescendant<MainModel>(builder: (
+                            _buildRememberMeListTile(),
+                            ScopedModelDescendant<UsersModel>(builder: (
                               BuildContext context,
                               Widget child,
-                              MainModel model,
+                              UsersModel model,
                             ) {
                               return model.isLoading
-                                  ? CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),)
-                                  : RaisedButton(
+                                  ? CircularProgressIndicator(
+                                      valueColor:
+                                          new AlwaysStoppedAnimation<Color>(
+                                              orangeDesign1),
+                                    )
+                                  : RaisedButton(color: orangeDesign1,
                                       textColor: Colors.white,
-                                      onPressed: () =>
-                                          _submitForm(model),
+                                      onPressed: () => _submitForm(model),
                                       child: Text('Login'),
                                     );
                             }),
@@ -188,4 +226,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                   ),
                 ))));
   }
+
+  @override
+  void afterFirstLayout(BuildContext context) {
+    // Calling the same function "after layout" to resolve the issue.
+    if(Theme.of(context).brightness == Brightness.dark){
+      GlobalFunctions.setLightMode(context);
+    }
+  }
+
 }

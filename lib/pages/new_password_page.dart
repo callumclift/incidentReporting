@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:rxdart/subjects.dart';
 
-import '../scoped_models/main.dart';
+import '../scoped_models/users_model.dart';
 import '../widgets/ui_elements/adaptive_progress_indicator.dart';
 
 import '../models/auth.dart';
@@ -70,8 +70,8 @@ class _NewPasswordPageState extends State<NewPasswordPage>
   }
 
   Widget _buildSubmitButton() {
-    return ScopedModelDescendant<MainModel>(
-        builder: (BuildContext context, Widget child, MainModel model) {
+    return ScopedModelDescendant<UsersModel>(
+        builder: (BuildContext context, Widget child, UsersModel model) {
           return model.isLoading
               ? Center(
             child: AdaptiveProgressIndicator(),
@@ -89,7 +89,7 @@ class _NewPasswordPageState extends State<NewPasswordPage>
         });
   }
 
-  void _submitForm(MainModel model) async {
+  void _submitForm(UsersModel model) async {
     
     if (!_formKey.currentState.validate()) {
       return;

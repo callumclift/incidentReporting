@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
-import '../scoped_models/main.dart';
+import '../scoped_models/users_model.dart';
 import '../widgets/ui_elements/adaptive_progress_indicator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -227,10 +227,10 @@ class _AuthPageState extends State<AuthPage> with TickerProviderStateMixin {
                               },
                               child: Text(
                                   'Switch to ${_authMode == AuthMode.Login ? 'Sign Up' : 'Login'}')),
-                          ScopedModelDescendant<MainModel>(builder: (
+                          ScopedModelDescendant<UsersModel>(builder: (
                             BuildContext context,
                             Widget child,
-                            MainModel model,
+                            UsersModel model,
                           ) {
                             return model.isLoading
                                 ? AdaptiveProgressIndicator()

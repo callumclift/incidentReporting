@@ -1,28 +1,34 @@
 import 'package:flutter/material.dart';
 
 class AuthenticatedUser {
-  final String id;
-  final String email;
-  final String token;
-  final String authenticationId;
+  final int userId;
   final String firstName;
-  final String surname;
-  final String organisation;
-  final String role;
-  final bool hasTemporaryPassword;
-  bool acceptedTerms;
+  final String lastName;
+  final String username;
+  final String password;
   final bool suspended;
+  final int organisationId;
+  final String organisationName;
+  final String session;
+  final bool deleted;
+  final bool isClientAdmin;
+  final bool isSuperAdmin;
+  final String termsAccepted;
+  final bool forcePasswordReset;
 
   AuthenticatedUser(
-      {@required this.id,
-      @required this.email,
-      @required this.token,
-      @required this.authenticationId,
+      {@required this.userId,
       @required this.firstName,
-      @required this.surname,
-      @required this.organisation,
-      @required this.role,
-      @required this.hasTemporaryPassword,
-      @required this.acceptedTerms,
-      @required this.suspended});
+      @required this.lastName,
+      @required this.username,
+      @required this.password,
+      @required this.suspended,
+      @required this.organisationId,
+      @required this.organisationName,
+      @required this.session,
+      @required this.deleted,
+      @required this.isClientAdmin,
+      @required this.isSuperAdmin,
+      @required this.termsAccepted,
+      @required this.forcePasswordReset});
 }
