@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
-import './users_edit_page.dart';
-import './users_list_page.dart';
-import '../scoped_models/users_model.dart';
+import './incident_types_edit_page.dart';
+
+import 'package:scoped_model/scoped_model.dart';
+import './incident_types_list_page.dart';
+import '../scoped_models/incidents_model.dart';
 
 import '../widgets/helpers/app_side_drawer.dart';
 
-class UsersAdminPage extends StatelessWidget {
+class IncidentTypesPage extends StatelessWidget {
 
-  final UsersModel usersModel;
+  final IncidentsModel _incidentsModel;
 
-  UsersAdminPage(this.usersModel);
+  IncidentTypesPage(this._incidentsModel);
 
   @override
   Widget build(BuildContext context) {
@@ -19,24 +21,24 @@ class UsersAdminPage extends StatelessWidget {
         child: Scaffold(
           drawer: SideDrawer(),
           appBar: AppBar(
-            title: Text('Manage Users'),
+            title: Text('Manage Incident Types'),
             bottom: TabBar(
               tabs: <Widget>[
                 Tab(
                   icon: Icon(Icons.list),
-                  text: 'Registered Users',
+                  text: 'Incident Types',
                 ),
                 Tab(
                   icon: Icon(Icons.create),
-                  text: 'Create User',
+                  text: 'Add Incident Type',
                 ),
               ],
             ),
           ),
           body: TabBarView(
             children: <Widget>[
-              UsersListPage(usersModel),
-              UsersEditPage(),
+              IncidentTypesListPage(_incidentsModel),
+              IncidentTypesEditPage(),
             ],
           ),
         ));

@@ -8,20 +8,18 @@ import '../models/location_data.dart';
 import '../widgets/helpers/image_viewer.dart';
 import '../widgets/ui_elements/adaptive_progress_indicator.dart';
 import '../widgets/form_inputs/locate_user.dart';
-import '../scoped_models/incidents_model.dart';
+import '../scoped_models/main.dart';
 import '../pages/test_maps.dart';
 
-class ViewIncidentPage extends StatefulWidget {
+class ViewMyIncidentPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
-    return _ViewIncidentPageState();
+    return _ViewMyIncidentPageState();
   }
 }
 
-class _ViewIncidentPageState extends State<ViewIncidentPage> {
-
-
+class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
 
 
 
@@ -74,7 +72,7 @@ class _ViewIncidentPageState extends State<ViewIncidentPage> {
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Reporter'),
-                initialValue: incident.reporterFirstName + ' ' + incident.reporterLastName,
+                initialValue: incident.reporterFirstName + incident.reporterLastName,
                 enabled: false,
               ),
               TextFormField(
@@ -136,8 +134,8 @@ class _ViewIncidentPageState extends State<ViewIncidentPage> {
   Widget build(BuildContext context) {
     print('[Product Create Page] - build page');
     // TODO: implement build
-    return ScopedModelDescendant<IncidentsModel>(
-      builder: (BuildContext context, Widget child, IncidentsModel model) {
+    return ScopedModelDescendant<MainModel>(
+      builder: (BuildContext context, Widget child, MainModel model) {
         return Scaffold(
           appBar: AppBar(
             title: LayoutBuilder(

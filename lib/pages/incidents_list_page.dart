@@ -17,9 +17,10 @@ import '../models/incident.dart';
 import '../widgets/helpers/app_side_drawer.dart';
 
 import '../scoped_models/main.dart';
+import '../scoped_models/incidents_model.dart';
 
 class IncidentsListPage extends StatefulWidget {
-  final MainModel model;
+  final IncidentsModel model;
 
   IncidentsListPage(this.model);
 
@@ -31,13 +32,14 @@ class IncidentsListPage extends StatefulWidget {
 }
 
 class _IncidentsListPageState extends State<IncidentsListPage> {
+
   @override
   initState() {
     widget.model.fetchIncidents('Super Admin', clearExisting: true);
     super.initState();
   }
 
-  Widget _buildEditButton(MainModel model, int index, BuildContext context, Incident incidentData) {
+  Widget _buildEditButton(IncidentsModel model, int index, BuildContext context, Incident incidentData) {
 
 
     String view = 'View';
@@ -104,8 +106,8 @@ class _IncidentsListPageState extends State<IncidentsListPage> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return ScopedModelDescendant<MainModel>(
-      builder: (BuildContext context, Widget child, MainModel model) {
+    return ScopedModelDescendant<IncidentsModel>(
+      builder: (BuildContext context, Widget child, IncidentsModel model) {
         List<Incident> incidents = model.allIncidents;
         return Scaffold(appBar: AppBar(title: Text('Incidents'),), drawer: SideDrawer(), body: model.isLoading ? Center(child: CircularProgressIndicator()): ListView.builder(
         itemBuilder: (BuildContext context, int index) {

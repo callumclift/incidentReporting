@@ -5,14 +5,20 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:after_layout/after_layout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/location_data.dart';
 import '../widgets/form_inputs/locate_user.dart';
 import '../widgets/helpers/app_side_drawer.dart';
 import '../widgets/ui_elements/adaptive_progress_indicator.dart';
 import '../widgets/ui_elements/dropdown_formfield.dart';
 import '../widgets/helpers/add_images.dart';
+import '../shared/global_functions.dart';
+import '../shared/global_config.dart';
+import '../scoped_models/incidents_model.dart';
+import '../scoped_models/users_model.dart';
 
-import '../scoped_models/main.dart';
 
 class RaiseIncidentPage extends StatefulWidget {
   @override
@@ -22,35 +28,65 @@ class RaiseIncidentPage extends StatefulWidget {
   }
 }
 
-class _RaiseIncidentPageState extends State<RaiseIncidentPage> {
+class _RaiseIncidentPageState extends State<RaiseIncidentPage> with AfterLayoutMixin<RaiseIncidentPage> {
+  bool disableScreen = false;
 
-
-  final List<String> _incidentDrop = ['Incident', 'Close Call', 'Near Miss', 'Workplace Accident'];
-  final List<String> _routeDrop = ['Select a Route', 'Anglia', 'Southeast', 'London North East', 'London North West (North)',
-  'London North West (South)', 'East Midlands', 'Scotland', 'Wales', 'Wessex', 'Western (West)', 'Western (Thames Valley)'];
-  final List<String> _elrDrop = ['Select an ELR', 'Anglia', 'Southeast', 'London North East',];
-
+  final List<String> _incidentDrop = [
+    'Incident',
+    'Close Call',
+    'Near Miss',
+    'Workplace Accident'
+  ];
+  final List<String> _routeDrop = [
+    'Select a Route',
+    'Anglia',
+    'Southeast',
+    'London North East',
+    'London North West (North)',
+    'London North West (South)',
+    'East Midlands',
+    'Scotland',
+    'Wales',
+    'Wessex',
+    'Western (West)',
+    'Western (Thames Valley)'
+  ];
+  final List<String> _elrDrop = [
+    'Select an ELR',
+    'Anglia',
+    'Southeast',
+    'London North East',
+  ];
 
   String _incidentValue = 'Incident';
   String _routeValue = 'Select a Route';
   String _elrValue = 'Select an ELR';
+  bool _isAnonymous = false;
 
-  final dateFormat = DateFormat("d/M/yyyy 'at' h:mma");
+  final dateFormat = DateFormat("dd/MM/yyyy HH:mm");
   DateTime date;
 
-
-  final TextEditingController _reporterTextController = TextEditingController();
+  TextEditingController _reporterTextController = TextEditingController();
   final TextEditingController _summaryTextController = TextEditingController();
   final TextEditingController _mileageTextController = TextEditingController();
   final TextEditingController _projectNameController = TextEditingController();
   final TextEditingController _dateTimeController = TextEditingController();
+  final TextEditingController _dateTimeController1 = TextEditingController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final FocusNode _projectNameFocusNode = new FocusNode();
+  final FocusNode _mileageFocusNode = new FocusNode();
+  final FocusNode _summaryFocusNode = new FocusNode();
+  Color _projectNameLabelColor = Colors.grey;
+  Color _mileageLabelColor = Colors.grey;
+  Color _summaryLabelColor = Colors.grey;
 
   //this is a map to manage the form data
   final Map<String, dynamic> _formData = {
     'incidentType': 'Incident',
-    'reporter': null,
+    'reporterFirstName': null,
+    'reporterLastName': null,
     'dateTime': null,
     'location': null,
     'projectName': null,
@@ -61,6 +97,55 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> {
     'images': null,
   };
 
+  @override
+  void initState() {
+    super.initState();
+    setupFocusNodes();
+  }
+
+  setupFocusNodes(){
+
+    _projectNameFocusNode.addListener((){
+      if(_projectNameFocusNode.hasFocus){
+        setState(() {
+          _projectNameLabelColor = orangeDesign1;
+        });
+      } else {
+        setState(() {
+          _projectNameLabelColor = Colors.grey;
+
+        });
+      }
+    });
+
+    _mileageFocusNode.addListener((){
+      if(_mileageFocusNode.hasFocus){
+        setState(() {
+          _mileageLabelColor = orangeDesign1;
+        });
+      } else {
+        setState(() {
+          _mileageLabelColor = Colors.grey;
+
+        });
+      }
+    });
+    _summaryFocusNode.addListener((){
+      if(_summaryFocusNode.hasFocus){
+        setState(() {
+          _summaryLabelColor = orangeDesign1;
+        });
+      } else {
+        setState(() {
+          _summaryLabelColor = Colors.grey;
+
+        });
+      }
+    });
+
+  }
+
+
 
   void _setLocation(LocationData locationData) {
     _formData['location'] = locationData;
@@ -70,68 +155,82 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> {
     _formData['images'] = images;
   }
 
+  void _disableScreen(bool disabled) {
+   disableScreen = disabled;
+  }
+
   Widget _buildIncidentDrop() {
     return DropdownFormField(
       hint: 'Incident Type',
       value: _incidentValue,
       items: _incidentDrop.toList(),
       onChanged: (val) => setState(() {
-        _incidentValue = val;
-        _formData['incidentType'] = _incidentValue;
-      }),
-      validator: (val) =>
-      (val == null || val.isEmpty) ? 'Please choose an Incident Type' : null,
+            _incidentValue = val;
+            _formData['incidentType'] = _incidentValue;
+          }),
+      validator: (val) => (val == null || val.isEmpty)
+          ? 'Please choose an Incident Type'
+          : null,
       initialValue: _incidentDrop[0],
       onSaved: (val) => setState(() {
-        _incidentValue = val;
-        _formData['incidentType'] = _incidentValue;
-      }),
+            _incidentValue = val;
+            _formData['incidentType'] = _incidentValue;
+          }),
     );
   }
 
   Widget _buildRouteDrop() {
-
     return DropdownFormField(
       hint: 'Route',
       value: _routeValue,
       items: _routeDrop.toList(),
       onChanged: (val) => setState(() {
-        _routeValue = val;
-        _formData['route'] = _routeValue;
-      }),
+            _routeValue = val;
+            _formData['route'] = _routeValue;
+          }),
       validator: (val) =>
-      (val == null || val.isEmpty || val == 'Select a Route') ? 'Please select a Route' : null,
+          (val == null || val.isEmpty || val == 'Select a Route')
+              ? 'Please select a Route'
+              : null,
       initialValue: _routeDrop[0],
       onSaved: (val) => setState(() {
-        _routeValue = val;
-        _formData['route'] = _routeValue;
-      }),
+            _routeValue = val;
+            _formData['route'] = _routeValue;
+          }),
     );
   }
 
   Widget _buildElrDrop() {
-
     return DropdownFormField(
       hint: 'ELR',
       value: _elrValue,
       items: _elrDrop.toList(),
       onChanged: (val) => setState(() {
-        _elrValue = val;
-        _formData['elr'] = _elrValue;
-      }),
-      validator: (val) =>
-      (val == null || val.isEmpty || val == 'Select an ELR') ? 'Please select an ELR' : null,
+            _elrValue = val;
+            _formData['elr'] = _elrValue;
+          }),
+      validator: (val) => (val == null || val.isEmpty || val == 'Select an ELR')
+          ? 'Please select an ELR'
+          : null,
       initialValue: _elrDrop[0],
       onSaved: (val) => setState(() {
-        _elrValue = val;
-        _formData['elr'] = _elrValue;
-      }),
+            _elrValue = val;
+            _formData['elr'] = _elrValue;
+          }),
     );
   }
 
-  Widget _buildReporterField(MainModel model) {
+  Widget _buildReporterField(UsersModel model) {
 
-    _reporterTextController.text = model.authenticatedUser.firstName + ' ' + model.authenticatedUser.surname;
+    if(model.authenticatedUser == null){
+      _reporterTextController.text = '';
+    } else if(_isAnonymous){
+      _reporterTextController.text = 'Anonymous';
+    } else {
+      _reporterTextController.text = model.authenticatedUser.firstName +
+          ' ' +
+          model.authenticatedUser.lastName;
+    }
 
     return TextFormField(
       decoration: InputDecoration(labelText: 'Reporter Name'),
@@ -151,27 +250,86 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> {
     );
   }
 
-  Widget _buildDateTimeField() {
+  Widget _reportAnonymous(UsersModel model) {
+    return CheckboxListTile(activeColor: orangeDesign1,
+        title: Text('Report Anonymously'),
+        value: _isAnonymous,
+        onChanged: (bool value) => setState(() {
+          _isAnonymous = value;
+            }));
+  }
 
+  Widget _dateTimeField(){
+    return Column(
+      children: <Widget>[
+        Row(children: <Widget>[
+          Flexible(child: IgnorePointer(child: TextFormField(enabled: true,
+            decoration: InputDecoration(labelText: 'Date & Time'),
+            initialValue: null,
+            controller: _dateTimeController1,
+            validator: (String value) {
+              if (value.trim().length <= 0 && value.isEmpty) {
+                return 'please enter a Date & Time';
+              }
+            },
+            onSaved: (String value) {
+              setState(() {
+
+                _formData['dateTime'] = value;
+
+              });
+            },
+
+
+          ),),),
+
+          IconButton(icon: Icon(Icons.access_time, color: Color.fromARGB(255, 255, 147, 94)), onPressed: (){
+            showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1970), lastDate: DateTime(2100)).then((DateTime newDate){
+              if(newDate != null){
+                showTimePicker(context: context, initialTime: TimeOfDay.now()).then((TimeOfDay time){
+                  if(time != null){
+                    newDate = startOfDay(newDate);
+                    newDate = newDate.add(Duration(hours: time.hour, minutes: time.minute));
+                    String dateTime = dateFormat.format(newDate);
+                    setState(() {
+                      _dateTimeController1.text = dateTime;
+                      _formData['dateTime'] = dateTime;
+                    });
+
+                  }
+                });
+              }
+
+            });
+          })
+        ],),
+
+      ],
+    );
+
+  }
+
+  Widget _buildDateTimeField() {
     return DateTimePickerFormField(
       format: dateFormat,
-      decoration: InputDecoration(prefixIcon: Icon(Icons.access_time),labelText: 'Date & Time'),
+      decoration: InputDecoration(
+          prefixIcon: Icon(Icons.access_time), labelText: 'Date & Time'),
       onChanged: (dt) => setState(() {
-        date = dt;
-        String dateString = dateFormat.format(dt);
-        print('this is the date string');
-        print(dateString);
-      }),
+            date = dt;
+            String dateString = dateFormat.format(dt);
+            print('this is the date string');
+            print(dateString);
+          }),
       controller: _dateTimeController,
       onSaved: (dt) => setState(() {
-        date = dt;
-        String dateString = dateFormat.format(dt);
-        print('this is the date string');
-        print(dateString);
-        _formData['dateTime'] = dateString;
-      }),
-      validator: (DateTime dateTime){
-        if(date == null){
+            date = dt;
+            String dateString = dateFormat.format(dt);
+            print('this is the date string');
+            print(dateString);
+            _formData['dateTime'] = dateString;
+          }),
+      validator: (DateTime dateTime) {
+        if (date == null) {
           return 'please enter a Date & Time';
         }
       },
@@ -179,13 +337,18 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> {
   }
 
   Widget _buildSummaryText() {
-
-    return TextFormField(
-      decoration: InputDecoration(labelText: 'Summary', suffixIcon: _summaryTextController.text == ''? null: IconButton(icon: Icon(Icons.clear), onPressed: () {
-        setState(() {
-          _summaryTextController.clear();
-        });
-      })),
+    return TextFormField(focusNode: _summaryFocusNode,
+      decoration: InputDecoration(labelStyle: TextStyle(color: _summaryLabelColor),
+          labelText: 'Summary',
+          suffixIcon: _summaryTextController.text == ''
+              ? null
+              : IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    setState(() {
+                      _summaryTextController.clear();
+                    });
+                  })),
       maxLines: 4,
       controller: _summaryTextController,
       //initialValue: product == null ? '' : product.description,
@@ -203,13 +366,18 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> {
   }
 
   Widget _buildProjectNameText() {
-
-    return TextFormField(
-      decoration: InputDecoration(labelText: 'Project Name', suffixIcon: _projectNameController.text == ''? null: IconButton(icon: Icon(Icons.clear), onPressed: () {
-        setState(() {
-          _projectNameController.clear();
-        });
-        })),
+    return TextFormField(focusNode: _projectNameFocusNode,
+      decoration: InputDecoration(labelStyle: TextStyle(color: _projectNameLabelColor),
+          labelText: 'Project Name',
+          suffixIcon: _projectNameController.text == ''
+              ? null
+              : IconButton(
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                    setState(() {
+                      _projectNameController.clear();
+                    });
+                  })),
       controller: _projectNameController,
       onSaved: (String value) {
         setState(() {
@@ -220,9 +388,8 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> {
   }
 
   Widget _buildMileageText() {
-
-    return TextFormField(
-      decoration: InputDecoration(labelText: 'Mileage'),
+    return TextFormField(focusNode: _mileageFocusNode,
+      decoration: InputDecoration(labelStyle: TextStyle(color: _mileageLabelColor), labelText: 'Mileage'),
       keyboardType: TextInputType.number,
       controller: _mileageTextController,
       validator: (String value) {
@@ -240,23 +407,26 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> {
     );
   }
 
-  Widget _buildSubmitButton() {
-    return ScopedModelDescendant<MainModel>(
-        builder: (BuildContext context, Widget child, MainModel model) {
-      return model.isLoading
-          ? Center(
-              child: AdaptiveProgressIndicator(),
-            )
-          : Center(child: SizedBox(width: MediaQuery.of(context).size.width * 0.5,
-          child: RaisedButton(
-              textColor: Colors.white,
-              child: Text('Save'),
-              onPressed: () => _submitForm(model.addIncident),
-            )));
-    });
+  Widget _buildSubmitButton(
+      UsersModel usersModel, IncidentsModel incidentsModel) {
+    return incidentsModel.isLoading
+        ? Center(
+            child: AdaptiveProgressIndicator(),
+          )
+        : Center(
+            child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                child: RaisedButton(
+                  textColor: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
+                  child: Text('Save'),
+                  onPressed: () => disableScreen == true ? null : _submitForm(incidentsModel.addIncident,
+                      incidentsModel.addIncidentLocally, usersModel),
+                )));
+    ;
   }
 
-  Widget _buildPageContent(BuildContext context, MainModel model) {
+  Widget _buildPageContent(BuildContext context, IncidentsModel incidentsModel,
+      UsersModel usersModel) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 768.0 ? 500.0 : deviceWidth * 0.95;
     final double targetPadding = deviceWidth - targetWidth;
@@ -271,34 +441,37 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> {
           key: _formKey,
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: targetPadding / 2),
-            child: Column(children: <Widget>[
-              _buildIncidentDrop(),
-              _buildReporterField(model),
-              _buildDateTimeField(),
-              LocateUser(_setLocation),
-              _buildProjectNameText(),
-              _buildRouteDrop(),
-              _buildElrDrop(),
-              _buildMileageText(),
-              _buildSummaryText(),
-              SizedBox(
-                height: 10.0,
-              ),
-              AddImages(_setImages),
-              SizedBox(
-                height: 10.0,
-              ),
-              _buildSubmitButton(),
-            ],)
-
-            ,
+            child: Column(
+              children: <Widget>[
+                _buildIncidentDrop(),
+                _buildReporterField(usersModel),
+                _reportAnonymous(usersModel),
+                _dateTimeField(),
+                //_buildDateTimeField(),
+                LocateUser(_setLocation),
+                _buildProjectNameText(),
+                _buildRouteDrop(),
+                _buildElrDrop(),
+                _buildMileageText(),
+                _buildSummaryText(),
+                SizedBox(
+                  height: 10.0,
+                ),
+                AddImages(_setImages, _disableScreen),
+                SizedBox(
+                  height: 10.0,
+                ),
+                _buildSubmitButton(usersModel, incidentsModel),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _submitForm(Function addIncident) {
+  void _submitForm(Function addIncident, Function addIncidentLocally,
+      UsersModel usersModel) {
     //if the form fails the validation then return and dont execute anymore code
     //or is the image is null and we are not in edit mode
     if (!_formKey.currentState.validate()) {
@@ -306,70 +479,55 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> {
     }
     _formKey.currentState.save();
 
-    addIncident(
-      _formData['incidentType'],
-      _formData['reporter'],
-      _formData['dateTime'],
-      _formData['location'],
-      _formData['projectName'],
-      _formData['route'],
-      _formData['elr'],
-      double.parse(_mileageTextController.text.replaceFirst(RegExp(r','), '.')),
-      _formData['summary'],
-      _formData['images'],
-    ).then((Map<String, dynamic> response) {
+    addIncidentLocally(
+            _isAnonymous,
+            usersModel.authenticatedUser,
+            _formData['incidentType'],
+            _formData['dateTime'],
+            _formData['location'],
+            _formData['projectName'],
+            _formData['route'],
+            _formData['elr'],
+            _mileageTextController.text,
+            _formData['summary'],
+            _formData['images'])
+        .then((Map<String, dynamic> response) {
       print(response);
       if (response['success']) {
-        Navigator.of(context).pushReplacementNamed('/');
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text(response['message']),
-                content: Text('Press OK to continue'),
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text('OK'),
-                    onPressed: () => Navigator.of(context).pop(),
-                  )
-                ],
-              );
-            });
+        print('waheyyyyyy');
       } else {
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text(response['message']),
-                content: Text('Please try again'),
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text('OK'),
-                    onPressed: () => Navigator.of(context).pop(),
-                  )
-                ],
-              );
-            });
+        print('booooo');
       }
     });
-
   }
 
   @override
   Widget build(BuildContext context) {
-    print('[Product Create Page] - build page');
-    // TODO: implement build
-    return ScopedModelDescendant<MainModel>(
-      builder: (BuildContext context, Widget child, MainModel model) {
-            return Scaffold(
-                appBar: AppBar(
-                  title: Text('Raise Incident'),
+    print('[Raise Incident Page] - build page');
+    final _usersModel =
+        ScopedModel.of<UsersModel>(context, rebuildOnChange: true);
+    final IncidentsModel _incidentsModel =
+        ScopedModel.of<IncidentsModel>(context, rebuildOnChange: true);
 
-                ),
-                drawer: SideDrawer(),
-                body: _buildPageContent(context, model),
-              );
-      },
+    return Scaffold(
+      appBar: AppBar(backgroundColor: orangeDesign1,
+        title: Text('Raise Incident'),
+      ),
+      drawer: SideDrawer(),
+      body: _buildPageContent(context, _incidentsModel, _usersModel),
     );
+  }
+
+  @override
+  void afterFirstLayout(BuildContext context) {
+    // Calling the same function "after layout" to resolve the issue.
+
+    SharedPreferences.getInstance().then((SharedPreferences prefs){
+      if(prefs.getBool('darkMode') == true){
+        GlobalFunctions.setDarkMode(context);
+    }});
+
+
+
   }
 }

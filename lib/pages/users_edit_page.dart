@@ -7,7 +7,7 @@ import '../models/user_mode.dart';
 import '../models/user.dart';
 import '../widgets/ui_elements/adaptive_progress_indicator.dart';
 import '../widgets/ui_elements/dropdown_formfield.dart';
-import '../scoped_models/main.dart';
+import '../scoped_models/users_model.dart';
 
 class UsersEditPage extends StatefulWidget {
   @override
@@ -247,8 +247,8 @@ class _UsersEditPageState extends State<UsersEditPage> {
   }
 
   Widget _buildSubmitButton(User user) {
-    return ScopedModelDescendant<MainModel>(
-        builder: (BuildContext context, Widget child, MainModel model) {
+    return ScopedModelDescendant<UsersModel>(
+        builder: (BuildContext context, Widget child, UsersModel model) {
       return model.isLoading
           ? Center(
               child: AdaptiveProgressIndicator(),
@@ -406,8 +406,8 @@ class _UsersEditPageState extends State<UsersEditPage> {
   Widget build(BuildContext context) {
     print('[Product Create Page] - build page');
     // TODO: implement build
-    return ScopedModelDescendant<MainModel>(
-      builder: (BuildContext context, Widget child, MainModel model) {
+    return ScopedModelDescendant<UsersModel>(
+      builder: (BuildContext context, Widget child, UsersModel model) {
         final Widget pageContent =
             _buildPageContent(context, model.selectedUser);
         return model.selectedUser == null

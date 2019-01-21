@@ -4,12 +4,12 @@ import 'dart:async';
 import './users_edit_page.dart';
 import '../models/user.dart';
 
-import '../scoped_models/main.dart';
+import '../scoped_models/users_model.dart';
 
 class UsersListPage extends StatefulWidget {
-  final MainModel model;
+  final UsersModel usersModel;
 
-  UsersListPage(this.model);
+  UsersListPage(this.usersModel);
 
   @override
   State<StatefulWidget> createState() {
@@ -21,11 +21,11 @@ class UsersListPage extends StatefulWidget {
 class _UsersListPageState extends State<UsersListPage> {
   @override
   initState() {
-    widget.model.fetchUsers('Super Admin', clearExisting: true);
+    widget.usersModel.fetchUsers('Super Admin', clearExisting: true);
     super.initState();
   }
 
-  Widget _buildEditButton(MainModel model, int index, BuildContext context, User userData) {
+  Widget _buildEditButton(UsersModel usersModel, int index, BuildContext context, User userData) {
 
 
     String edit = 'Edit';
@@ -45,7 +45,7 @@ class _UsersListPageState extends State<UsersListPage> {
           if (value == 'Delete') {
 
           } else if (value == 'Suspend' || value == 'Resume') {
-            model
+            usersModel
                 .suspendResumeUser(userData.id, userData.suspended)
                 .then((Map<String, dynamic> response) {
               showDialog(
@@ -64,13 +64,13 @@ class _UsersListPageState extends State<UsersListPage> {
                   });
             });
           } else if (value == 'Edit') {
-            model.selectUser(model.allUsers[index].id);
+            usersModel.selectUser(usersModel.allUsers[index].id);
             Navigator.of(context).push(
                 MaterialPageRoute(builder: (BuildContext context) {
                   return UsersEditPage(
                   );
                 })).then((_){
-              model.selectUser(null);
+              usersModel.selectUser(null);
             });
 
           }
@@ -92,10 +92,10 @@ class _UsersListPageState extends State<UsersListPage> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return ScopedModelDescendant<MainModel>(
-      builder: (BuildContext context, Widget child, MainModel model) {
-        List<User> users = model.allUsers;
-        return model.isLoading ? Center(child: CircularProgressIndicator()) : ListView.builder(
+    return ScopedModelDescendant<UsersModel>(
+      builder: (BuildContext context, Widget child, UsersModel usersModel) {
+        List<User> users = usersModel.allUsers;
+        return usersModel.isLoading ? Center(child: CircularProgressIndicator()) : ListView.builder(
           itemBuilder: (BuildContext context, int index) {
             return Column(
                   children: <Widget>[
@@ -105,7 +105,7 @@ class _UsersListPageState extends State<UsersListPage> {
                       ),
                       title: Text(users[index].firstName + ' ' + users[index].surname),
                       subtitle: Text(_buildListSubtitle(users[index].role, users[index].suspended)),
-                      trailing: _buildEditButton(model, index, context, users[index]),
+                      trailing: _buildEditButton(usersModel, index, context, users[index]),
                     ),
                     Divider(),
                   ],
