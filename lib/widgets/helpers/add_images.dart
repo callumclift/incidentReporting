@@ -7,7 +7,8 @@ import '../../models/product.dart';
 
 class AddImages extends StatefulWidget {
   final Function setImages;
-  AddImages(this.setImages);
+  final Function disableScreen;
+  AddImages(this.setImages, this.disableScreen);
 
   @override
   State<StatefulWidget> createState() {
@@ -17,6 +18,9 @@ class AddImages extends StatefulWidget {
 }
 
 class AddImagesState extends State<AddImages> {
+
+  bool _pickInProgress = false;
+
   static File _imageFile1;
   static File _imageFile2;
   static File _imageFile3;
@@ -128,8 +132,6 @@ class AddImagesState extends State<AddImages> {
           //this is setting the image locally here
           images[index] = image;
         });
-        //now we can use the image in the surrounding form too
-        //widget.setImage(image);
       } else {
         setState(() {
           images[index] = image;
@@ -138,6 +140,30 @@ class AddImagesState extends State<AddImages> {
       widget.setImages(images);
       Navigator.pop(context);
     });
+  }
+
+  _pickPhoto(ImageSource source, int index) async {
+    if (_pickInProgress) {
+      return;
+    }
+    _pickInProgress = true;
+    Navigator.pop(context);
+    var image = await ImagePicker.pickImage(source: source);
+    if (images[index] != null) {
+      setState(() {
+        //this is setting the image locally here
+        images[index] = image;
+      });
+    } else {
+      setState(() {
+        images[index] = image;
+      });
+    }
+    widget.setImages(images);
+    widget.disableScreen(false);
+    _pickInProgress = false;
+
+
   }
 
   void _openImagePicker(BuildContext context, int index) {
@@ -164,14 +190,16 @@ class AddImagesState extends State<AddImages> {
                       Container(height: images[index] == null? sheetHeight * 0.425: sheetHeight * 0.283, child: FlatButton(
                         textColor: Theme.of(context).primaryColor,
                         onPressed: () {
-                          _getImage(context, ImageSource.camera, index);
+                          widget.disableScreen(true);
+                          _pickPhoto(ImageSource.camera, index);
                         },
                         child: Text('Use Camera'),
                       )),
                       Container(height: images[index] == null? sheetHeight * 0.425: sheetHeight * 0.283, child: FlatButton(
                         textColor: Theme.of(context).primaryColor,
                         onPressed: () {
-                          _getImage(context, ImageSource.gallery, index);
+                          widget.disableScreen(true);
+                          _pickPhoto(ImageSource.gallery, index);
                         },
                         child: Text('Use Gallery'),
                       )),
