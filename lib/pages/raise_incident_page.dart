@@ -7,11 +7,11 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../models/location_data.dart';
 import '../widgets/form_inputs/locate_user.dart';
 import '../widgets/helpers/app_side_drawer.dart';
-import '../widgets/ui_elements/adaptive_progress_indicator.dart';
 import '../widgets/ui_elements/dropdown_formfield.dart';
 import '../widgets/helpers/add_images.dart';
 import '../shared/global_functions.dart';
@@ -70,7 +70,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> with AfterLayoutM
   final TextEditingController _summaryTextController = TextEditingController();
   final TextEditingController _mileageTextController = TextEditingController();
   final TextEditingController _projectNameController = TextEditingController();
-  final TextEditingController _dateTimeController = TextEditingController();
   final TextEditingController _dateTimeController1 = TextEditingController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -309,33 +308,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> with AfterLayoutM
 
   }
 
-  Widget _buildDateTimeField() {
-    return DateTimePickerFormField(
-      format: dateFormat,
-      decoration: InputDecoration(
-          prefixIcon: Icon(Icons.access_time), labelText: 'Date & Time'),
-      onChanged: (dt) => setState(() {
-            date = dt;
-            String dateString = dateFormat.format(dt);
-            print('this is the date string');
-            print(dateString);
-          }),
-      controller: _dateTimeController,
-      onSaved: (dt) => setState(() {
-            date = dt;
-            String dateString = dateFormat.format(dt);
-            print('this is the date string');
-            print(dateString);
-            _formData['dateTime'] = dateString;
-          }),
-      validator: (DateTime dateTime) {
-        if (date == null) {
-          return 'please enter a Date & Time';
-        }
-      },
-    );
-  }
-
   Widget _buildSummaryText() {
     return TextFormField(focusNode: _summaryFocusNode,
       decoration: InputDecoration(labelStyle: TextStyle(color: _summaryLabelColor),
@@ -389,13 +361,19 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> with AfterLayoutM
 
   Widget _buildMileageText() {
     return TextFormField(focusNode: _mileageFocusNode,
-      decoration: InputDecoration(labelStyle: TextStyle(color: _mileageLabelColor), labelText: 'Mileage'),
-      keyboardType: TextInputType.number,
+      decoration: InputDecoration(labelStyle: TextStyle(color: _mileageLabelColor), labelText: 'Mileage', suffixIcon: _mileageTextController.text == ''
+          ? null
+          : IconButton(
+          icon: Icon(Icons.clear),
+          onPressed: () {
+            setState(() {
+              _mileageTextController.clear();
+            });
+          })),
       controller: _mileageTextController,
       validator: (String value) {
-        if (value.trim().length <= 0 && value.isEmpty ||
-            !RegExp(r'^(?:[1-9]\d*|0)?(?:[.,]\d+)?$').hasMatch(value)) {
-          return 'Mileage is required and should be a number';
+        if (value.trim().length <= 0 && value.isEmpty) {
+          return 'Mileage is required';
         }
       },
       onSaved: (String value) {
@@ -409,11 +387,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> with AfterLayoutM
 
   Widget _buildSubmitButton(
       UsersModel usersModel, IncidentsModel incidentsModel) {
-    return incidentsModel.isLoading
-        ? Center(
-            child: AdaptiveProgressIndicator(),
-          )
-        : Center(
+    return Center(
             child: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.5,
                 child: RaisedButton(
@@ -422,7 +396,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> with AfterLayoutM
                   onPressed: () => disableScreen == true ? null : _submitForm(incidentsModel.addIncident,
                       incidentsModel.addIncidentLocally, usersModel),
                 )));
-    ;
+
   }
 
   Widget _buildPageContent(BuildContext context, IncidentsModel incidentsModel,
@@ -470,6 +444,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> with AfterLayoutM
     );
   }
 
+
   void _submitForm(Function addIncident, Function addIncidentLocally,
       UsersModel usersModel) {
     //if the form fails the validation then return and dont execute anymore code
@@ -478,8 +453,11 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> with AfterLayoutM
       return;
     }
     _formKey.currentState.save();
+    print('button pressed');
 
-    addIncidentLocally(
+      GlobalFunctions.showLoadingDialog(context, 'Saving');
+
+      addIncidentLocally(
             _isAnonymous,
             usersModel.authenticatedUser,
             _formData['incidentType'],
@@ -494,11 +472,33 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> with AfterLayoutM
         .then((Map<String, dynamic> response) {
       print(response);
       if (response['success']) {
+        Navigator.pop(context);
+        Fluttertoast.showToast(
+            msg: 'Incident Saved Successfully',
+            toastLength: Toast.LENGTH_SHORT,
+            timeInSecForIos: 3,
+            gravity: ToastGravity.CENTER,
+            backgroundColor: orangeDesign1,
+            textColor: Colors.black);
         print('waheyyyyyy');
+        //Navigator.pushReplacementNamed(context, '/raiseIncident');
+
+
+
       } else {
         print('booooo');
+        Navigator.pop(context);
+        Fluttertoast.showToast(
+            msg: response['message'],
+            toastLength: Toast.LENGTH_SHORT,
+            timeInSecForIos: 3,
+            gravity: ToastGravity.CENTER,
+            backgroundColor: orangeDesign1,
+            textColor: Colors.black);
       }
     });
+
+
   }
 
   @override
@@ -508,6 +508,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage> with AfterLayoutM
         ScopedModel.of<UsersModel>(context, rebuildOnChange: true);
     final IncidentsModel _incidentsModel =
         ScopedModel.of<IncidentsModel>(context, rebuildOnChange: true);
+
 
     return Scaffold(
       appBar: AppBar(backgroundColor: orangeDesign1,
