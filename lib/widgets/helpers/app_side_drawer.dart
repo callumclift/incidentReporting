@@ -1,19 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
 import '../ui_elements/logout_list_tile.dart';
 import '../../scoped_models/incidents_model.dart';
 import '../../scoped_models/users_model.dart';
 import '../../models/authenticated_user.dart';
+import '../../shared/global_config.dart';
+import '../../shared/global_functions.dart';
 
-class SideDrawer extends StatelessWidget {
+class SideDrawer extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return _SideDrawerState();
+  }
+}
+
+class _SideDrawerState extends State<SideDrawer> {
   bool _extraDivider = false;
+  bool _pendingItems = false;
+
+  @override
+  void initState() {
+
+    final AuthenticatedUser _authenticatedUser =
+    ScopedModel.of<UsersModel>(context).authenticatedUser;
+
+    IncidentsModel _incidentsModel = IncidentsModel();
+    _checkPendingIncidents(_incidentsModel, _authenticatedUser);
+
+
+    super.initState();
+
+  }
+
+  _checkPendingIncidents(IncidentsModel model, AuthenticatedUser authenticatedUser) async{
+
+    model.checkPendingIncidents(authenticatedUser).then((int value) {
+      if (value == 1) {
+        setState(() {
+          _pendingItems = true;
+        });
+      }
+    });
+  }
+
 
   Widget _buildUserAdmin(BuildContext context, AuthenticatedUser user) {
     Widget returnedWidget;
 
-    if(user == null){
+    if (user == null) {
       returnedWidget = new Container();
-    }else if (user.isClientAdmin || user.isSuperAdmin) {
+    } else if (user.isClientAdmin || user.isSuperAdmin) {
       returnedWidget = ListTile(
         leading: Icon(Icons.people),
         title: Text('Add Users'),
@@ -31,9 +70,9 @@ class SideDrawer extends StatelessWidget {
   Widget _buildIncidentAdmin(BuildContext context, AuthenticatedUser user) {
     Widget returnedWidget;
 
-    if(user == null){
+    if (user == null) {
       returnedWidget = new Container();
-    }else if (user.isClientAdmin || user.isSuperAdmin) {
+    } else if (user.isClientAdmin || user.isSuperAdmin) {
       returnedWidget = ListTile(
         leading: Icon(Icons.insert_drive_file),
         title: Text('Incident Types'),
@@ -48,8 +87,53 @@ class SideDrawer extends StatelessWidget {
     return returnedWidget;
   }
 
+  void _uploadPendingIncidents(IncidentsModel model, AuthenticatedUser authenticatedUser){
+
+    GlobalFunctions.showLoadingDialog(context, 'Uploading');
+    print('finished loading dialog');
+
+
+
+
+
+    model.uploadPendingIncidents(authenticatedUser).then((Map<String, dynamic> response){
+
+      if(response['success']){
+        setState(() {
+          _pendingItems = false;
+        });
+        Navigator.pop(context);
+        Fluttertoast.showToast(
+            msg: response['message'],
+            toastLength: Toast.LENGTH_SHORT,
+            timeInSecForIos: 2,
+            gravity: ToastGravity.CENTER,
+            backgroundColor: orangeDesign1,
+            textColor: Colors.black);
+      } else {
+        Navigator.pop(context);
+        Fluttertoast.showToast(
+            msg: response['message'],
+            toastLength: Toast.LENGTH_SHORT,
+            timeInSecForIos: 2,
+            gravity: ToastGravity.CENTER,
+            backgroundColor: orangeDesign1,
+            textColor: Colors.black);
+      }
+
+
+    });
+
+
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
+    final IncidentsModel _incidentsModel =
+        ScopedModel.of<IncidentsModel>(context, rebuildOnChange: true);
+
     // TODO: implement build
     return ScopedModelDescendant<UsersModel>(
         builder: (BuildContext context, Widget child, UsersModel model) {
@@ -73,15 +157,8 @@ class SideDrawer extends StatelessWidget {
             ListTile(
               leading: Icon(Icons.create),
               title: Text('Raise Incident'),
-              onTap: () => Navigator.of(context).pushReplacementNamed('/raiseIncident'),
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.shop),
-              title: Text('View Incidents'),
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/incidents');
-              },
+              onTap: () =>
+                  Navigator.of(context).pushReplacementNamed('/raiseIncident'),
             ),
             Divider(),
             _buildUserAdmin(context, model.authenticatedUser),
@@ -89,7 +166,7 @@ class SideDrawer extends StatelessWidget {
             _buildIncidentAdmin(context, model.authenticatedUser),
             _extraDivider ? Divider() : new Container(),
             ListTile(
-              leading: Icon(Icons.map),
+              leading: Icon(Icons.description),
               title: Text('My Incidents'),
               onTap: () {
                 Navigator.pushReplacementNamed(context, '/myIncidents');
@@ -105,6 +182,26 @@ class SideDrawer extends StatelessWidget {
             ),
             Divider(),
             LogoutListTile(),
+            Expanded(
+              child: new Align(
+                alignment: FractionalOffset.bottomRight,
+                child: _pendingItems
+                    ? Container(
+                    padding: EdgeInsets.all(20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Text('Upload Incidents'),
+                        IconButton(
+                          color: orangeDesign1,
+                          icon: Icon(Icons.file_upload),
+                          onPressed: () => _uploadPendingIncidents(_incidentsModel, model.authenticatedUser),
+                        )
+                      ],
+                    ))
+                    : Container(),
+              ),
+            ),
           ],
         ),
       );

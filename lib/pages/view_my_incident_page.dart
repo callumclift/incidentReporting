@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:map_view/map_view.dart';
+//import 'package:map_view/map_view.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:connectivity/connectivity.dart';
+
 
 import '../models/incident.dart';
 import '../models/location_data.dart';
+import '../shared/global_config.dart';
+import '../shared/global_functions.dart';
 import '../widgets/helpers/image_viewer.dart';
 import '../widgets/ui_elements/adaptive_progress_indicator.dart';
 import '../widgets/form_inputs/locate_user.dart';
-import '../scoped_models/main.dart';
+import '../scoped_models/incidents_model.dart';
 import '../pages/test_maps.dart';
 
 class ViewMyIncidentPage extends StatefulWidget {
+
+  final IncidentsModel model;
+
+  ViewMyIncidentPage(this.model);
+
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
@@ -20,38 +31,92 @@ class ViewMyIncidentPage extends StatefulWidget {
 }
 
 class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
+  String imageMessage = '';
+  bool refreshIcon = false;
+  GoogleMapController _mapController;
+  String _location = '';
+  bool _hasPostcode = false;
+  double _latitude;
+  double _longitude;
+  int _customFieldCount = 0;
+
+  @override
+  void initState() {
+
+    if(widget.model.selectedMyIncident.images == null){
+      _getIncidentImages();
+    }
+
+    if(widget.model.selectedMyIncident.customFields != null) _customFieldCount = widget.model.selectedMyIncident.customFields.length;
 
 
 
-  Widget _buildPageContent(BuildContext context, Incident incident) {
+    super.initState();
+  }
+
+  Future<void>_getIncidentImages() async{
+    widget.model.getIncidentImages().then((Map<String, dynamic> map){
+      refreshIcon = false;
+
+      if(!map['success']){
+
+
+
+        if(map['message'] == 'No data connection, please try again later'){
+
+          imageMessage = 'Unable to Load Images, pull down to refresh';
+          refreshIcon = true;
+
+          Fluttertoast.showToast(
+              msg: 'No Data Connection',
+              toastLength: Toast.LENGTH_SHORT,
+              timeInSecForIos: 3,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: orangeDesign1,
+              textColor: Colors.black);
+
+        }
+
+      } else if(map['success'] && map['message'] == 'There are no images attached to this incident'){
+        imageMessage = map['message'];
+      }
+
+    });
+  }
+
+//  void _showMap(IncidentsModel model) {
+//    final List<Marker> markers = <Marker>[
+//      Marker('position', 'Incident', model.selectedMyIncident.latitude,
+//          model.selectedMyIncident.longitude)
+//    ];
+//    final CameraPosition cameraPosition = CameraPosition(
+//        Location(model.selectedMyIncident.latitude, model.selectedMyIncident.longitude), 14.0);
+//    final MapView mapView = MapView();
+//    mapView.show(
+//      MapOptions(
+//          title: 'Map of Incident',
+//          mapViewType: MapViewType.normal,
+//          initialCameraPosition: cameraPosition),
+//      toolbarActions: [ToolbarAction('Close', 1)],
+//    );
+//    mapView.onToolbarAction.listen((int id) {
+//      if (id == 1) {
+//        mapView.dismiss();
+//      }
+//    });
+//    mapView.onMapReady.listen((_) {
+//      mapView.setMarkers(markers);
+//    });
+//  }
+
+
+  Widget _buildPageContent(BuildContext context, IncidentsModel model) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 768.0 ? 500.0 : deviceWidth * 0.95;
     final double targetPadding = deviceWidth - targetWidth;
 
-    void _showMap() {
-      final List<Marker> markers = <Marker>[
-        Marker('position', 'Incident', incident.location.latitude,
-            incident.location.longitude)
-      ];
-      final CameraPosition cameraPosition = CameraPosition(
-          Location(incident.location.latitude, incident.location.longitude), 14.0);
-      final MapView mapView = MapView();
-      mapView.show(
-        MapOptions(
-            title: 'Map of Incident',
-            mapViewType: MapViewType.normal,
-            initialCameraPosition: cameraPosition),
-        toolbarActions: [ToolbarAction('Close', 1)],
-      );
-      mapView.onToolbarAction.listen((int id) {
-        if (id == 1) {
-          mapView.dismiss();
-        }
-      });
-      mapView.onMapReady.listen((_) {
-        mapView.setMarkers(markers);
-      });
-    }
+
+
 
     print('building page content');
 
@@ -62,80 +127,264 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
       child: Container(
         margin: EdgeInsets.all(10.0),
 
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(horizontal: targetPadding / 2),
-            child: Column(children: <Widget>[
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Incident Type'),
-                initialValue: incident.incidentType,
-                enabled: false,
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Reporter'),
-                initialValue: incident.reporterFirstName + incident.reporterLastName,
-                enabled: false,
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Reporter Email'),
-                initialValue: incident.reporterEmail,
-                enabled: false,
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Date & Time', prefixIcon: Icon(Icons.access_time)),
-                initialValue: incident.dateTime,
-                enabled: false,
-              ),
-              GestureDetector(
-                onTap: _showMap,
-                child: InputDecorator(
-                  decoration: InputDecoration(labelText: 'Location', prefixIcon: Icon(Icons.location_on)),
-                  child: Text(incident.location.latitude.toString() + incident.location.longitude.toString()),
-
-                ),
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Project Name'),
-                initialValue: incident.projectName,
-                enabled: false,
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Route'),
-                initialValue: incident.route,
-                enabled: false,
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'ELR'),
-                initialValue: incident.elr,
-                enabled: false,
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Mileage'),
-                initialValue: incident.mileage.toString(),
-                enabled: false,
-              ),
-          InputDecorator(
-            decoration: InputDecoration(labelText: 'Summary'),
-            child: Text(incident.summary),
-
-          ),
-              Container(child: ImageViewer(photos: incident.images)),
-              SizedBox(
-                height: 10.0,
-              ),
-
-            ],
-          )),
+          child: widget.model.selectedMyIncident.images == null ? RefreshIndicator(color: orangeDesign1, child: _scrollView(model, targetPadding), onRefresh: _getIncidentImages) : _scrollView(model, targetPadding)
 
       ),
     );
+  }
+
+  String _locationText(){
+
+
+    if(widget.model.selectedMyIncident.latitude == null && widget.model.selectedMyIncident.postcode == null){
+      _location = 'No location recorded';
+    } else if (widget.model.selectedMyIncident.latitude != null && widget.model.selectedMyIncident.longitude != null){
+      _location = widget.model.selectedMyIncident.latitude.toString() + widget.model.selectedMyIncident.longitude.toString();
+    } else if (widget.model.selectedMyIncident.postcode != null){
+      _location = widget.model.selectedMyIncident.postcode;
+      _hasPostcode = true;
+    }
+
+    return _location;
+
+  }
+
+  Widget _scrollView(IncidentsModel model, double targetPadding){
+    return SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: targetPadding / 2),
+        child: Column(children: <Widget>[
+          TextFormField(
+            decoration: InputDecoration(labelText: 'Incident Type'),
+            initialValue: model.selectedMyIncident.type,
+            enabled: false,
+          ),
+          TextFormField(
+            decoration: InputDecoration(labelText: 'Reporter'),
+            initialValue: model.selectedMyIncident.fullName,
+            enabled: false,
+          ),
+          TextFormField(
+            decoration: InputDecoration(labelText: 'Reporter Email'),
+            initialValue: model.selectedMyIncident.username,
+            enabled: false,
+          ),
+          TextFormField(
+            decoration: InputDecoration(labelText: 'Date & Time', prefixIcon: Icon(Icons.access_time)),
+            initialValue: model.selectedMyIncident.incidentDate,
+            enabled: false,
+          ),
+          GestureDetector(
+            onTap: () {
+              print('tapped');
+              //_showMap(model)
+
+              if(_location != 'No location recorded') {
+                if (_hasPostcode) {
+                  GlobalFunctions.geocodePostcode(
+                      model.selectedMyIncident.postcode).then((
+                      Map<String, dynamic> result) {
+                    if (result['success']) {
+                      _latitude = result['latitude'];
+                      _longitude = result['longitude'];
+                    } else {
+                      GlobalFunctions.showToast(result['message']);
+                    }
+                  });
+                } else {
+                  _latitude = model.selectedMyIncident.latitude;
+                  _longitude = model.selectedMyIncident.longitude;
+                }
+
+                if (_latitude != null && _longitude != null) {
+
+                  Connectivity().checkConnectivity().then((ConnectivityResult result){
+
+                    if(result != ConnectivityResult.none){
+
+                      Navigator.of(context, rootNavigator: true).push(
+                        new MaterialPageRoute<bool>(
+                          fullscreenDialog: true,
+                          builder: (BuildContext context) {
+                            return Scaffold(
+                              appBar: AppBar(title: Text('Map of Incident'),),
+                              body: GoogleMap(
+                                onMapCreated: (controller) {
+                                  _mapController = controller;
+                                  _mapController.addMarker(MarkerOptions(
+                                      infoWindowText: InfoWindowText(
+                                          model.selectedMyIncident.type,
+                                          model.selectedMyIncident.incidentDate),
+                                      position: LatLng(
+                                          _latitude,
+                                          _longitude))).then((Marker value) {
+                                    Future.delayed(Duration(milliseconds: 100))
+                                        .then((_) {
+                                      _mapController.moveCamera(
+                                          CameraUpdate.newCameraPosition(
+                                              CameraPosition(target: LatLng(
+                                                  model.selectedMyIncident.latitude,
+                                                  model.selectedMyIncident
+                                                      .longitude),
+                                                  zoom: 15.0)));
+                                    });
+                                  });
+                                },
+                                initialCameraPosition: CameraPosition(
+                                    target: LatLng(
+                                        _latitude,
+                                        _longitude), zoom: 15.0),
+                              ),);
+                          },
+                        ),
+                      );
+                    } else {
+                      GlobalFunctions.showToast('No data connection to load Map');
+                    }
+                  });
+
+                }
+              }
+
+
+            },
+            child: InputDecorator(
+              decoration: InputDecoration(labelText: 'Location', prefixIcon: Icon(Icons.location_on)),
+              child: Text(_locationText()),
+
+            ),
+          ),
+          TextFormField(
+            decoration: InputDecoration(labelText: 'Project Name'),
+            initialValue: model.selectedMyIncident.projectName,
+            enabled: false,
+          ),
+          TextFormField(
+            decoration: InputDecoration(labelText: 'Route'),
+            initialValue: model.selectedMyIncident.route,
+            enabled: false,
+          ),
+          TextFormField(
+            decoration: InputDecoration(labelText: 'ELR'),
+            initialValue: model.selectedMyIncident.elr,
+            enabled: false,
+          ),
+          TextFormField(
+            decoration: InputDecoration(labelText: 'Mileage'),
+            initialValue: model.selectedMyIncident.mileage.toString(),
+            enabled: false,
+          ),
+          _customFieldCount > 0 ? _buildCustomFields() : Container(),
+          InputDecorator(
+            decoration: InputDecoration(labelText: 'Summary'),
+            child: Text(model.selectedMyIncident.summary),
+
+          ),
+          _buildImagesSection(model),
+          SizedBox(
+            height: 10.0,
+          ),
+
+        ],
+        ));
+  }
+
+  Widget _buildCustomFields(){
+
+    Widget customFields;
+
+    if(_customFieldCount == 1){
+
+      customFields = TextFormField(
+        decoration: InputDecoration(labelText: widget.model.selectedMyIncident.customFields[0]['label']),
+        initialValue:  widget.model.selectedMyIncident.customFields[0]['value'] == null ? '':  widget.model.selectedMyIncident.customFields[0]['value'],
+        enabled: false,
+      );
+    } else if(_customFieldCount == 2){
+      customFields = Column(children: <Widget>[
+        TextFormField(
+          decoration: InputDecoration(labelText: widget.model.selectedMyIncident.customFields[0]['label']),
+          initialValue:  widget.model.selectedMyIncident.customFields[0]['value'] == null ? '':  widget.model.selectedMyIncident.customFields[0]['value'],
+          enabled: false,
+        ),
+        TextFormField(
+          decoration: InputDecoration(labelText: widget.model.selectedMyIncident.customFields[1]['label']),
+          initialValue:  widget.model.selectedMyIncident.customFields[1]['value'] == null ? '':  widget.model.selectedMyIncident.customFields[1]['value'],
+          enabled: false,
+        )
+      ],);
+
+    } else if(_customFieldCount == 3){
+
+      Column(children: <Widget>[
+        TextFormField(
+          decoration: InputDecoration(labelText: widget.model.selectedMyIncident.customFields[0]['label']),
+          initialValue:  widget.model.selectedMyIncident.customFields[0]['value'] == null ? '':  widget.model.selectedMyIncident.customFields[0]['value'],
+          enabled: false,
+        ),
+        TextFormField(
+          decoration: InputDecoration(labelText: widget.model.selectedMyIncident.customFields[1]['label']),
+          initialValue:  widget.model.selectedMyIncident.customFields[1]['value'] == null ? '':  widget.model.selectedMyIncident.customFields[1]['value'],
+          enabled: false,
+        ),
+        TextFormField(
+          decoration: InputDecoration(labelText: widget.model.selectedMyIncident.customFields[2]['label']),
+          initialValue:  widget.model.selectedMyIncident.customFields[2]['value'] == null ? '':  widget.model.selectedMyIncident.customFields[2]['value'],
+          enabled: false,
+        )
+      ],);
+
+
+    }
+
+    return customFields;
+
+
+
+  }
+
+
+  Widget _buildImagesSection(IncidentsModel model){
+
+    if(model.isLoading){
+      return Column(children: <Widget>[
+        SizedBox(height: 20.0),
+        CircularProgressIndicator(
+          valueColor:
+          new AlwaysStoppedAnimation<Color>(
+              orangeDesign1),
+        ),
+        SizedBox(height: 10.0),
+        Text('Loading Images')
+      ],);
+    } else if (model.selectedMyIncident.images == null){
+      return Column(children: <Widget>[
+        SizedBox(height: 20.0),
+        Text('Unable to Load Images, pull down to refresh'),
+        refreshIcon == true? Icon(Icons.warning, color: orangeDesign1, size: 40.0,) : Container(),
+      ],);
+
+    }else if(!model.isLoading && model.selectedMyIncident.images.length == 0){
+      return Column(children: <Widget>[
+        SizedBox(height: 20.0),
+        Text('There are no images attached to this incident'),
+        refreshIcon == true? Icon(Icons.warning, color: orangeDesign1, size: 40.0,) : Container(),
+      ],);} else {
+      return Container(child: ImageViewer(photos: model.selectedMyIncident.images));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     print('[Product Create Page] - build page');
     // TODO: implement build
-    return ScopedModelDescendant<MainModel>(
-      builder: (BuildContext context, Widget child, MainModel model) {
+
+    final IncidentsModel _incidentsModel =
+    ScopedModel.of<IncidentsModel>(context, rebuildOnChange: true);
+
+    print('here is the selected incident');
+    print(_incidentsModel.selectedMyIncident);
+
+
         return Scaffold(
           appBar: AppBar(
             title: LayoutBuilder(
@@ -143,13 +392,12 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
 
                   double appBarWidth = constraints.maxWidth;
 
-                  return Container(alignment: Alignment.center ,width: appBarWidth * 0.9, child: Text(model.selectedIncident.incidentType + ' - ' + model.selectedIncident.dateTime),);
+                  return Container(alignment: Alignment.center ,width: appBarWidth * 0.9, child: Text(_incidentsModel.selectedMyIncident.type + ' - ' + _incidentsModel.selectedMyIncident.incidentDate),);
 
                 }),
           ),
-          body: _buildPageContent(context, model.selectedIncident),
+          body: _buildPageContent(context, _incidentsModel),
         );
-      },
-    );
+
   }
 }

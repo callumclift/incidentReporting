@@ -127,7 +127,7 @@ class _LoginPageState extends State<LoginPage> with AfterLayoutMixin<LoginPage> 
     //print(_authFormData);
 
     Map<String, dynamic> successInformation =
-        await model.login(_authFormData['username'], _authFormData['password'], _rememberMe);
+        await model.login(_authFormData['username'], _authFormData['password'], _rememberMe, context);
 
     if (successInformation['success']) {
       Navigator.pushReplacementNamed(context, '/raiseIncident');

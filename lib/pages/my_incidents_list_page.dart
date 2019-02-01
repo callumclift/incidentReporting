@@ -26,36 +26,91 @@ class MyIncidentsListPage extends StatefulWidget {
 class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
   @override
   initState() {
+    getIncidents();
+    //widget.model.fetchMyIncidents();
+    super.initState();
+  }
+
+  getIncidents() async {
     widget.model.getIncidents().then((Map<String, dynamic> success) {
-      if (success['success'] != true) {
-//        showDialog(context: context, builder: (BuildContext context){
-//          return AlertDialog(content: Text('hi'), actions: <Widget>[
-//            FlatButton(onPressed: () => Navigator.pop(context), child: Text('OK'))
-//          ],);
-//        });
+      if (success['success'] != true ) {
+
         Fluttertoast.showToast(
-            msg: 'testing toast',
+            msg: success['message'],
             toastLength: Toast.LENGTH_SHORT,
-            timeInSecForIos: 3,
+            timeInSecForIos: 2,
             gravity: ToastGravity.BOTTOM,
             backgroundColor: orangeDesign1,
             textColor: Colors.black);
 
         print('uh ohhhhhh');
         print(success['message']);
-      } else {
-        print(success['message']);
-        Fluttertoast.showToast(
-            msg: 'testing toast',
-            toastLength: Toast.LENGTH_SHORT,
-            timeInSecForIos: 3,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: orangeDesign1,
-            textColor: Colors.black);
       }
     });
-    //widget.model.fetchMyIncidents();
-    super.initState();
+  }
+
+  Widget _buildPageContent(IncidentsModel model, List<Incident> incidents) {
+    final double deviceHeight = MediaQuery.of(context).size.height;
+
+    if (model.isLoading) {
+      return Center(
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+            CircularProgressIndicator(
+                valueColor: new AlwaysStoppedAnimation<Color>(orangeDesign1)),
+            SizedBox(height: 20.0),
+            Text('Fetching Incidents')
+          ]));
+    } else if (incidents.length == 0) {
+      return RefreshIndicator(
+          color: orangeDesign1,
+          child: ListView(padding: EdgeInsets.all(10.0), children: <Widget>[
+            Container(
+                height: deviceHeight * 0.9,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      'No Incidents Available pull down to refesh',
+                      textAlign: TextAlign.center,
+                    ),
+                    Icon(
+                      Icons.warning,
+                      size: 40.0,
+                      color: orangeDesign1,
+                    )
+                  ],
+                ))
+          ]),
+          onRefresh: () => getIncidents());
+    } else {
+      return RefreshIndicator(
+        color: orangeDesign1,
+        child: ListView.builder(
+          itemBuilder: (BuildContext context, int index) {
+            return Column(
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(
+                    Icons.warning,
+                    color: orangeDesign1,
+                    size: 30.0,
+                  ),
+                  title: Text(incidents[index].type),
+                  subtitle: Text(incidents[index].incidentDate),
+                  trailing:
+                      _buildEditButton(model, index, context, incidents[index]),
+                ),
+                Divider(),
+              ],
+            );
+          },
+          itemCount: incidents.length,
+        ),
+        onRefresh: () => getIncidents(),
+      );
+    }
   }
 
   Widget _buildEditButton(IncidentsModel model, int index, BuildContext context,
@@ -68,10 +123,13 @@ class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
         onSelected: (String value) {
           if (value == 'Delete') {
           } else if (value == 'View') {
-            model.selectMyIncident(model.allMyIncidents[index].id);
+            print('index is:' + index.toString());
+            model.selectMyIncident(model.allMyIncidents[index].incidentId);
+            print('here is the selected incident');
+            print(model.selectedMyIncident.incidentId);
             Navigator.of(context)
                 .push(MaterialPageRoute(builder: (BuildContext context) {
-              return ViewMyIncidentPage();
+              return ViewMyIncidentPage(model);
             })).then((_) {
               model.selectMyIncident(null);
             });
@@ -102,25 +160,7 @@ class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
               title: Text('Incidents'),
             ),
             drawer: SideDrawer(),
-            body: model.isLoading
-                ? Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    itemBuilder: (BuildContext context, int index) {
-                      return Column(
-                        children: <Widget>[
-                          ListTile(
-                            leading: Icon(Icons.warning, color: orangeDesign1,size: 30.0,),
-                            title: Text(incidents[index].type),
-                            subtitle: Text(incidents[index].incidentDate),
-                            trailing: _buildEditButton(
-                                model, index, context, incidents[index]),
-                          ),
-                          Divider(),
-                        ],
-                      );
-                    },
-                    itemCount: incidents.length,
-                  ));
+            body: _buildPageContent(model, incidents));
       },
     );
   }

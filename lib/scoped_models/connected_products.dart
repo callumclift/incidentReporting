@@ -4,9 +4,7 @@ import 'dart:io';
 
 import 'package:scoped_model/scoped_model.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:random_string/random_string.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server/gmail.dart';
@@ -16,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:encrypt/encrypt.dart';
 
 import '../models/product.dart';
 import '../models/product1.dart';
@@ -23,16 +22,19 @@ import '../models/incident.dart';
 import '../models/user.dart';
 import '../models/authenticated_user.dart';
 import '../models/auth.dart';
-import '../models/user_mode.dart';
 import '../models/location_data.dart';
+import '../utils/database_helper.dart';
+import '../shared/global_config.dart';
 
 mixin ConnectedProductsModel on Model {
   List<Product> _products = [];
   List<User> _users = [];
   List<Product1> _products1 = [];
   List<Incident> _incidents = [];
+  List<Incident> _myIncidents = [];
   String _selProductId;
   String _selIncidentKey;
+  String _selMyIncidentId;
   String _selUserKey;
   AuthenticatedUser _authenticatedUser;
   bool _isLoading = false;
@@ -52,6 +54,10 @@ mixin ProductsModel on ConnectedProductsModel {
 
   List<Incident> get allIncidents {
   return List.from(_incidents);
+  }
+
+  List<Incident> get allMyIncidents {
+    return List.from(_myIncidents);
   }
 
   List<Product1> get allProducts1 {
@@ -90,6 +96,12 @@ mixin ProductsModel on ConnectedProductsModel {
     });
   }
 
+  int get selectedMyIncidentIndex {
+    return _myIncidents.indexWhere((Incident incident) {
+      return incident.id == _selMyIncidentId;
+    });
+  }
+
   String get selectedProductId {
     return _selProductId;
   }
@@ -100,6 +112,10 @@ mixin ProductsModel on ConnectedProductsModel {
 
   String get selectedIncidentKey {
     return _selIncidentKey;
+  }
+
+  String get selectedMyIncidentId {
+    return _selMyIncidentId;
   }
 
   bool get displayFavouritesOnly {
@@ -130,6 +146,15 @@ mixin ProductsModel on ConnectedProductsModel {
     }
     return _incidents.firstWhere((Incident incident) {
       return incident.id == _selIncidentKey;
+    });
+  }
+
+  Incident get selectedMyIncident {
+    if (_selMyIncidentId == null) {
+      return null;
+    }
+    return _myIncidents.firstWhere((Incident incident) {
+      return incident.id == _selMyIncidentId;
     });
   }
 
@@ -198,6 +223,67 @@ mixin ProductsModel on ConnectedProductsModel {
       return;
     });
   }
+
+Future<Null> fetchMyIncidents() async{
+
+  _isLoading = true;
+  notifyListeners();
+
+  final List<Incident> fetchedIncidentList = [];
+
+  try {
+
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    List<Map<String, dynamic>> test = await databaseHelper.getIncidentMapList();
+
+
+    List<Map<String, dynamic>> incidentsList = await databaseHelper.getIncidentMapList();
+
+    if (incidentsList.length == 0){
+      print('there are no incidents');
+    } else {
+      print('we have some incidents');
+    }
+
+    print('this is the size of the incident list locally');
+    print(incidentsList.length);
+
+    incidentsList.forEach((Map<String, dynamic> incidentMap) {
+      print('the start of the for each');
+
+      final Incident incident = Incident.myIncident(
+          incidentId: incidentMap['id'],
+          incidentType: incidentMap['incidentType'],
+          reporterFirstName: incidentMap['reporterFirstName'],
+          reporterLastName: incidentMap['reporterLastName'],
+          dateTime: incidentMap['dateTime'],
+          location: LocationData(longitude: incidentMap['locLng'], latitude: incidentMap['locLat']),
+          projectName: incidentMap['projectName'],
+          route: incidentMap['route'],
+          elr: incidentMap['elr'],
+          mileage: incidentMap['mileage'],
+          summary: incidentMap['summary'],
+          organisation: incidentMap['organisation'],
+          reporterEmail: incidentMap['reporterEmail'],
+      );
+      print('ok about to add');
+      fetchedIncidentList.add(incident);
+
+      //Incident incident = Incident(id: null, incidentType: null, reporter: null, dateTime: null, location: null, projectName: null, route: null, elr: null, mileage: null, summary: null, imagePaths: null, images: null, organisation: null, reporterEmail: null, voided: null)
+    });
+
+    //return incidentsList;
+
+  } catch (error) {
+    print(error);
+  }
+
+  _myIncidents = fetchedIncidentList;
+  _isLoading = false;
+  notifyListeners();
+
+}
 
 Future<Null> fetchIncidents(String role, {onlyForUser: false, clearExisting = false}) async{
 
@@ -282,7 +368,8 @@ Future<Null> fetchIncidents(String role, {onlyForUser: false, clearExisting = fa
       final Incident incident = Incident(
           id: incidentKey,
           incidentType: incidentData['incidentType'],
-          reporter: incidentData['reporter'],
+          reporterFirstName: incidentData['reporterFirstName'],
+          reporterLastName: incidentData['reporterLastName'],
           dateTime: incidentData['dateTime'],
           location: LocationData(longitude: incidentData['loc_lng'], latitude: incidentData['loc_lat']),
           projectName: incidentData['projectName'],
@@ -733,8 +820,87 @@ Future<Null> fetchUsers(String role, {onlyForUser: false, clearExisting = false}
     }
   }
 
+Future<Map<String, dynamic>> addIncidentLocally(String incidentType, String reporter, String dateTime, LocationData locationData,
+    String projectName, String route, String elr, double mileage, String summary, List<File> images) async {
+
+  _isLoading = true;
+  notifyListeners();
+
+  String message = 'Something went wrong!';
+  bool hasError = true;
+
+  List<String> base64Images = [];
+
+  for (File image in images) {
+    if (image == null) {
+      continue;
+    }
+    List<int> imageBytes =image.readAsBytesSync();
+    String base64Image = base64Encode(imageBytes);
+    base64Images.add(base64Image);
+  }
+
+  var encodedImages = jsonEncode(base64Images);
+
+  try {
+
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    int count = await databaseHelper.getCount();
+    int id;
+
+    if (count == 0) {
+      id = 1;
+    } else {
+      id = count + 1;
+    }
+
+
+
+
+
+
+    Map<String, dynamic> incidentData = {
+      'incidentId': id,
+      'userId': _authenticatedUser.id,
+      'incidentType': incidentType,
+      'reporterName': reporter,
+      'dateTime': dateTime,
+      'locLat': locationData.latitude,
+      'locLng': locationData.longitude,
+      'projectName': projectName,
+      'route': route,
+      'elr': elr,
+      'mileage': mileage,
+      'summary': summary,
+      'organisationId': _authenticatedUser.organisationId,
+      'organisationName': _authenticatedUser.organisationName,
+      'reporterEmail': _authenticatedUser.email,
+      'voided': 0,
+      'images' : encodedImages
+    };
+
+    int result = await databaseHelper.addIncident(incidentData);
+
+    if (result != 0){
+      print('Incident has successfully been added to local database');
+      hasError = false;
+      message = 'Incident has been successfully uploaded';
+    }
+
+  } catch (error) {
+    print(error);
+  }
+
+  _isLoading = false;
+  notifyListeners();
+  return {'success': !hasError, 'message': message};
+
+}
+
   Future<Map<String, dynamic>> addIncident(String incidentType, String reporter, String dateTime, LocationData locationData,
   String projectName, String route, String elr, double mileage, String summary, List<File> images) async {
+
 
     _isLoading = true;
     notifyListeners();
@@ -781,7 +947,7 @@ Future<Null> fetchUsers(String role, {onlyForUser: false, clearExisting = false}
       'summary': summary,
       'imagePaths': imagePaths,
       'imageUrls': imageUrls,
-      'organisation': _authenticatedUser.organisation,
+      'organisation': _authenticatedUser.organisationName,
       'reporterEmail': _authenticatedUser.email,
       'voided': false
     };
@@ -1000,19 +1166,26 @@ Future<Null> fetchUsers(String role, {onlyForUser: false, clearExisting = false}
     }
   }
 
-void selectUser(String userKey) {
-  _selUserKey = userKey;
-  if (userKey != null) {
-    notifyListeners();
+  void selectUser(String userKey) {
+    _selUserKey = userKey;
+    if (userKey != null) {
+      notifyListeners();
+    }
   }
-}
 
-void selectIncident(String incidentKey) {
-  _selIncidentKey = incidentKey;
-  if (incidentKey != null) {
-    notifyListeners();
+  void selectIncident(String incidentKey) {
+    _selIncidentKey = incidentKey;
+    if (incidentKey != null) {
+      notifyListeners();
+    }
   }
-}
+
+  void selectMyIncident(String incidentId) {
+    _selMyIncidentId = incidentId;
+    if (incidentId != null) {
+      notifyListeners();
+    }
+  }
 
   void toggleDisplayMode() {
     _showFavourites = !_showFavourites;
@@ -1252,7 +1425,8 @@ Future<Map<String, dynamic>> newPassword(String newPassword) async {
           suspended: _authenticatedUser.suspended,
           acceptedTerms: _authenticatedUser.acceptedTerms,
           hasTemporaryPassword: false,
-          organisation: _authenticatedUser.organisation,
+          organisationId: 1,
+          organisationName: _authenticatedUser.organisationName,
           surname: _authenticatedUser.surname,
           firstName: _authenticatedUser.firstName,
           role: _authenticatedUser.role,
@@ -1281,7 +1455,7 @@ Future<Map<String, dynamic>> newPassword(String newPassword) async {
       prefs.setBool('suspended', _authenticatedUser.suspended);
       prefs.setBool('acceptedTerms', _authenticatedUser.acceptedTerms);
       prefs.setBool('hasTemporaryPassword', _authenticatedUser.hasTemporaryPassword);
-      prefs.setString('organisation', _authenticatedUser.organisation);
+      prefs.setString('organisation', _authenticatedUser.organisationName);
       prefs.setString('surname', _authenticatedUser.firstName);
       prefs.setString('firstName', _authenticatedUser.surname);
       prefs.setString('role', _authenticatedUser.role);
@@ -1311,7 +1485,7 @@ Future<Map<String, dynamic>> newPassword(String newPassword) async {
     'authenticationId': _authenticatedUser.authenticationId,
     'firstName': _authenticatedUser.firstName,
     'surname': _authenticatedUser.surname,
-    'organisation': _authenticatedUser.organisation,
+    'organisation': _authenticatedUser.organisationName,
     'role': _authenticatedUser.role,
     'email': _authenticatedUser.email,
     'hasTemporaryPassword' : false,
@@ -1337,7 +1511,7 @@ Future<bool> acceptTerms() async {
     'authenticationId': _authenticatedUser.authenticationId,
     'firstName': _authenticatedUser.firstName,
     'surname': _authenticatedUser.surname,
-    'organisation': _authenticatedUser.organisation,
+    'organisation': _authenticatedUser.organisationName,
     'role': _authenticatedUser.role,
     'email': _authenticatedUser.email,
     'hasTemporaryPassword' : _authenticatedUser.hasTemporaryPassword,
@@ -1510,7 +1684,8 @@ Future<Map<String, dynamic>>editUser(User user, String firstName, String surname
                 suspended: value['suspended'],
                 acceptedTerms: value['acceptedTerms'],
                 hasTemporaryPassword: value['hasTemporaryPassword'],
-                organisation: value['organisation'],
+                organisationId: 1,
+                organisationName: value['organisation'],
                 surname: value['surname'],
                 firstName: value['firstName'],
                 role: value['role'],
@@ -1543,7 +1718,7 @@ Future<Map<String, dynamic>>editUser(User user, String firstName, String surname
             prefs.setBool('suspended', _authenticatedUser.suspended);
             prefs.setBool('acceptedTerms', _authenticatedUser.acceptedTerms);
             prefs.setBool('hasTemporaryPassword', _authenticatedUser.hasTemporaryPassword);
-            prefs.setString('organisation', _authenticatedUser.organisation);
+            prefs.setString('organisation', _authenticatedUser.organisationName);
             prefs.setString('surname', _authenticatedUser.surname);
             prefs.setString('firstName', _authenticatedUser.firstName);
             prefs.setString('role', _authenticatedUser.role);
@@ -1624,7 +1799,8 @@ Future<Map<String, dynamic>>editUser(User user, String firstName, String surname
           suspended: suspended,
           acceptedTerms: acceptedTerms,
           hasTemporaryPassword: hasTemporaryPassword,
-          organisation: organisation,
+          organisationId: 1,
+          organisationName: organisation,
           surname: surname,
           firstName: firstName,
           role: role,

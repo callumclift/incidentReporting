@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'location_data.dart';
 
@@ -13,15 +14,16 @@ class Incident {
   final String created;
   final double latitude;
   final double longitude;
+  final String postcode;
   final String projectName;
   final String route;
   final String elr;
   final String mileage;
   final String summary;
-  final List<String> images;
+  List<Uint8List> images;
   final int organisationId;
   final String organisationName;
-  final List<String> customFields;
+  final List<Map<String, dynamic>> customFields;
   final bool anonymous;
 
   Incident({
@@ -36,6 +38,7 @@ class Incident {
     this.created,
     this.latitude,
     this.longitude,
+    this.postcode,
     this.projectName,
     this.route,
     this.elr,

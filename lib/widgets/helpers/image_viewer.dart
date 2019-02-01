@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
+
 
 class ImageViewer extends StatelessWidget {
-  final List<String> photos;
+  final List<Uint8List> photos;
 
   ImageViewer({this.photos});
 
   Widget _buildCarousel(
-      BuildContext context, int carouselIndex, List<String> photos) {
+      BuildContext context, int carouselIndex, List<Uint8List> photos) {
     return Column(
       children: <Widget>[
         SizedBox(
@@ -28,7 +30,7 @@ class ImageViewer extends StatelessWidget {
   }
 
   Widget _buildCarouselItem(BuildContext context, int carouselIndex,
-      int photoIndex, List<String> photos) {
+      int photoIndex, List<Uint8List> photos) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 4.0),
       child: Stack(
@@ -42,12 +44,9 @@ class ImageViewer extends StatelessWidget {
             width: double.infinity,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(25.0),
-              child: FadeInImage(
-              placeholder: AssetImage('assets/placeholder.png'),
-              image: NetworkImage(photos[photoIndex]),
-              height: 350.0,
-              fit: BoxFit.cover,
-            ),),
+              child: Image.memory(photos[photoIndex],height: 350.0, fit: BoxFit.cover,),
+
+            ),
 
 
           ),

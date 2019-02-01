@@ -1,25 +1,32 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-44:12
-INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-44:12
-INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-44:12
-INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-44:12
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-46:12
+INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-46:12
+INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-46:12
+INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-46:12
 MERGED from [:google_sign_in] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/google_sign_in/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-9:12
+MERGED from [:fluttertoast] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/fluttertoast/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
+MERGED from [:sqflite] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/sqflite/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:cloud_functions] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/cloud_functions/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:url_launcher] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/url_launcher/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-14:12
+MERGED from [:path_provider] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/path_provider/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
+MERGED from [:connectivity] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/connectivity/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-10:12
+MERGED from [:google_maps_flutter] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/google_maps_flutter/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:firebase_database] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_database/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:shared_preferences] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/shared_preferences/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:location] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/location/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-10:12
 MERGED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-23:12
-MERGED from [:firebase_core] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_core/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
+MERGED from [:flutter_exif_rotation] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/flutter_exif_rotation/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:map_view] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/map_view/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-11:12
+MERGED from [:firebase_core] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_core/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:firebase_auth] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_auth/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.firebase:firebase-core:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-core-16.0.4.aar/5ddb0b8ce29e59e3a765d33b299a334c/AndroidManifest.xml:2:1-9:12
 MERGED from [com.google.android.gms:play-services-auth:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-auth-16.0.1.aar/eeff83bb28420a93eb24e75beb2ef22e/AndroidManifest.xml:17:1-39:12
+MERGED from [com.android.support:appcompat-v7:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/AndroidManifest.xml:17:1-22:12
 MERGED from [com.google.firebase:firebase-functions:16.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-functions-16.1.1.aar/211cd910a4533c86ce15e0c543ed5160/AndroidManifest.xml:2:1-10:12
+MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:17:1-32:12
 MERGED from [com.google.firebase:firebase-database:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-database-16.0.3.aar/9885b612db64c964ed43bb9d01f23835/AndroidManifest.xml:15:1-25:12
 MERGED from [com.google.android.gms:play-services-location:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-location-15.0.1.aar/e1b5404075f2ad51ecab95b19f723d7e/AndroidManifest.xml:2:1-9:12
-MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:17:1-32:12
 MERGED from [com.google.firebase:firebase-auth:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-auth-16.0.4.aar/7ba8a8674529c4d13818cf4097355c41/AndroidManifest.xml:17:1-38:12
 MERGED from [com.google.android.gms:play-services-auth-api-phone:16.0.0] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-auth-api-phone-16.0.0.aar/73fb27b9c10e1fc86f85a49b03c826b1/AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.android.gms:play-services-auth-base:16.0.0] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-auth-base-16.0.0.aar/4ab28b6889de94685f37f483d9ba9835/AndroidManifest.xml:2:1-7:12
@@ -41,33 +48,32 @@ MERGED from [com.google.firebase:firebase-measurement-connector:17.0.1] /Users/c
 MERGED from [com.google.android.gms:play-services-ads-identifier:16.0.0] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-ads-identifier-16.0.0.aar/a80d92926e85403e9a30980078a32cbb/AndroidManifest.xml:17:1-24:12
 MERGED from [com.google.android.gms:play-services-basement:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-basement-16.0.1.aar/0cb5651cea3d0147a3404f2c8ebc7791/AndroidManifest.xml:17:1-28:12
 MERGED from [com.android.support:support-v4:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-v4-27.1.1.aar/6d5d809071d12a4cf4bd2ef7e14d08a7/AndroidManifest.xml:17:1-22:12
-MERGED from [com.android.support:appcompat-v7:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/AndroidManifest.xml:17:1-22:12
 MERGED from [com.android.support:support-fragment:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-fragment-27.1.1.aar/72ed965a32f438f769babcceba3c2ea1/AndroidManifest.xml:17:1-22:12
-MERGED from [android.arch.lifecycle:livedata-core:1.1.0] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/livedata-core-1.1.0.aar/03b598bfbde5cdbf0bd19e5b9be20e24/AndroidManifest.xml:17:1-22:12
-MERGED from [android.arch.core:runtime:1.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/runtime-1.1.1.aar/a30e5da7da8b3c6723784ac147c55f6e/AndroidManifest.xml:17:1-22:12
-MERGED from [com.android.support:support-media-compat:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-media-compat-27.1.1.aar/df2b1cc41545337aa2f693d53bd58dd6/AndroidManifest.xml:17:1-22:12
 MERGED from [com.android.support:animated-vector-drawable:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/animated-vector-drawable-27.1.1.aar/27e09d03fc3cd2d7fe9fddc0e55c2ffc/AndroidManifest.xml:17:1-22:12
 MERGED from [com.android.support:support-core-ui:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-core-ui-27.1.1.aar/9828f4ed7bbd2463f6f7cdff519c855b/AndroidManifest.xml:17:1-22:12
 MERGED from [com.android.support:support-core-utils:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-core-utils-27.1.1.aar/5533cd830ec78d882a8fdb203e1e3fc9/AndroidManifest.xml:17:1-22:12
 MERGED from [com.android.support:support-vector-drawable:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-vector-drawable-27.1.1.aar/bfb9de8d2e2838a5b6ef0e2f700ac4d9/AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:livedata-core:1.1.0] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/livedata-core-1.1.0.aar/03b598bfbde5cdbf0bd19e5b9be20e24/AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.core:runtime:1.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/runtime-1.1.1.aar/a30e5da7da8b3c6723784ac147c55f6e/AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-media-compat:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-media-compat-27.1.1.aar/df2b1cc41545337aa2f693d53bd58dd6/AndroidManifest.xml:17:1-22:12
 MERGED from [com.android.support:support-compat:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-compat-27.1.1.aar/975e06c96644a2ada8c925905ca0dbb3/AndroidManifest.xml:17:1-22:12
 MERGED from [android.arch.lifecycle:runtime:1.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/runtime-1.1.1.aar/9317bcd9a8bc20cdad955d43563bf3bc/AndroidManifest.xml:17:1-22:12
 MERGED from [android.arch.lifecycle:viewmodel:1.1.0] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/viewmodel-1.1.0.aar/ee591dd543031a7ae03a7841f4e76803/AndroidManifest.xml:17:1-22:12
 MERGED from [com.google.android.gms:play-services-measurement-base:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-measurement-base-16.0.3.aar/0fed3ba8fd0a4affcc6bc56796fd010c/AndroidManifest.xml:2:1-9:12
-INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-44:12
-INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-44:12
-INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-44:12
+INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-46:12
+INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-46:12
+INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-46:12
 	package
 		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:2:5-49
 		INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml
 		INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml
 	android:versionName
 		INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-44:12
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-46:12
 		INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml
 	android:versionCode
 		INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-44:12
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:1-46:12
 		INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml
 	xmlns:android
 		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:1:11-69
@@ -75,10 +81,10 @@ uses-permission#android.permission.INTERNET
 ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:8:5-66
 MERGED from [:google_sign_in] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/google_sign_in/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-67
 MERGED from [:google_sign_in] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/google_sign_in/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-67
-MERGED from [com.google.firebase:firebase-database:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-database-16.0.3.aar/9885b612db64c964ed43bb9d01f23835/AndroidManifest.xml:23:5-67
-MERGED from [com.google.firebase:firebase-database:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-database-16.0.3.aar/9885b612db64c964ed43bb9d01f23835/AndroidManifest.xml:23:5-67
 MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:24:5-67
 MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:24:5-67
+MERGED from [com.google.firebase:firebase-database:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-database-16.0.3.aar/9885b612db64c964ed43bb9d01f23835/AndroidManifest.xml:23:5-67
+MERGED from [com.google.firebase:firebase-database:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-database-16.0.3.aar/9885b612db64c964ed43bb9d01f23835/AndroidManifest.xml:23:5-67
 MERGED from [com.google.firebase:firebase-measurement-connector-impl:17.0.2] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-measurement-connector-impl-17.0.2.aar/654f6ffa045ef49cf5227a0243d0c6b0/AndroidManifest.xml:22:5-67
 MERGED from [com.google.firebase:firebase-measurement-connector-impl:17.0.2] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-measurement-connector-impl-17.0.2.aar/654f6ffa045ef49cf5227a0243d0c6b0/AndroidManifest.xml:22:5-67
 MERGED from [com.google.firebase:firebase-analytics:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-analytics-16.0.4.aar/ad9ac436b5612388eae9fde4a33964b8/AndroidManifest.xml:23:5-67
@@ -101,8 +107,20 @@ MERGED from [:location] /Users/callumclift/StudioProjects/ontrac_incident_report
 MERGED from [:location] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/location/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-81
 	android:name
 		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:10:22-78
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:11:5-79
+MERGED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-80
+MERGED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-80
+	android:name
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:11:22-77
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:12:5-80
+MERGED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:8:5-81
+MERGED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:8:5-81
+	android:name
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:12:22-78
 application
-ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:17:5-43:19
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:19:5-45:19
 MERGED from [:url_launcher] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/url_launcher/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-12:19
 MERGED from [:url_launcher] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/url_launcher/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-12:19
 MERGED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:11:5-21:19
@@ -111,10 +129,10 @@ MERGED from [com.google.firebase:firebase-core:16.0.4] /Users/callumclift/.gradl
 MERGED from [com.google.firebase:firebase-core:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-core-16.0.4.aar/5ddb0b8ce29e59e3a765d33b299a334c/AndroidManifest.xml:7:5-20
 MERGED from [com.google.android.gms:play-services-auth:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-auth-16.0.1.aar/eeff83bb28420a93eb24e75beb2ef22e/AndroidManifest.xml:22:5-37:19
 MERGED from [com.google.android.gms:play-services-auth:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-auth-16.0.1.aar/eeff83bb28420a93eb24e75beb2ef22e/AndroidManifest.xml:22:5-37:19
-MERGED from [com.google.android.gms:play-services-location:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-location-15.0.1.aar/e1b5404075f2ad51ecab95b19f723d7e/AndroidManifest.xml:7:5-20
-MERGED from [com.google.android.gms:play-services-location:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-location-15.0.1.aar/e1b5404075f2ad51ecab95b19f723d7e/AndroidManifest.xml:7:5-20
 MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:30:5-20
 MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:30:5-20
+MERGED from [com.google.android.gms:play-services-location:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-location-15.0.1.aar/e1b5404075f2ad51ecab95b19f723d7e/AndroidManifest.xml:7:5-20
+MERGED from [com.google.android.gms:play-services-location:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-location-15.0.1.aar/e1b5404075f2ad51ecab95b19f723d7e/AndroidManifest.xml:7:5-20
 MERGED from [com.google.firebase:firebase-auth:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-auth-16.0.4.aar/7ba8a8674529c4d13818cf4097355c41/AndroidManifest.xml:22:5-36:19
 MERGED from [com.google.firebase:firebase-auth:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-auth-16.0.4.aar/7ba8a8674529c4d13818cf4097355c41/AndroidManifest.xml:22:5-36:19
 MERGED from [com.google.firebase:firebase-auth-interop:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-auth-interop-16.0.1.aar/d70c8e70116e83a043481ba798e5931e/AndroidManifest.xml:7:5-8:19
@@ -150,71 +168,81 @@ MERGED from [com.google.android.gms:play-services-basement:16.0.1] /Users/callum
 MERGED from [com.google.android.gms:play-services-measurement-base:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-measurement-base-16.0.3.aar/0fed3ba8fd0a4affcc6bc56796fd010c/AndroidManifest.xml:7:5-20
 MERGED from [com.google.android.gms:play-services-measurement-base:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-measurement-base-16.0.3.aar/0fed3ba8fd0a4affcc6bc56796fd010c/AndroidManifest.xml:7:5-20
 	android:label
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:19:9-50
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:21:9-50
 	android:icon
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:20:9-43
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:22:9-43
 	android:name
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:18:9-57
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:20:9-57
 activity#com.ontrac.ontracincidentreporting.MainActivity
-ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:21:9-39:20
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:23:9-41:20
 	android:launchMode
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:23:13-43
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:25:13-43
 	android:hardwareAccelerated
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:26:13-47
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:28:13-47
 	android:windowSoftInputMode
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:27:13-55
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:29:13-55
 	android:configChanges
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:25:13-137
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:27:13-137
 	android:theme
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:24:13-47
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:26:13-47
 	android:name
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:22:13-41
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:24:13-41
 meta-data#io.flutter.app.android.SplashScreenUntilFirstFrame
-ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:32:13-34:40
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:34:13-36:40
 	android:value
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:34:17-37
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:36:17-37
 	android:name
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:33:17-82
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:35:17-82
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:35:13-38:29
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:37:13-40:29
 action#android.intent.action.MAIN
-ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:36:17-68
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:38:17-68
 	android:name
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:36:25-66
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:38:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:37:17-76
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:39:17-76
 	android:name
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:37:27-74
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:39:27-74
 activity#com.apptreesoftware.mapview.MapActivity
-ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:40:9-134
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:42:9-134
 	android:theme
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:40:74-132
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:42:74-132
 	android:name
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:40:19-73
-meta-data#com.google.android.maps.v2.API_KEY
-ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:41:9-127
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:42:19-73
+meta-data#com.google.android.geo.API_KEY
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:43:9-123
 	android:value
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:41:70-125
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:43:66-121
 	android:name
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:41:20-69
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:43:20-65
 meta-data#com.google.android.gms.version
-ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:42:9-121
+ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:44:9-121
 MERGED from [com.google.android.gms:play-services-basement:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-basement-16.0.1.aar/0cb5651cea3d0147a3404f2c8ebc7791/AndroidManifest.xml:23:9-25:69
 MERGED from [com.google.android.gms:play-services-basement:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-basement-16.0.1.aar/0cb5651cea3d0147a3404f2c8ebc7791/AndroidManifest.xml:23:9-25:69
 	android:value
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:42:66-119
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:44:66-119
 	android:name
-		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:42:20-65
+		ADDED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml:44:20-65
 uses-sdk
 INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml
 INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml
 MERGED from [:google_sign_in] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/google_sign_in/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:google_sign_in] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/google_sign_in/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:fluttertoast] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/fluttertoast/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:fluttertoast] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/fluttertoast/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:sqflite] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/sqflite/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:sqflite] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/sqflite/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:cloud_functions] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/cloud_functions/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:cloud_functions] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/cloud_functions/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:url_launcher] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/url_launcher/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:url_launcher] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/url_launcher/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:path_provider] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/path_provider/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:path_provider] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/path_provider/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:connectivity] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/connectivity/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:connectivity] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/connectivity/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:google_maps_flutter] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/google_maps_flutter/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:google_maps_flutter] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/google_maps_flutter/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:firebase_database] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_database/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:firebase_database] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_database/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:shared_preferences] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/shared_preferences/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
@@ -223,24 +251,28 @@ MERGED from [:location] /Users/callumclift/StudioProjects/ontrac_incident_report
 MERGED from [:location] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/location/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
-MERGED from [:firebase_core] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_core/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
-MERGED from [:firebase_core] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_core/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:flutter_exif_rotation] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/flutter_exif_rotation/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:flutter_exif_rotation] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/flutter_exif_rotation/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:map_view] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/map_view/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-9:41
 MERGED from [:map_view] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/map_view/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-9:41
+MERGED from [:firebase_core] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_core/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:firebase_core] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_core/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:firebase_auth] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_auth/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:firebase_auth] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_auth/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [com.google.firebase:firebase-core:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-core-16.0.4.aar/5ddb0b8ce29e59e3a765d33b299a334c/AndroidManifest.xml:5:5-44
 MERGED from [com.google.firebase:firebase-core:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-core-16.0.4.aar/5ddb0b8ce29e59e3a765d33b299a334c/AndroidManifest.xml:5:5-44
 MERGED from [com.google.android.gms:play-services-auth:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-auth-16.0.1.aar/eeff83bb28420a93eb24e75beb2ef22e/AndroidManifest.xml:20:5-44
 MERGED from [com.google.android.gms:play-services-auth:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-auth-16.0.1.aar/eeff83bb28420a93eb24e75beb2ef22e/AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:appcompat-v7:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:appcompat-v7:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/AndroidManifest.xml:20:5-44
 MERGED from [com.google.firebase:firebase-functions:16.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-functions-16.1.1.aar/211cd910a4533c86ce15e0c543ed5160/AndroidManifest.xml:6:5-8:41
 MERGED from [com.google.firebase:firebase-functions:16.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-functions-16.1.1.aar/211cd910a4533c86ce15e0c543ed5160/AndroidManifest.xml:6:5-8:41
+MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:20:5-44
+MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:20:5-44
 MERGED from [com.google.firebase:firebase-database:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-database-16.0.3.aar/9885b612db64c964ed43bb9d01f23835/AndroidManifest.xml:18:5-20:41
 MERGED from [com.google.firebase:firebase-database:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-database-16.0.3.aar/9885b612db64c964ed43bb9d01f23835/AndroidManifest.xml:18:5-20:41
 MERGED from [com.google.android.gms:play-services-location:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-location-15.0.1.aar/e1b5404075f2ad51ecab95b19f723d7e/AndroidManifest.xml:5:5-44
 MERGED from [com.google.android.gms:play-services-location:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-location-15.0.1.aar/e1b5404075f2ad51ecab95b19f723d7e/AndroidManifest.xml:5:5-44
-MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:20:5-44
-MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:20:5-44
 MERGED from [com.google.firebase:firebase-auth:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-auth-16.0.4.aar/7ba8a8674529c4d13818cf4097355c41/AndroidManifest.xml:20:5-44
 MERGED from [com.google.firebase:firebase-auth:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-auth-16.0.4.aar/7ba8a8674529c4d13818cf4097355c41/AndroidManifest.xml:20:5-44
 MERGED from [com.google.android.gms:play-services-auth-api-phone:16.0.0] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-auth-api-phone-16.0.0.aar/73fb27b9c10e1fc86f85a49b03c826b1/AndroidManifest.xml:5:5-44
@@ -283,16 +315,8 @@ MERGED from [com.google.android.gms:play-services-basement:16.0.1] /Users/callum
 MERGED from [com.google.android.gms:play-services-basement:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-basement-16.0.1.aar/0cb5651cea3d0147a3404f2c8ebc7791/AndroidManifest.xml:20:5-44
 MERGED from [com.android.support:support-v4:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-v4-27.1.1.aar/6d5d809071d12a4cf4bd2ef7e14d08a7/AndroidManifest.xml:20:5-44
 MERGED from [com.android.support:support-v4:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-v4-27.1.1.aar/6d5d809071d12a4cf4bd2ef7e14d08a7/AndroidManifest.xml:20:5-44
-MERGED from [com.android.support:appcompat-v7:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/AndroidManifest.xml:20:5-44
-MERGED from [com.android.support:appcompat-v7:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/AndroidManifest.xml:20:5-44
 MERGED from [com.android.support:support-fragment:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-fragment-27.1.1.aar/72ed965a32f438f769babcceba3c2ea1/AndroidManifest.xml:20:5-44
 MERGED from [com.android.support:support-fragment:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-fragment-27.1.1.aar/72ed965a32f438f769babcceba3c2ea1/AndroidManifest.xml:20:5-44
-MERGED from [android.arch.lifecycle:livedata-core:1.1.0] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/livedata-core-1.1.0.aar/03b598bfbde5cdbf0bd19e5b9be20e24/AndroidManifest.xml:20:5-44
-MERGED from [android.arch.lifecycle:livedata-core:1.1.0] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/livedata-core-1.1.0.aar/03b598bfbde5cdbf0bd19e5b9be20e24/AndroidManifest.xml:20:5-44
-MERGED from [android.arch.core:runtime:1.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/runtime-1.1.1.aar/a30e5da7da8b3c6723784ac147c55f6e/AndroidManifest.xml:20:5-44
-MERGED from [android.arch.core:runtime:1.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/runtime-1.1.1.aar/a30e5da7da8b3c6723784ac147c55f6e/AndroidManifest.xml:20:5-44
-MERGED from [com.android.support:support-media-compat:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-media-compat-27.1.1.aar/df2b1cc41545337aa2f693d53bd58dd6/AndroidManifest.xml:20:5-44
-MERGED from [com.android.support:support-media-compat:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-media-compat-27.1.1.aar/df2b1cc41545337aa2f693d53bd58dd6/AndroidManifest.xml:20:5-44
 MERGED from [com.android.support:animated-vector-drawable:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/animated-vector-drawable-27.1.1.aar/27e09d03fc3cd2d7fe9fddc0e55c2ffc/AndroidManifest.xml:20:5-44
 MERGED from [com.android.support:animated-vector-drawable:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/animated-vector-drawable-27.1.1.aar/27e09d03fc3cd2d7fe9fddc0e55c2ffc/AndroidManifest.xml:20:5-44
 MERGED from [com.android.support:support-core-ui:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-core-ui-27.1.1.aar/9828f4ed7bbd2463f6f7cdff519c855b/AndroidManifest.xml:20:5-44
@@ -301,6 +325,12 @@ MERGED from [com.android.support:support-core-utils:27.1.1] /Users/callumclift/.
 MERGED from [com.android.support:support-core-utils:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-core-utils-27.1.1.aar/5533cd830ec78d882a8fdb203e1e3fc9/AndroidManifest.xml:20:5-44
 MERGED from [com.android.support:support-vector-drawable:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-vector-drawable-27.1.1.aar/bfb9de8d2e2838a5b6ef0e2f700ac4d9/AndroidManifest.xml:20:5-44
 MERGED from [com.android.support:support-vector-drawable:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-vector-drawable-27.1.1.aar/bfb9de8d2e2838a5b6ef0e2f700ac4d9/AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata-core:1.1.0] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/livedata-core-1.1.0.aar/03b598bfbde5cdbf0bd19e5b9be20e24/AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata-core:1.1.0] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/livedata-core-1.1.0.aar/03b598bfbde5cdbf0bd19e5b9be20e24/AndroidManifest.xml:20:5-44
+MERGED from [android.arch.core:runtime:1.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/runtime-1.1.1.aar/a30e5da7da8b3c6723784ac147c55f6e/AndroidManifest.xml:20:5-44
+MERGED from [android.arch.core:runtime:1.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/runtime-1.1.1.aar/a30e5da7da8b3c6723784ac147c55f6e/AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-media-compat:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-media-compat-27.1.1.aar/df2b1cc41545337aa2f693d53bd58dd6/AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-media-compat:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-media-compat-27.1.1.aar/df2b1cc41545337aa2f693d53bd58dd6/AndroidManifest.xml:20:5-44
 MERGED from [com.android.support:support-compat:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-compat-27.1.1.aar/975e06c96644a2ada8c925905ca0dbb3/AndroidManifest.xml:20:5-44
 MERGED from [com.android.support:support-compat:27.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-compat-27.1.1.aar/975e06c96644a2ada8c925905ca0dbb3/AndroidManifest.xml:20:5-44
 MERGED from [android.arch.lifecycle:runtime:1.1.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/runtime-1.1.1.aar/9317bcd9a8bc20cdad955d43563bf3bc/AndroidManifest.xml:20:5-44
@@ -327,14 +357,26 @@ ADDED from [:url_launcher] /Users/callumclift/StudioProjects/ontrac_incident_rep
 		ADDED from [:url_launcher] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/url_launcher/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:11:13-71
 	android:name
 		ADDED from [:url_launcher] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/url_launcher/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:9:13-92
-uses-permission#android.permission.READ_EXTERNAL_STORAGE
-ADDED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-80
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from [:connectivity] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/connectivity/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-79
+MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:23:5-79
+MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:23:5-79
+MERGED from [com.google.firebase:firebase-database:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-database-16.0.3.aar/9885b612db64c964ed43bb9d01f23835/AndroidManifest.xml:22:5-79
+MERGED from [com.google.firebase:firebase-database:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-database-16.0.3.aar/9885b612db64c964ed43bb9d01f23835/AndroidManifest.xml:22:5-79
+MERGED from [com.google.firebase:firebase-measurement-connector-impl:17.0.2] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-measurement-connector-impl-17.0.2.aar/654f6ffa045ef49cf5227a0243d0c6b0/AndroidManifest.xml:23:5-79
+MERGED from [com.google.firebase:firebase-measurement-connector-impl:17.0.2] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-measurement-connector-impl-17.0.2.aar/654f6ffa045ef49cf5227a0243d0c6b0/AndroidManifest.xml:23:5-79
+MERGED from [com.google.firebase:firebase-analytics:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-analytics-16.0.4.aar/ad9ac436b5612388eae9fde4a33964b8/AndroidManifest.xml:24:5-79
+MERGED from [com.google.firebase:firebase-analytics:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-analytics-16.0.4.aar/ad9ac436b5612388eae9fde4a33964b8/AndroidManifest.xml:24:5-79
+MERGED from [com.google.firebase:firebase-analytics-impl:16.2.2] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-analytics-impl-16.2.2.aar/151a629878288c49ce5c8f894d8117b6/AndroidManifest.xml:24:5-79
+MERGED from [com.google.firebase:firebase-analytics-impl:16.2.2] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-analytics-impl-16.2.2.aar/151a629878288c49ce5c8f894d8117b6/AndroidManifest.xml:24:5-79
+MERGED from [com.google.firebase:firebase-iid:17.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-iid-17.0.3.aar/395c4f9b16181fe7899cca4a68783cda/AndroidManifest.xml:22:5-79
+MERGED from [com.google.firebase:firebase-iid:17.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-iid-17.0.3.aar/395c4f9b16181fe7899cca4a68783cda/AndroidManifest.xml:22:5-79
 	android:name
-		ADDED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:22-77
-uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
-ADDED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:8:5-81
+		ADDED from [:connectivity] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/connectivity/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:22-76
+uses-permission#android.permission.ACCESS_WIFI_STATE
+ADDED from [:connectivity] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/connectivity/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:8:5-76
 	android:name
-		ADDED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:8:22-78
+		ADDED from [:connectivity] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/connectivity/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:8:22-73
 uses-permission#android.permission.CAMERA
 ADDED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:9:5-65
 	android:name
@@ -373,20 +415,6 @@ ADDED from [com.google.android.gms:play-services-auth:16.0.1] /Users/callumclift
 		ADDED from [com.google.android.gms:play-services-auth:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-auth-16.0.1.aar/eeff83bb28420a93eb24e75beb2ef22e/AndroidManifest.xml:36:13-107
 	android:name
 		ADDED from [com.google.android.gms:play-services-auth:16.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-auth-16.0.1.aar/eeff83bb28420a93eb24e75beb2ef22e/AndroidManifest.xml:34:13-89
-uses-permission#android.permission.ACCESS_NETWORK_STATE
-ADDED from [com.google.firebase:firebase-database:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-database-16.0.3.aar/9885b612db64c964ed43bb9d01f23835/AndroidManifest.xml:22:5-79
-MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:23:5-79
-MERGED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:23:5-79
-MERGED from [com.google.firebase:firebase-measurement-connector-impl:17.0.2] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-measurement-connector-impl-17.0.2.aar/654f6ffa045ef49cf5227a0243d0c6b0/AndroidManifest.xml:23:5-79
-MERGED from [com.google.firebase:firebase-measurement-connector-impl:17.0.2] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-measurement-connector-impl-17.0.2.aar/654f6ffa045ef49cf5227a0243d0c6b0/AndroidManifest.xml:23:5-79
-MERGED from [com.google.firebase:firebase-analytics:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-analytics-16.0.4.aar/ad9ac436b5612388eae9fde4a33964b8/AndroidManifest.xml:24:5-79
-MERGED from [com.google.firebase:firebase-analytics:16.0.4] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-analytics-16.0.4.aar/ad9ac436b5612388eae9fde4a33964b8/AndroidManifest.xml:24:5-79
-MERGED from [com.google.firebase:firebase-analytics-impl:16.2.2] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-analytics-impl-16.2.2.aar/151a629878288c49ce5c8f894d8117b6/AndroidManifest.xml:24:5-79
-MERGED from [com.google.firebase:firebase-analytics-impl:16.2.2] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-analytics-impl-16.2.2.aar/151a629878288c49ce5c8f894d8117b6/AndroidManifest.xml:24:5-79
-MERGED from [com.google.firebase:firebase-iid:17.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-iid-17.0.3.aar/395c4f9b16181fe7899cca4a68783cda/AndroidManifest.xml:22:5-79
-MERGED from [com.google.firebase:firebase-iid:17.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-iid-17.0.3.aar/395c4f9b16181fe7899cca4a68783cda/AndroidManifest.xml:22:5-79
-	android:name
-		ADDED from [com.google.firebase:firebase-database:16.0.3] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/firebase-database-16.0.3.aar/9885b612db64c964ed43bb9d01f23835/AndroidManifest.xml:22:22-76
 uses-feature#0x00020000
 ADDED from [com.google.android.gms:play-services-maps:15.0.1] /Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-maps-15.0.1.aar/bd0bce66784283021d3ccb1d4b6c88a8/AndroidManifest.xml:26:5-28:35
 	android:glEsVersion

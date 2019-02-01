@@ -23,6 +23,7 @@ class LocateUser extends StatefulWidget {
 }
 
 class _LocateUserState extends State<LocateUser> {
+
   Uri _staticMapUri;
   LocationData _locationData;
   final FocusNode _locationInputFocusNode = FocusNode();
@@ -84,7 +85,7 @@ class _LocateUserState extends State<LocateUser> {
           maptype: StaticMapViewType.roadmap);
       widget.setLocation(_locationData);
       setState(() {
-        _locationInputController.text = _locationData.latitude.toString() + " " + _locationData.longitude.toString();
+        //_locationInputController.text = _locationData.latitude.toString() + " " + _locationData.longitude.toString();
         _staticMapUri = staticMapUri;
       });
     }
@@ -114,6 +115,24 @@ class _LocateUserState extends State<LocateUser> {
     final geoloc.Location location = geoloc.Location();
     try {
       final Map<String, double> currentLocation = await location.getLocation();
+      String message = 'Unable to load Map';
+
+      if(currentLocation == null){
+        message = 'Unable to fetch current Location';
+        widget.setLocation(_locationData);
+        _locationInputController.text = _locationData.latitude.toString() + " " + _locationData.longitude.toString();
+      }
+
+      _locationData = LocationData(
+          address: null,
+          latitude: currentLocation['latitude'],
+          longitude: currentLocation['longitude']);
+
+      setState(() {
+        widget.setLocation(_locationData);
+        _locationInputController.text = _locationData.latitude.toString() + " " + _locationData.longitude.toString();
+      });
+
       print(currentLocation['latitude']);
       final address = await _getAddress(
         currentLocation['latitude'],
@@ -130,8 +149,8 @@ class _LocateUserState extends State<LocateUser> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Could not fetch location'),
-              content: Text('Please enter a location manually'),
+              title: Text('Unable to load Map'),
+              content: Text('Location will still be recorded'),
               actions: <Widget>[
                 FlatButton(
                   onPressed: () => Navigator.pop(context),
@@ -155,7 +174,7 @@ class _LocateUserState extends State<LocateUser> {
     return Column(
       children: <Widget>[
         Row(children: <Widget>[
-          Flexible(child: TextFormField(enabled: false,
+          Flexible(child: IgnorePointer(child: TextFormField(enabled: true,
             decoration: InputDecoration(labelText: 'Location'),
             controller: _locationInputController,
             validator: (String value) {
@@ -170,9 +189,9 @@ class _LocateUserState extends State<LocateUser> {
             },
 
 
-          )),
+          ),)),
 
-          IconButton(icon: Icon(Icons.location_on, color: Color.fromARGB(255, 255, 147, 94),), onPressed: _getUserLocation)
+          IconButton(icon: Icon(Icons.location_on, color: orangeDesign1,), onPressed: _getUserLocation)
         ],),
 
         SizedBox(

@@ -19,6 +19,7 @@ import 'package:connectivity/connectivity.dart';
 
 import '../models/user.dart';
 import '../models/authenticated_user.dart';
+import '../scoped_models/incidents_model.dart';
 import '../models/auth.dart';
 import '../shared/global_functions.dart';
 import '../shared/global_config.dart';
@@ -531,7 +532,7 @@ class UsersModel extends Model {
 
   }
 
-  Future<Map<String, dynamic>> login(String username, String password, bool rememberMe) async {
+  Future<Map<String, dynamic>> login(String username, String password, bool rememberMe, BuildContext context) async {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     print('before shared prefs');
@@ -563,7 +564,7 @@ class UsersModel extends Model {
 
         //Make the POST request to the server
         Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
-            serverUrl + 'login', authData, false);
+            serverUrl + 'login', authData, false).timeout(Duration(seconds: 90));
 
         if (serverResponse != null) {
           if (serverResponse['error'] != null &&
@@ -580,6 +581,274 @@ class UsersModel extends Model {
             print(serverResponse);
 
             cookie = serverResponse['response']['session'];
+            prefs.setString('cookie', GlobalFunctions.encryptString(cookie));
+
+            final DateTime now = DateTime.now();
+            print('this is the time currently now: ' + now.toIso8601String());
+
+            final DateTime cookieExpiryTime =
+            now.add(Duration(minutes: 28));
+            print('this is the expiry time at the point of logging in' +
+                cookieExpiryTime.toIso8601String());
+
+
+            _authenticatedUser = AuthenticatedUser(
+                userId: int.parse(serverResponse['response']['id']),
+                firstName: serverResponse['response']['first_name'],
+                lastName: serverResponse['response']['last_name'],
+                username: username,
+                password: password,
+                suspended: serverResponse['response']['suspended'],
+                organisationId: int.parse(
+                    serverResponse['response']['organisation_id']),
+                organisationName: serverResponse['response']['organisation_name'],
+                session: serverResponse['response']['session'],
+                deleted: serverResponse['response']['deleted'],
+                isClientAdmin: serverResponse['response']['is_client_admin'],
+                isSuperAdmin: serverResponse['response']['is_super_admin'],
+                termsAccepted: serverResponse['response']['terms_accepted'],
+                forcePasswordReset: serverResponse['response']['force_password_reset']);
+
+
+
+
+            DatabaseHelper databaseHelper = DatabaseHelper();
+
+            final int existingUser = await databaseHelper.checkUserExists(_authenticatedUser.userId);
+
+
+            //First Name
+            String encryptedFirstName = GlobalFunctions.encryptString(
+                authenticatedUser.firstName);
+            //Last Name
+            String encryptedLastName = GlobalFunctions.encryptString(
+                authenticatedUser.lastName);
+            //Username
+            String encryptedUsername = GlobalFunctions.encryptString(
+                authenticatedUser.username);
+            //Password
+            String encryptedPassword = GlobalFunctions.encryptString(
+                authenticatedUser.password);
+            //Session
+            String encryptedSession = GlobalFunctions.encryptString(
+                authenticatedUser.session);
+
+
+            if (existingUser == 0) {
+              Map<String, dynamic> userData = {
+                'user_id': _authenticatedUser.userId,
+                'first_name': encryptedFirstName,
+                'last_name': encryptedLastName,
+                'username': encryptedUsername,
+                'password': encryptedPassword,
+                'suspended': _authenticatedUser.suspended,
+                'organisation_id': _authenticatedUser.organisationId,
+                'organisation_name': _authenticatedUser.organisationName,
+                'session': encryptedSession,
+                'deleted': _authenticatedUser.deleted,
+                'is_client_admin': _authenticatedUser.isClientAdmin,
+                'is_super_admin': _authenticatedUser.isSuperAdmin,
+                'terms_accepted': _authenticatedUser.termsAccepted,
+                'force_password_reset': _authenticatedUser.forcePasswordReset,
+                'dark_mode': false,
+              };
+
+              int addedUser = await databaseHelper.addUser(userData);
+
+              if (addedUser == 0) {
+                message = 'Unable to add user locally to the device';
+              } else {
+                final SharedPreferences prefs = await SharedPreferences
+                    .getInstance();
+                prefs.setInt('userId', _authenticatedUser.userId);
+                prefs.setString('firstName', encryptedFirstName);
+                prefs.setString('lastName', encryptedLastName);
+                prefs.setString('username', encryptedUsername);
+                prefs.setString('password', encryptedPassword);
+                prefs.setBool('suspended', _authenticatedUser.suspended);
+                prefs.setInt(
+                    'organisationId', _authenticatedUser.organisationId);
+                prefs.setString('organisationName', _authenticatedUser.organisationName);
+                prefs.setString('session', encryptedSession);
+                prefs.setBool('deleted', _authenticatedUser.deleted);
+                prefs.setBool('isClientAdmin', _authenticatedUser.isClientAdmin);
+                prefs.setBool('isSuperAdmin', _authenticatedUser.isSuperAdmin);
+                prefs.setString('termsAccepted', _authenticatedUser.termsAccepted);
+                prefs.setBool('forcePasswordReset',
+                    _authenticatedUser.forcePasswordReset);
+                prefs.setBool('rememberMe', rememberMe);
+                prefs.setBool('darkMode', false);
+                prefs.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
+              }
+            } else {
+              Map<String, dynamic> userData = {
+                'user_id': _authenticatedUser.userId,
+                'first_name': encryptedFirstName,
+                'last_name': encryptedLastName,
+                'username': encryptedUsername,
+                'password': encryptedPassword,
+                'suspended': _authenticatedUser.suspended,
+                'organisation_id': _authenticatedUser.organisationId,
+                'organisation_name': _authenticatedUser.organisationName,
+                'session': encryptedSession,
+                'deleted': _authenticatedUser.deleted,
+                'is_client_admin': _authenticatedUser.isClientAdmin,
+                'is_super_admin': _authenticatedUser.isSuperAdmin,
+                'terms_accepted': _authenticatedUser.termsAccepted,
+                'force_password_reset': _authenticatedUser.forcePasswordReset,
+              };
+
+              int updatedUser = await databaseHelper.updateUser1(userData);
+              if (updatedUser == 0) {
+                message = 'Unable to update user locally on the device';
+              } else {
+                Database database = await databaseHelper.database;
+
+                List<Map<String, dynamic>> user = await database.rawQuery(
+                    'SELECT dark_mode FROM users_table WHERE user_id = ${_authenticatedUser
+                        .userId}');
+
+                bool darkMode;
+
+                if(user[0]['dark_mode'] is String){
+                  darkMode = user[0]['dark_mode'] == 'true' ? true : false;
+
+                } else if (user[0]['dark_mode'] is int){
+                  darkMode = user[0]['dark_mode'] == 1 ? true : false;
+                }
+
+                final SharedPreferences prefs = await SharedPreferences
+                    .getInstance();
+                prefs.setInt('userId', _authenticatedUser.userId);
+                prefs.setString('firstName', encryptedFirstName);
+                prefs.setString('lastName', encryptedLastName);
+                prefs.setString('username', encryptedUsername);
+                prefs.setString('password', encryptedPassword);
+                prefs.setBool('suspended', _authenticatedUser.suspended);
+                prefs.setInt(
+                    'organisationId', _authenticatedUser.organisationId);
+                prefs.setString('organisationName', _authenticatedUser.organisationName);
+                prefs.setString('session', encryptedSession);
+                prefs.setBool('deleted', _authenticatedUser.deleted);
+                prefs.setBool('isClientAdmin', _authenticatedUser.isClientAdmin);
+                prefs.setBool('isSuperAdmin', _authenticatedUser.isSuperAdmin);
+                prefs.setString('termsAccepted', _authenticatedUser.termsAccepted);
+                prefs.setBool('forcePasswordReset',
+                    _authenticatedUser.forcePasswordReset);
+                prefs.setBool('rememberMe', rememberMe);
+                prefs.setBool('darkMode', darkMode);
+                prefs.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
+
+              }
+            }
+
+            final int existingTemporaryIncident = await databaseHelper.checkTemporaryIncidentExists(_authenticatedUser.userId);
+
+            if(existingTemporaryIncident == 0){
+              int result = await databaseHelper.addTemporaryIncident({
+                'user_id' : _authenticatedUser.userId,
+                'organisation_id' : _authenticatedUser.organisationId,
+                'organisation_name' : _authenticatedUser.organisationName,
+                'anonymous' : false
+
+              });
+
+              if(result == 1){
+                print('successfully added a temporary incident');
+              } else {
+                print('unable to add temporary incident');
+              }
+
+            }
+
+
+            final IncidentsModel _incidentsModel =
+            ScopedModel.of<IncidentsModel>(context);
+
+            final Map<String, dynamic> incidentTypes = await _incidentsModel.getCustomIncidents();
+
+            if(incidentTypes['success']) success = true;
+
+
+          } else {
+            message = 'no valid session found';
+          }
+
+        }
+      }
+
+    } on TimeoutException catch (_) {
+
+      message = 'Request timeout, please try again later';
+      // A timeout occurred.
+    } catch(error){
+      print(error);
+      message = 'Something went wrong';
+    }
+
+    _userSubject.add(true);
+    _isLoading = false;
+    notifyListeners();
+
+    return {'success': success, 'message': message};
+  }
+
+
+  Future<Map<String, dynamic>> renewSession(String username, String password) async {
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool rememberMe = prefs.getBool('rememberMe');
+
+
+    _isLoading = true;
+    notifyListeners();
+
+    bool success = false;
+    String message = 'Something went wrong!';
+
+
+    final Map<String,dynamic> authData = {
+      'loginData': {'username': username, 'password': password},
+    };
+
+    try {
+
+      var connectivityResult = await (new Connectivity().checkConnectivity());
+
+      if(connectivityResult == ConnectivityResult.none){
+
+        message = 'No data connection, please try again later';
+
+      } else {
+
+        //Make the POST request to the server
+        Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
+            serverUrl + 'login', authData, false).timeout(Duration(seconds: 90));
+
+        if (serverResponse != null) {
+          if (serverResponse['error'] != null &&
+              serverResponse['error'] == 'incorrect_details') {
+            message = 'Your Username/Email and or Password have been changed';
+          } else if (serverResponse['error'] != null &&
+              serverResponse['error'] == 'terms_not_accepted') {
+            message =
+            'You need to accept the terms & conditions before continuing to use this app';
+          } else if (serverResponse['error'] != null &&
+              serverResponse['error'] == 'change_password') {
+            message = 'You are required to change your password, unable to process this request';
+          } else if (serverResponse['response']['session'] != null) {
+            print(serverResponse);
+
+            cookie = serverResponse['response']['session'];
+            prefs.setString('cookie', GlobalFunctions.encryptString(cookie));
+
+            final DateTime now = DateTime.now();
+            print('this is the time currently now: ' + now.toIso8601String());
+
+            final DateTime cookieExpiryTime =
+            now.add(Duration(minutes: 28));
+            print('this is the expiry time at the point of logging in' +
+                cookieExpiryTime.toIso8601String());
 
 
             _authenticatedUser = AuthenticatedUser(
@@ -619,16 +888,9 @@ class UsersModel extends Model {
             //Password
             String encryptedPassword = GlobalFunctions.encryptString(
                 authenticatedUser.password);
-            //Organisation Name
-            String encryptedOrganisationName = GlobalFunctions.encryptString(
-                authenticatedUser.organisationName);
             //Session
             String encryptedSession = GlobalFunctions.encryptString(
                 authenticatedUser.session);
-            //Date terms accepted
-            String encryptedTermsAccepted = GlobalFunctions.encryptString(
-                authenticatedUser.termsAccepted);
-
 
             if (existingUser == 0) {
               Map<String, dynamic> userData = {
@@ -639,7 +901,7 @@ class UsersModel extends Model {
                 'password': encryptedPassword,
                 'suspended': _authenticatedUser.suspended,
                 'organisation_id': _authenticatedUser.organisationId,
-                'organisation_name': encryptedOrganisationName,
+                'organisation_name': _authenticatedUser.organisationName,
                 'session': encryptedSession,
                 'deleted': _authenticatedUser.deleted,
                 'is_client_admin': _authenticatedUser.isClientAdmin,
@@ -664,16 +926,17 @@ class UsersModel extends Model {
                 prefs.setBool('suspended', _authenticatedUser.suspended);
                 prefs.setInt(
                     'organisationId', _authenticatedUser.organisationId);
-                prefs.setString('organisationName', encryptedOrganisationName);
+                prefs.setString('organisationName', _authenticatedUser.organisationName);
                 prefs.setString('session', encryptedSession);
                 prefs.setBool('deleted', _authenticatedUser.deleted);
                 prefs.setBool('isClientAdmin', _authenticatedUser.isClientAdmin);
                 prefs.setBool('isSuperAdmin', _authenticatedUser.isSuperAdmin);
-                prefs.setString('termsAccepted', encryptedTermsAccepted);
+                prefs.setString('termsAccepted', _authenticatedUser.termsAccepted);
                 prefs.setBool('forcePasswordReset',
                     _authenticatedUser.forcePasswordReset);
                 prefs.setBool('rememberMe', rememberMe);
                 prefs.setBool('darkMode', false);
+                prefs.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
               }
             } else {
               Map<String, dynamic> userData = {
@@ -684,7 +947,7 @@ class UsersModel extends Model {
                 'password': encryptedPassword,
                 'suspended': _authenticatedUser.suspended,
                 'organisation_id': _authenticatedUser.organisationId,
-                'organisation_name': encryptedOrganisationName,
+                'organisation_name': _authenticatedUser.organisationName,
                 'session': encryptedSession,
                 'deleted': _authenticatedUser.deleted,
                 'is_client_admin': _authenticatedUser.isClientAdmin,
@@ -722,19 +985,21 @@ class UsersModel extends Model {
                 prefs.setBool('suspended', _authenticatedUser.suspended);
                 prefs.setInt(
                     'organisationId', _authenticatedUser.organisationId);
-                prefs.setString('organisationName', encryptedOrganisationName);
+                prefs.setString('organisationName', _authenticatedUser.organisationName);
                 prefs.setString('session', encryptedSession);
                 prefs.setBool('deleted', _authenticatedUser.deleted);
                 prefs.setBool('isClientAdmin', _authenticatedUser.isClientAdmin);
                 prefs.setBool('isSuperAdmin', _authenticatedUser.isSuperAdmin);
-                prefs.setString('termsAccepted', encryptedTermsAccepted);
+                prefs.setString('termsAccepted', _authenticatedUser.termsAccepted);
                 prefs.setBool('forcePasswordReset',
                     _authenticatedUser.forcePasswordReset);
                 prefs.setBool('rememberMe', rememberMe);
                 prefs.setBool('darkMode', darkMode);
+                prefs.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
+
               }
             }
-
+            message = 'successfully renewed the session, please try again';
             success = true;
           } else {
             message = 'no valid session found';
@@ -743,41 +1008,14 @@ class UsersModel extends Model {
         }
       }
 
+    } on TimeoutException catch (_) {
 
+      message = 'Request timeout, unable renew session';
+      // A timeout occurred.
     } catch(error){
       print(error);
       message = 'Something went wrong';
     }
-
-    //final List<IncidentType> fetchedIncidentTypeList = [];
-
-//      Map<String, dynamic> serverResponse1 = await GlobalFunctions.apiRequest(
-//          serverUrl + 'getTestCustomFields', authData);
-//
-//    print(serverResponse1);
-//
-//    _isLoading = false;
-//    notifyListeners();
-//
-//      print('testing custom fields');
-//      List<Map<String, dynamic>> testList = (serverResponse1['fields']);
-//      testList.forEach((Map<String, dynamic> map){
-//        print(map['label']);
-//      });
-//      print('ok im done');
-
-//    Map<String, dynamic> testing = {
-//      'incidentData': {'type': 'Incident', 'incident_date': '2019-01-01 12:00:00', 'latitude' : '54.9517560000000000',
-//        'longitude' : '-1.5937100000000000', 'project_name' : 'Test Project 2', 'route': 'London North East', 'elr': 'ECM1',
-//        'mileage' : '1-10 miles', 'summary' : 'this is a test of the summary 222', 'custom_fields' : null, 'anonymous': false, 'images': null},
-//    };
-//
-//    Map<String, dynamic> serverResponse1 = await GlobalFunctions.apiRequest(
-//        serverUrl + 'saveIncident', testing);
-//
-//    print(serverResponse1);
-
-
 
     _userSubject.add(true);
     _isLoading = false;
@@ -793,7 +1031,7 @@ class UsersModel extends Model {
     print('this is remember me');
     print(rememberMe);
 
-    if(rememberMe != null){
+    if(rememberMe != null && rememberMe == true){
 
       _authenticatedUser = AuthenticatedUser(
           userId: prefs.getInt('userId'),
@@ -803,16 +1041,37 @@ class UsersModel extends Model {
           password: GlobalFunctions.decryptString(prefs.get('password')),
           suspended: prefs.getBool('suspended'),
           organisationId: prefs.getInt('organisationId'),
-          organisationName: GlobalFunctions.decryptString(prefs.get('organisationName')),
+          organisationName: prefs.get('organisationName'),
           session: GlobalFunctions.decryptString(prefs.get('session')),
           deleted: prefs.getBool('deleted'),
           isClientAdmin: prefs.getBool('isClientAdmin'),
           isSuperAdmin: prefs.getBool('isSuperAdmin'),
-          termsAccepted: GlobalFunctions.decryptString(prefs.get('termsAccepted')),
+          termsAccepted: prefs.get('termsAccepted'),
           forcePasswordReset: prefs.getBool('forcePasswordReset'));
+
+      if(prefs.get('cookie') != null) cookie = GlobalFunctions.decryptString(prefs.get('cookie'));
+      print('here is the cookie after auto login');
+      print(cookie);
 
       notifyListeners();
 
+    } else {
+      prefs.remove('userId');
+      prefs.remove('firstName');
+      prefs.remove('lastName');
+      prefs.remove('username');
+      prefs.remove('password');
+      prefs.remove('suspended');
+      prefs.remove('organisationId');
+      prefs.remove('organisationName');
+      prefs.remove('session');
+      prefs.remove('deleted');
+      prefs.remove('isClientAdmin');
+      prefs.remove('isSuperAdmin');
+      prefs.remove('termsAccepted');
+      prefs.remove('forcePasswordReset');
+      prefs.remove('cookie');
+      prefs.remove('cookieExpiryTime');
     }
   }
 
@@ -1098,7 +1357,6 @@ class UsersModel extends Model {
    void logout() async {
     print('logout happened');
     _selUserKey = null;
-
     _authenticatedUser = null;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove('userId');
@@ -1116,6 +1374,8 @@ class UsersModel extends Model {
     prefs.remove('forcePasswordReset');
     prefs.remove('darkMode');
     prefs.remove('rememberMe');
+    prefs.remove('cookie');
+    prefs.remove('cookieExpiryTime');
   }
 
   void setAuthTimeout(int time) {
