@@ -17,6 +17,7 @@ import 'package:rxdart/subjects.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image/image.dart' as imagePackage;
 import 'package:encrypt/encrypt.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 import '../shared/global_config.dart';
 
@@ -109,11 +110,11 @@ class GlobalFunctions {
 
   static void setLightMode(BuildContext context) {
     DynamicTheme.of(context).setThemeData(
-      new ThemeData(
+      new ThemeData(fontFamily: 'OpenSans',
           inputDecorationTheme: InputDecorationTheme(
               focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                      width: 2.0, color: Color.fromARGB(255, 255, 147, 94))),
+                  borderSide:
+                  BorderSide(width: 2.0, color: Color.fromARGB(255, 255, 147, 94))),
               labelStyle: TextStyle(color: Colors.grey)),
           //fontFamily: 'Oswald',
           primaryColor: Color.fromARGB(255, 254, 147, 94),
@@ -126,11 +127,11 @@ class GlobalFunctions {
 
   static void setDarkMode(BuildContext context) {
     DynamicTheme.of(context).setThemeData(
-      new ThemeData(
+      new ThemeData(fontFamily: 'OpenSans',
           inputDecorationTheme: InputDecorationTheme(
               focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                      width: 2.0, color: Color.fromARGB(255, 255, 147, 94))),
+                  borderSide:
+                  BorderSide(width: 2.0, color: Color.fromARGB(255, 255, 147, 94))),
               labelStyle: TextStyle(color: Colors.grey)),
           //fontFamily: 'Oswald',
           primaryColor: Color.fromARGB(255, 254, 147, 94),
@@ -148,6 +149,21 @@ class GlobalFunctions {
     print('done the new thing');
     //List<int> imageBytes = image.readAsBytesSync();
     String base64Image = base64Encode(compressedImage);
+
+    return base64Image;
+  }
+
+  static Future<List<int>> compressImageIos(File image) async{
+    print('about to try the compression ios');
+
+    List<int> compressedImage = await FlutterImageCompress.compressWithFile(image.absolute.path, quality: 50);
+
+    return compressedImage;
+  }
+
+  static String getBase64ImageIos(List<int> imageBytes) {
+    print('about to try the new thing');
+    String base64Image = base64Encode(imageBytes);
 
     return base64Image;
   }

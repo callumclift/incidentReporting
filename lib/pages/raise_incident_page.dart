@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:scoped_model/scoped_model.dart';
@@ -18,6 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission/permission.dart';
 
 
 import '../models/location_data.dart';
@@ -25,6 +27,8 @@ import '../models/incident_type.dart';
 import '../widgets/form_inputs/locate_user.dart';
 import '../widgets/helpers/app_side_drawer.dart';
 import '../widgets/ui_elements/dropdown_formfield.dart';
+import '../widgets/ui_elements/dropdown_formfield_expanded.dart';
+import '../widgets/ui_elements/fix_dropdown.dart';
 import '../widgets/helpers/add_images.dart';
 import '../shared/global_functions.dart';
 import '../shared/global_config.dart';
@@ -48,18 +52,28 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   Map<String, dynamic> _temporaryIncident = new Map();
   List<dynamic> _temporaryPaths = [];
   IncidentType _currentIncidentType;
+  Map<String, dynamic> _currentElr;
+  bool _showElr = false;
+  String _currentMileage = '';
+  bool _loadingTemporary = false;
+
+  List<Map<String, dynamic>> _routes = [];
+  List<Map<String, dynamic>> _currentElrList = [];
+
+  String _incidentValue = 'Incident';
 
 
 
   List<IncidentType> _incidentTypes = [];
 
-  final List<String> _incidentDrop = [
+  List<String> _incidentDrop = [
     'Incident',
     'Close Call',
     'Near Miss',
     'Workplace Accident'
   ];
-  final List<String> _routeDrop = [
+
+  List<String> _routeDrop = [
     'Select a Route',
     'Anglia',
     'Southeast',
@@ -73,16 +87,13 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     'Western (West)',
     'Western (Thames Valley)'
   ];
-  final List<String> _elrDrop = [
+  List<String> _elrDrop = [
     'Select an ELR',
-    'Anglia',
-    'Southeast',
-    'London North East',
   ];
 
   final List<String> _locationDrop = ['Latitude/Longitude', 'Post Code'];
 
-  String _incidentValue = 'Incident';
+
   String _locationValue = 'Latitude/Longitude';
   String _routeValue = 'Select a Route';
   String _elrValue = 'Select an ELR';
@@ -132,7 +143,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
   //this is a map to manage the form data
   final Map<String, dynamic> _formData = {
-    'incidentType': 'Incident',
+    'incidentType': null,
     'reporterFirstName': null,
     'reporterLastName': null,
     'dateTime': null,
@@ -176,25 +187,24 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
   @override
   void initState() {
+    _loadingTemporary = true;
     print('inside initState');
     _incidentsModel = ScopedModel.of<IncidentsModel>(context);
     _usersModel = ScopedModel.of<UsersModel>(context);
 
-    if (_incidentsModel.allIncidentTypes != null) {
-      _incidentTypes = _incidentsModel.allIncidentTypes;
-      for (IncidentType incidentType in _incidentTypes) {
-        _incidentDrop.add(incidentType.name);
 
-        IncidentType test = _incidentTypes
-            .firstWhere((incidentType) => incidentType.name == 'Test Incident');
+//    if (_incidentsModel.allIncidentTypes != null) {
+//      _incidentTypes = _incidentsModel.allIncidentTypes;
+//      for (IncidentType incidentType in _incidentTypes) {
+//        _incidentDrop.add(incidentType.name);
+//
+//      }
+//    }
+    _getRoutes();
 
-        print(test.customPlaceholder1);
-      }
-    }
-
-    _getTemporaryIncident();
 
     _getIncidentTypes();
+    //_getTemporaryIncident();
 
     print('this should print after');
     
@@ -202,8 +212,26 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
     _populateImageFiles();
 
+
+
     super.initState();
     _setupFocusNodes();
+  }
+
+  _getRoutes(){
+
+    _incidentsModel.getRoutes().then((List<Map<String,dynamic>> routes){
+
+      _routes = routes;
+
+//      _routes.forEach((Map<String, dynamic> route){
+//        _routeDrop.add(route['route_name']);
+//
+//      });
+
+
+    });
+
   }
 
   _populateImageFiles() {
@@ -238,98 +266,179 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
   _getTemporaryIncident(){
 
-    _incidentsModel.getTemporaryIncident(_usersModel.authenticatedUser.userId).then((Map<String, dynamic> incident){
+    _incidentsModel.checkTemporaryIncidentExists(_usersModel.authenticatedUser).then((int result){
 
-      if(incident['type'] != null){
-        _incidentValue = incident['type'];
-      }
-      if(incident['anonymous'] != null && incident['anonymous'] == 'true'){
-        _isAnonymous = true;
+      if(result != 0){
+
+        _incidentsModel.getTemporaryIncident(_usersModel.authenticatedUser.userId).then((Map<String, dynamic> incident){
+
+//      if(incident['type'] == null && incident['anonymous'] != 1 && incident['incident_date'] == null && incident['location_drop']){}
+
+          if(incident['type'] != null){
+            setState(() {
+              _incidentValue = incident['type'];
+
+            });
+          }
+          print('here is anonymous');
+          print(incident['anonymous']);
+          if(incident['anonymous'] != null && incident['anonymous'] == 1 || incident['anonymous'] == 'true'){
+            setState(() {
+              _isAnonymous = true;
+
+            });
+
+
+
+          } else {
+            _isAnonymous = false;
+          }
+          if(incident['incident_date'] != null){
+            _dateTimeController1.text = incident['incident_date'];
+          }
+          if(incident['location_drop'] != null){
+            _locationValue = incident['location_drop'];
+          }
+          if(incident['latitude'] != null && incident['longitude'] != null){
+            _locationController.text = incident['latitude'] + ' ' + incident['longitude'];
+            _latitude = double.parse(incident['latitude']);
+            _longitude = double.parse(incident['longitude']);
+          }
+          if(incident['postcode'] != null){
+            _postcodeController.text = incident['postcode'];
+          }
+          if(incident['location_map'] != null){
+            _staticMapLocation = incident['location_map'];
+          }
+          if(incident['postcode_map'] != null){
+            _staticMapPostcode = incident['postcode_map'];
+          }
+          if(incident['project_name'] != null){
+            _projectNameController.text = incident['project_name'];
+          }
+          if(incident['route'] != null){
+            _routeValue = incident['route'];
+            _showElr = false;
+            if(incident['route'] != 'Select a Route'){
+
+              Map<String, dynamic> currentRoute = _routes
+                  .firstWhere((route) => route['route_name'] == incident['route']);
+
+              _incidentsModel.getElrsFromRegion(currentRoute['route_code'])
+                  .then((List<Map<String, dynamic>> elrs) {
+
+                print('this should be elrs');
+                print(elrs);
+
+
+
+                for(Map<String, dynamic> elr in elrs){
+
+
+                  _elrDrop.add(elr['elr'] + ': ' + elr['description']);
+                }
+                setState(() {
+                  _showElr = true;
+                  _currentElrList = elrs;
+                  _incidentValue = _incidentValue;
+                });
+
+
+                //_elrDrop = _elrDrop;
+
+                if(incident['elr'] != null){
+                  _elrValue = incident['elr'];
+
+                  if(incident['elr'] == 'Select an ELR' || incident['elr'] == null || incident['elr'] == 'null'){
+                    _currentElr = null;
+                    _currentMileage = '';
+                  } else {
+                    print('ok here is the elr list');
+                    print(_currentElrList);
+                    print('ok here is the current ELR where the issue is being caused');
+                    print(incident['elr']);
+                    print('ok done with the current ELR');
+
+                    List<String> parts = incident['elr'].split(':');
+                    print('here is the parts');
+                    print(parts[0]);
+                    _currentElr = _currentElrList
+                        .firstWhere((elr) => elr['elr'] == parts[0]);
+                    _currentMileage = _currentElr['start_miles'] + ' miles to ' + _currentElr['end_miles'] + ' miles';
+                  }
+
+
+                }
+              });
+
+
+
+            }
+          }
+          if(incident['mileage'] != null){
+            _mileageTextController.text = incident['mileage'];
+          }
+          if(incident['summary'] != null){
+            _summaryTextController.text = incident['summary'];
+          }
+          if(incident['images'] != null){
+            _temporaryPaths = jsonDecode(incident['images']);
+          }
+          if(incident['custom_fields'] != null){
+            List<dynamic> customFields = jsonDecode(incident['custom_fields']);
+
+            _customFieldCount = customFields.length;
+
+            if(_customFieldCount >= 1){
+
+              _customLabel1 = customFields[0]['label'];
+              _customPlaceholder1 = customFields[0]['placeholder'];
+              _customField1Controller.text = incident['custom_value1'] == null || incident['custom_value1'] == 'null' ? '' : incident['custom_value1'];
+
+            }
+            if (_customFieldCount >= 2){
+
+              _customLabel2 = customFields[1]['label'];
+              _customPlaceholder2 = customFields[1]['placeholder'];
+              _customField2Controller.text = incident['custom_value2'] == null || incident['custom_value2'] == 'null' ? '' : incident['custom_value2'];
+
+            }
+            if (_customFieldCount >= 3){
+
+              _customLabel3 = customFields[2]['label'];
+              _customPlaceholder3 = customFields[2]['placeholder'];
+              _customField3Controller.text = incident['custom_value3'] == null || incident['custom_value3'] == 'null' ? '' : incident['custom_value3'];
+
+            }
+          }
+
+          print('its getting here before stopping loading');
+          setState(() {
+            _loadingTemporary = false;
+          });
+        });
+
       } else {
-        _isAnonymous = false;
+        setState(() {
+          _loadingTemporary = false;
+        });
       }
-      if(incident['incident_date'] != null){
-        _dateTimeController1.text = incident['incident_date'];
-      }
-      if(incident['location_drop'] != null){
-        _locationValue = incident['location_drop'];
-      }
-      if(incident['latitude'] != null && incident['longitude'] != null){
-        _locationController.text = incident['latitude'] + ' ' + incident['longitude'];
-        _latitude = double.parse(incident['latitude']);
-        _longitude = double.parse(incident['longitude']);
-      }
-      if(incident['postcode'] != null){
-        _postcodeController.text = incident['postcode'];
-      }
-      if(incident['location_map'] != null){
-        _staticMapLocation = incident['location_map'];
-      }
-      if(incident['postcode_map'] != null){
-        _staticMapPostcode = incident['postcode_map'];
-      }
-      if(incident['project_name'] != null){
-        _projectNameController.text = incident['project_name'];
-      }
-      if(incident['route'] != null){
-        _routeValue = incident['route'];
-      }
-      if(incident['elr'] != null){
-        _elrValue = incident['elr'];
-      }
-      if(incident['mileage'] != null){
-        _mileageTextController.text = incident['mileage'];
-      }
-      if(incident['summary'] != null){
-        _summaryTextController.text = incident['summary'];
-      }
-      if(incident['images'] != null){
-          _temporaryPaths = jsonDecode(incident['images']);
-      }
-      if(incident['custom_fields'] != null){
-        List<dynamic> customFields = jsonDecode(incident['custom_fields']);
-
-        _customFieldCount = customFields.length;
-
-        if(_customFieldCount >= 1){
-
-          _customLabel1 = customFields[0]['label'];
-          _customPlaceholder1 = customFields[0]['placeholder'];
-          _customField1Controller.text = incident['custom_value1'] == null || incident['custom_value1'] == 'null' ? '' : incident['custom_value1'];
-
-        }
-        if (_customFieldCount >= 2){
-
-          _customLabel2 = customFields[1]['label'];
-          _customPlaceholder2 = customFields[1]['placeholder'];
-          _customField2Controller.text = incident['custom_value2'] == null || incident['custom_value2'] == 'null' ? '' : incident['custom_value2'];
-
-        }
-        if (_customFieldCount >= 3){
-
-          _customLabel3 = customFields[2]['label'];
-          _customPlaceholder3 = customFields[2]['placeholder'];
-          _customField3Controller.text = incident['custom_value3'] == null || incident['custom_value3'] == 'null' ? '' : incident['custom_value3'];
-
-        }
-      }
-
 
 
     });
+
+
+
+
+
+
   }
 
   _getIncidentTypes() {
-    Connectivity().checkConnectivity().then((ConnectivityResult result) {
-      if (result == ConnectivityResult.none) {
-        GlobalFunctions.showToast('Unable to fetch latest Incident Types');
-      } else {
         _incidentsModel
-            .getCustomIncidents()
+            .getCustomIncidents(_usersModel.authenticatedUser)
             .then((Map<String, dynamic> result) {
-          if (!result['success']) {
-            GlobalFunctions.showToast('Unable to fetch latest Incident Types');
-          } else {
+
             if (_incidentsModel.allIncidentTypes != null) {
               _incidentTypes = _incidentsModel.allIncidentTypes;
               for (IncidentType incidentType in _incidentTypes) {
@@ -339,11 +448,15 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                 if(!exists) _incidentDrop.add(incidentType.name);
 
               }
+
+              setState(() {
+                _incidentDrop = _incidentDrop;
+              });
             }
-          }
+
+            _getTemporaryIncident();
         });
-      }
-    });
+
   }
   
   _setupTextListeners(IncidentsModel incidentsModel, UsersModel usersModel){
@@ -463,7 +576,14 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   }
 
   Widget _buildIncidentDrop() {
+    print('building incident drop');
+    print('here is trhe value of the incident drop');
+    print(_incidentDrop);
+    print(_incidentValue);
+
+    print('done');
     return DropdownFormField(
+      expanded: true,
       hint: 'Incident Type',
       value: _incidentValue,
       items: _incidentDrop.toList(),
@@ -571,14 +691,49 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   }
 
   Widget _buildRouteDrop() {
+    print('building route drop');
     return DropdownFormField(
+      expanded: true,
       hint: 'Route',
       value: _routeValue,
       items: _routeDrop.toList(),
       onChanged: (val) => setState(() {
+            _showElr = false;
+            _currentElrList = [];
             _routeValue = val;
             _formData['route'] = _routeValue;
             _incidentsModel.updateTemporaryIncidentField('route', val, _usersModel.authenticatedUser.userId);
+            _incidentsModel.updateTemporaryIncidentField('elr', null, _usersModel.authenticatedUser.userId);
+            _elrDrop = ['Select an ELR'];
+            _elrValue = 'Select an ELR';
+            _currentMileage = '';
+
+            if(val != 'Select a Route') {
+              Map<String, dynamic> currentRoute = _routes
+                  .firstWhere((route) => route['route_name'] == val);
+
+              _incidentsModel.getElrsFromRegion(currentRoute['route_code'])
+                  .then((List<Map<String, dynamic>> elrs) {
+
+
+
+                    for(Map<String, dynamic> elr in elrs){
+                      _elrDrop.add(elr['elr'] + ': ' + elr['description']);
+                    }
+                    setState(() {
+                      _showElr = true;
+                      _currentElrList = elrs;
+                    });
+
+
+                //_elrDrop = _elrDrop;
+              });
+            } else {
+              _showElr = false;
+              _elrDrop = ['Select an ELR'];
+            }
+
+
 
       }),
       validator: (String message){
@@ -586,13 +741,17 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       },
       initialValue: _routeDrop[0],
       onSaved: (val) => setState(() {
+            _routeValue = val;
             _formData['route'] = _routeValue;
+
           }),
     );
   }
 
   Widget _buildElrDrop() {
-    return DropdownFormField(
+    print('building elr drop');
+    return DropdownFormFieldExpanded(
+      expanded: true,
       hint: 'ELR',
       value: _elrValue,
       items: _elrDrop.toList(),
@@ -600,6 +759,19 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             _elrValue = val;
             _formData['elr'] = _elrValue;
             _incidentsModel.updateTemporaryIncidentField('elr', val, _usersModel.authenticatedUser.userId);
+            if(val == 'Select an ELR'){
+              _currentElr = null;
+              _currentMileage = '';
+              _incidentsModel.updateTemporaryIncidentField('elr', null, _usersModel.authenticatedUser.userId);
+            } else {
+              List<String> parts = val.toString().split(':');
+              _currentElr = _currentElrList
+            .firstWhere((elr) => elr['elr'] == parts[0]);
+              _currentMileage = _currentElr['start_miles'] + ' miles to ' + _currentElr['end_miles'] + ' miles';
+            }
+            print(_currentMileage);
+            _incidentsModel.updateTemporaryIncidentField('mileage_tip', _currentMileage, _usersModel.authenticatedUser.userId);
+
 
       }),
       validator: (String message){
@@ -607,10 +779,14 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       },
       initialValue: _elrDrop[0],
       onSaved: (val) => setState(() {
+        print('saved elr');
+        print(val);
+            _elrValue = val;
             _formData['elr'] = _elrValue;
 
           }),
     );
+
   }
 
   Widget _buildReporterField(UsersModel model) {
@@ -725,7 +901,9 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   }
 
   Widget _buildLocationDrop() {
+    print('building location drop');
     return DropdownFormField(
+      expanded: true,
       hint: 'Location Type',
       value: _locationValue,
       items: _locationDrop.toList(),
@@ -1009,7 +1187,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   Widget _buildMileageText() {
     return TextFormField(
       focusNode: _mileageFocusNode,
-      decoration: InputDecoration(
+      decoration: InputDecoration(helperText: _currentMileage == '' ? '' : _currentMileage,
           labelStyle: TextStyle(color: _mileageLabelColor),
           labelText: 'Mileage',
           suffixIcon: _mileageTextController.text == ''
@@ -1216,7 +1394,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     return Center(
         child: SizedBox(
             width: MediaQuery.of(context).size.width * 0.5,
-            child: RaisedButton(
+            child: RaisedButton(color: orangeDesign1,
               textColor: Theme.of(context).brightness == Brightness.dark
                   ? Colors.black
                   : Colors.white,
@@ -1224,8 +1402,27 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
               onPressed: () => _disableScreen == true
                   ? null
                   : _submitForm(incidentsModel.addIncident,
-                      incidentsModel.addIncidentLocally, usersModel),
+                      incidentsModel.saveIncident, usersModel),
             )));
+  }
+
+  Color photoColor(){
+
+    Color returnedColor;
+
+    if(_usersModel.authenticatedUser == null){
+      returnedColor = Colors.black;
+    } else {
+      if(_usersModel.authenticatedUser.darkMode){
+        returnedColor = orangeDesign1;
+      } else {
+        returnedColor = Colors.black;
+      }
+    }
+
+    return returnedColor;
+
+
   }
 
   Widget gridColor(BuildContext context, int index) {
@@ -1234,11 +1431,11 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     if (images[index] == null && index == 0) {
       return Container(
         decoration: BoxDecoration(
-            border: Border.all(width: 1.0),
+            border: Border.all(width: 1.0, color: photoColor()),
             borderRadius: BorderRadius.circular(10.0)),
         child: Icon(
           Icons.camera_alt,
-          color: Colors.black,
+          color: photoColor(),
         ),
       );
     } else if (images[index] != null && index == 0) {
@@ -1259,11 +1456,11 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
         images[index] == null) {
       return Container(
         decoration: BoxDecoration(
-            border: Border.all(width: 1.0),
+            border: Border.all(width: 1.0, color: photoColor()),
             borderRadius: BorderRadius.circular(10.0)),
         child: Icon(
           Icons.camera_alt,
-          color: Colors.black,
+          color: photoColor(),
         ),
       );
     } else if (images[index] != null && index > 0) {
@@ -1638,7 +1835,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                 _buildStaticMap(),
                 _buildProjectNameText(),
                 _buildRouteDrop(),
-                _buildElrDrop(),
+                _showElr == true ? _buildElrDrop() : Container(),
                 _buildMileageText(),
                 _customFieldCount > 0 ? _buildCustomFields() : Container(),
                 _buildSummaryText(),
@@ -1664,7 +1861,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     );
   }
 
-  void _submitForm(Function addIncident, Function addIncidentLocally,
+  void _submitForm(Function addIncident, Function saveIncident,
       UsersModel usersModel) {
     //if the form fails the validation then return and dont execute anymore code
     //or is the image is null and we are not in edit mode
@@ -1672,7 +1869,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       return;
     }
     _formKey.currentState.save();
-    print('button pressed');
 
     if (_locationValue == 'Post Code'){
       _formData['latitude'] = null;
@@ -1687,9 +1883,13 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
     _temporaryPaths.forEach((dynamic path){
 
-      File image = File(path);
+      if(path != null){
+        File image = File(path);
 
-      images.add(image);
+        images.add(image);
+      }
+
+
     });
 
 
@@ -1698,46 +1898,47 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     if(_customLabel1.isNotEmpty || _customLabel1 != ''){
 
       customFields.add({
-        'label': _formData['customLabel1'],
-        'placeholder': _formData['customPlaceholder1'],
-        'value': _formData['customField1'],
+        'label': _customLabel1,
+        'placeholder': _customPlaceholder1,
+        'value': _customField1Controller.text,
       });
 
       if(_customLabel2.isNotEmpty || _customLabel2 != ''){
 
         customFields.add({
-          'label': _formData['customLabel2'],
-          'placeholder': _formData['customPlaceholder2'],
-          'value': _formData['customField2'],
+          'label': _customLabel2,
+          'placeholder': _customPlaceholder2,
+          'value': _customField2Controller.text,
         });
 
         if(_customLabel3.isNotEmpty || _customLabel3 != ''){
 
           customFields.add({
-            'label': _formData['customLabel3'],
-            'placeholder': _formData['customPlaceholder3'],
-            'value': _formData['customField3'],
+            'label': _customLabel3,
+            'placeholder': _customPlaceholder3,
+            'value': _customField3Controller.text,
           });
         }
 
       }
     }
 
-    addIncidentLocally(
-            _isAnonymous,
-            usersModel.authenticatedUser,
-            _formData['incidentType'],
-            _formData['dateTime'],
-            _formData['latitude'],
-            _formData['longitude'],
-            _formData['postcode'],
-            _formData['projectName'],
-            _formData['route'],
-            _formData['elr'],
-            _mileageTextController.text,
-            _formData['summary'],
-            images,
-            customFields.length == 0 ? null : customFields
+    saveIncident(
+            anonymous: _isAnonymous,
+            authenticatedUser: usersModel.authenticatedUser,
+            type: _incidentValue,
+            incidentDate: _dateTimeController1.text,
+            latitude: _locationValue == 'Post Code' ? null: _latitude,
+            longitude: _locationValue == 'Post Code' ? null: _longitude,
+            postcode: _locationValue == 'Post Code' ? _postcodeController.text : null,
+            projectName: _projectNameController.text,
+            route: _routeValue,
+            elr: _elrValue,
+            mileage: _mileageTextController.text,
+            summary: _summaryTextController.text,
+            images: images,
+            customFields: customFields.length == 0 ? null : customFields,
+            context: context
     )
         .then((Map<String, dynamic> response) {
       print(response);
@@ -1817,11 +2018,11 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                     _customPlaceholder2 = '';
                     _customPlaceholder3 = '';
                     _customFieldCount = 0;
-
-
-
-
-
+                    _currentMileage = '';
+                    _currentElr = null;
+                    _currentElrList = [];
+                    _elrDrop = ['Select an ELR'];
+                    _showElr = false;
                   });
 
                   Navigator.of(context).pop();
@@ -1844,11 +2045,13 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     return Scaffold(
       appBar: AppBar(
         backgroundColor: orangeDesign1,
-        title: Text('Raise Incident'),
+        title: Text('Raise Incident', style: TextStyle(color: Colors.black),),
         actions: <Widget>[IconButton(icon: Icon(Icons.refresh), onPressed: _resetIncident)],
       ),
       drawer: SideDrawer(),
-      body: _buildPageContent(context, _incidentsModel, _usersModel),
+      body: _loadingTemporary ? Center(child: CircularProgressIndicator(
+        valueColor: new AlwaysStoppedAnimation<Color>(orangeDesign1),
+      ),) : _buildPageContent(context, _incidentsModel, _usersModel),
     );
   }
 
@@ -1856,10 +2059,8 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   void afterFirstLayout(BuildContext context) {
     // Calling the same function "after layout" to resolve the issue.
 
-    SharedPreferences.getInstance().then((SharedPreferences prefs) {
-      if (prefs.getBool('darkMode') == true) {
-        GlobalFunctions.setDarkMode(context);
-      }
-    });
+    if(_usersModel.authenticatedUser.darkMode != null){
+      if(_usersModel.authenticatedUser.darkMode) GlobalFunctions.setDarkMode(context);
+    }
   }
 }

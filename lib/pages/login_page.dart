@@ -135,13 +135,14 @@ class _LoginPageState extends State<LoginPage> with AfterLayoutMixin<LoginPage> 
       showDialog(
           context: context,
           builder: (BuildContext context) {
-            return AlertDialog(
+            return AlertDialog(shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(32.0))),
               title: Text('An error occured'),
               content: Text(successInformation['message']),
               actions: <Widget>[
                 FlatButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text('ok'),
+                  child: Text('ok', style: TextStyle(color: orangeDesign1),),
                 ),
               ],
             );

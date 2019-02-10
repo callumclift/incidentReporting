@@ -58,6 +58,7 @@ class DatabaseHelper {
   String temporaryProjectName = 'project_name';
   String temporaryRoute = 'route';
   String temporaryElr = 'elr';
+  String temporaryMileageTip = 'mileage_tip';
   String temporaryMileage = 'mileage';
   String temporarySummary = 'summary';
   String temporaryImages = 'images';
@@ -103,6 +104,21 @@ class DatabaseHelper {
   String incidentTypeCustomPlaceholder3 = 'custom_placeholder3';
   String incidentTypeServerUploaded = 'server_uploaded';
 
+  //Route Table
+  String routesTable = 'routes_table';
+  String routeName = 'route_name';
+  String routeCode = 'route_code';
+
+  //ELRs Table
+  String elrsTable = 'elrs_table';
+  String regionCode = 'region_code';
+  String elr = 'elr';
+  String elrDescription = 'description';
+  String elrStartMiles = 'start_miles';
+  String elrEndMiles = 'end_miles';
+
+
+
   //Named constructor to create instance of DatabaseHelper
   DatabaseHelper._createInstance();
 
@@ -140,26 +156,45 @@ class DatabaseHelper {
   //create a function to help us to execute a statement to create our database
   void _createDb(Database db, int newVersion) async {
     await db.execute(
-        'CREATE TABLE $usersTable ($userId INT(11) PRIMARY KEY, $userFirstName VARCHAR(255), $userLastName VARCHAR(255), '
+        'CREATE TABLE $usersTable ($userId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $userFirstName VARCHAR(255), $userLastName VARCHAR(255), '
         '$userUsername VARCHAR(255), $userPassword VARCHAR(255), $userSuspended TINYINT(1), $userOrganisationId INT(11), $userOrganisationName VARCHAR(255), $userSession VARCHAR(255), '
         '$userDeleted TINYINT(1), $userIsClientAdmin TINYINT(1), $userIsSuperAdmin TINYINT(1), $userTermsAccepted VARCHAR(255), $userForcePasswordReset TINYINT(1), $userDarkMode TINYINT(1))');
 
     await db.execute(
-        'CREATE TABLE $incidentsTable($id INT(11) PRIMARY KEY, $incidentId INT(11) default NULL, $userId INT(11) default NULL, $incidentType VARCHAR(255), $incidentFullName VARCHAR(255) default NULL, '
+        'CREATE TABLE $incidentsTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $incidentId INT(11) default NULL, $userId INT(11) default NULL, $incidentType VARCHAR(255), $incidentFullName VARCHAR(255) default NULL, '
         '$incidentUsername VARCHAR(255) default NULL, $incidentEmail VARCHAR(255) default NULL, $incidentDate VARCHAR(255), $incidentCreated VARCHAR(255), $incidentLatitude VARCHAR(255) default NULL, $incidentLongitude VARCHAR(255) default NULL, '
             '$incidentPostCode VARCHAR(255) default NULL, $incidentProjectName VARCHAR(255) default NULL, $incidentRoute VARCHAR(255) default NULL, $incidentElr VARCHAR(255) default NULL, $incidentMileage VARCHAR(255) default NULL, $incidentSummary TEXT, $incidentImages JSON default NULL, '
             '$incidentOrganisationId INT(11), $incidentOrganisationName VARCHAR(255), $incidentCustomFields JSON default NULL, $incidentAnonymous TINYINT(1) default NULL, $incidentServerUploaded TINYINT(1) default NULL)');
 
     await db.execute(
-        'CREATE TABLE $temporaryIncidentsTable($id INT(11) PRIMARY KEY, $temporaryUserId INT(11), $temporaryIncidentType VARCHAR(255) default NULL, $temporaryFullName VARCHAR(255) default NULL, '
+        'CREATE TABLE $temporaryIncidentsTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $temporaryUserId INT(11), $temporaryIncidentType VARCHAR(255) default NULL, $temporaryFullName VARCHAR(255) default NULL, '
             '$temporaryUsername VARCHAR(255) default NULL, $temporaryEmail VARCHAR(255) default NULL, $temporaryDate VARCHAR(255) default NULL, $temporaryLocationDropValue VARCHAR(255) default NULL, $temporaryLatitude VARCHAR(255) default NULL, $temporaryLongitude VARCHAR(255) default NULL, '
-            '$temporaryPostCode VARCHAR(255) default NULL, $temporaryPostcodeMap TEXT default NULL, $temporaryLocationMap TEXT default NULL, $temporaryProjectName VARCHAR(255) default NULL, $temporaryRoute VARCHAR(255) default NULL, $temporaryElr VARCHAR(255) default NULL, $temporaryMileage VARCHAR(255) default NULL, $temporarySummary TEXT default NULL, $temporaryImages JSON default NULL, '
+            '$temporaryPostCode VARCHAR(255) default NULL, $temporaryPostcodeMap TEXT default NULL, $temporaryLocationMap TEXT default NULL, $temporaryProjectName VARCHAR(255) default NULL, $temporaryRoute VARCHAR(255) default NULL, $temporaryElr VARCHAR(255) default NULL, $temporaryMileage VARCHAR(255) default NULL, $temporaryMileageTip VARCHAR(255) default NULL, $temporarySummary TEXT default NULL, $temporaryImages JSON default NULL, '
             '$temporaryOrganisationId INT(11), $temporaryOrganisationName VARCHAR(255), $temporaryCustomFields JSON default NULL, $temporaryCustomFieldValue1 VARCHAR(255) default NULL, $temporaryCustomFieldValue2 VARCHAR(255) default NULL, $temporaryCustomFieldValue3 VARCHAR(255) default NULL, $temporaryAnonymous TINYINT(1) default NULL)');
 
     await db.execute(
-        'CREATE TABLE $incidentTypesTable($id INT(11) PRIMARY KEY, $incidentTypeId INT(11) default NULL, $incidentTypeUserId INT(11), $incidentTypeUsername VARCHAR(255), $incidentTypeName VARCHAR(255), $incidentTypeCustomLabel1 VARCHAR(255) default NULL, $incidentTypeCustomLabel2 VARCHAR(255) default NULL, '
+        'CREATE TABLE $incidentTypesTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $incidentTypeId INT(11) default NULL, $incidentTypeUserId INT(11), $incidentTypeUsername VARCHAR(255), $incidentTypeName VARCHAR(255), $incidentTypeCustomLabel1 VARCHAR(255) default NULL, $incidentTypeCustomLabel2 VARCHAR(255) default NULL, '
             '$incidentTypeCustomLabel3 VARCHAR(255) default NULL, $incidentTypeOrganisationId INT(11), $incidentTypeOrganisationName VARCHAR(255),'
             '$incidentTypeCustomPlaceholder1 VARCHAR(255) default NULL, $incidentTypeCustomPlaceholder2 VARCHAR(255) default NULL, $incidentTypeCustomPlaceholder3 VARCHAR(255) default NULL, $incidentTypeServerUploaded TINYINT(1) default NULL)');
+
+    await db.execute(
+        'CREATE TABLE $routesTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $routeName VARCHAR(255) default NULL, $routeCode VARCHAR(20) default NULL)');
+
+    await db.execute(
+        'CREATE TABLE $elrsTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $regionCode VARCHAR(20) default NULL, $elr VARCHAR(20) default NULL, $elrDescription VARCHAR(255) default NULL, $elrStartMiles VARCHAR(20) default NULL, $elrEndMiles VARCHAR(20) default NULL)');
+    
+    await db.rawInsert("INSERT INTO $routesTable ($routeName, $routeCode) VALUES "
+        "('Anglia', 'QT'),"
+        "('Southeast', 'QK'),"
+        "('London North East', 'QG'),"
+        "('London North West (North)','QR'),"
+        "('London North West (South)','QS'),"
+        "('East Midlands', 'QM'),"
+        "('Scotland', 'QL'),"
+        "('Wales', 'QC'),"
+        "('Wessex', 'QW'),"
+        "('Western (West)', 'QD'),"
+        "('Western (Thames Valley)', 'QV')");
   }
 
   //Get all incidents from the database
@@ -236,8 +271,8 @@ class DatabaseHelper {
   Future<int> updateTemporaryIncidentField(String field, var value, int userId) async {
     Database db = await this.database;
 
-    var result = await db.rawUpdate("UPDATE $temporaryIncidentsTable SET $field = '$value' WHERE $temporaryUserId = '$userId'");
-    //var result2 = await db.update(temporaryIncidentsTable, {'$field' : '$value'}, where: '$temporaryUserId = ?', whereArgs: ['$userId']);
+    var result = await db.update(temporaryIncidentsTable, {field : value},
+        where: '$temporaryUserId = ?', whereArgs: [userId]);
     return result;
   }
 
@@ -266,38 +301,11 @@ class DatabaseHelper {
     return result;
   }
 
-  Future<int> updateUser1(Map<String, dynamic> userData) async {
+  Future<int> updateUser(Map<String, dynamic> userData) async {
     Database db = await this.database;
 
     var result = await db.update(usersTable, userData,
         where: '$userId = ?', whereArgs: [userData['user_id']]);
-    return result;
-  }
-
-  Future<int> updateUser(Map<String, dynamic> userData) async {
-    Database db = await this.database;
-
-    var result = await db.rawUpdate(
-        'UPDATE $usersTable SET $userId = ?, $userFirstName = ? , $userLastName = ?, $userUsername = ?, $userPassword = ?, '
-            '$userSuspended = ?, $userOrganisationId = ?, $userOrganisationName = ?, $userSession = ?, $userDeleted = ?, '
-            '$userIsClientAdmin = ?, $userIsSuperAdmin = ?, $userTermsAccepted = ?, $userForcePasswordReset = ? WHERE $userId = ?',
-        [
-          '${userData['user_id']}',
-          '${userData['first_name']}',
-          '${userData['last_name']}',
-          '${userData['username']}',
-          '${userData['password']}',
-          '${userData['suspended']}',
-          '${userData['organisation_id']}',
-          '${userData['organisation_name']}',
-          '${userData['session']}',
-          '${userData['deleted']}',
-          '${userData['is_client_admin']}',
-          '${userData['is_super_admin']}',
-          '${userData['terms_accepted']}',
-          '${userData['force_password_reset']}',
-          '${userData['user_id']}'
-        ]);
     return result;
   }
 
@@ -310,39 +318,59 @@ class DatabaseHelper {
     return result;
   }
 
-  Future<int> updateUserDarkMode(int userId, bool darkMode) async {
+  Future<int> updateIncidentType(Map<String, dynamic> incidentTypeData) async {
     Database db = await this.database;
 
-    var result = await db.rawUpdate(
-        'UPDATE $usersTable SET $userDarkMode = ? WHERE $userId = ?',
-        [
-          '$darkMode',
-          '$userId'
-        ]);
+    var result = await db.update(incidentTypesTable, incidentTypeData);
+
+    return result;
+  }
+
+  Future<int> addElr(Map<String, dynamic> elrData) async {
+    Database db = await this.database;
+
+    var result = await db.insert(elrsTable, elrData);
+
+    return result;
+  }
+
+  Future<int> updateElr(Map<String, dynamic> elrData) async {
+    Database db = await this.database;
+
+    var result = await db.update(elrsTable, elrData);
+
+    return result;
+  }
+
+  Future<int> updateUserDarkMode(int usersId, bool darkMode) async {
+    Database db = await this.database;
+
+    var result = await db.update(usersTable, {userDarkMode : darkMode},
+        where: '$userId = ?', whereArgs: [usersId]);
     return result;
   }
 
   Future<int> updateIncidentId(int localId, int updatedIncidentId) async {
     Database db = await this.database;
 
-    var result = await db.rawUpdate(
-        'UPDATE $incidentsTable SET $incidentId = ? WHERE $id = ?',
-        [
-          '$updatedIncidentId',
-          '$localId'
-        ]);
+    var result = await db.update(incidentsTable, {incidentId : updatedIncidentId},
+        where: '$id = ?', whereArgs: [localId]);
     return result;
   }
 
   Future<int> updateServerUploaded(int localId, bool serverUploaded) async {
     Database db = await this.database;
 
-    var result = await db.rawUpdate(
-        'UPDATE $incidentsTable SET $incidentServerUploaded = ? WHERE $id = ?',
-        [
-          '$serverUploaded',
-          '$localId'
-        ]);
+    var result = await db.update(incidentsTable, {incidentServerUploaded : serverUploaded},
+        where: '$id = ?', whereArgs: [localId]);
+    return result;
+  }
+
+  Future<int> updateLocalIncidentImages(int serverId, var images) async {
+    Database db = await this.database;
+
+    var result = await db.update(incidentsTable, {incidentImages : images},
+        where: '$incidentId = ?', whereArgs: [serverId]);
     return result;
   }
 
@@ -351,6 +379,14 @@ class DatabaseHelper {
 
     var result = await db
         .rawQuery('SELECT * FROM $incidentsTable WHERE $id = $id');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getLocalIncident(int serverId) async {
+    Database db = await this.database;
+
+    var result = await db
+        .rawQuery('SELECT * FROM $incidentsTable WHERE $incidentId = $serverId');
     return result;
   }
 
@@ -367,6 +403,22 @@ class DatabaseHelper {
     List<Map<String, dynamic>> x = await db.rawQuery(
         'SELECT EXISTS(SELECT 1 FROM $usersTable WHERE $userId = $id)');
     int result = Sqflite.firstIntValue(x);
+    return result;
+  }
+
+  Future<int> checkElrExists(String inputElr, String inputRegion) async {
+    Database db = await this.database;
+    List<Map<String, dynamic>> x = await db.rawQuery(
+        "SELECT EXISTS(SELECT 1 FROM $elrsTable WHERE $elr = '$inputElr' AND $regionCode = '$inputRegion')");
+    int result = Sqflite.firstIntValue(x);
+    return result;
+  }
+
+  Future<int> deleteElrs(int id) async {
+    Database db = await this.database;
+
+    var result =
+    await db.delete('DELETE FROM $elrsTable');
     return result;
   }
 
@@ -407,6 +459,88 @@ class DatabaseHelper {
 
     var result = await db
         .rawQuery('SELECT * FROM $incidentsTable WHERE $incidentServerUploaded = 0 AND $incidentUserId = $userId');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getRoutes() async {
+    Database db = await this.database;
+
+    var result = await db
+        .rawQuery('SELECT * FROM $routesTable');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getIncidentTypes(int organisationId ) async {
+    Database db = await this.database;
+
+    var result = await db.query(incidentTypesTable,
+        where: '$incidentTypeOrganisationId = ?',
+        whereArgs: [organisationId]);
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getIncidents(int userId) async {
+    Database db = await this.database;
+
+    var result = await db
+        .rawQuery('SELECT * FROM $incidentsTable WHERE $incidentServerUploaded = 1 AND $incidentUserId = $userId');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getIncidentsSuperAdmin() async {
+    Database db = await this.database;
+
+    var result = await db
+        .rawQuery('SELECT * FROM $incidentsTable WHERE $incidentServerUploaded = 1');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getIncidentsClientAdmin(int organisationId) async {
+    Database db = await this.database;
+
+    var result = await db
+        .rawQuery('SELECT * FROM $incidentsTable WHERE $incidentServerUploaded = 1 AND $incidentOrganisationId = $organisationId');
+    return result;
+  }
+
+  Future<int> checkElrCount() async {
+    Database db = await this.database;
+    List<Map<String, dynamic>> x =
+    await db.rawQuery('SELECT COUNT (*) from $elrsTable');
+    int result = Sqflite.firstIntValue(x);
+    return result;
+  }
+
+  Future<int> checkLocalIncidentCount(int userId) async {
+    Database db = await this.database;
+    List<Map<String, dynamic>> x =
+    await db.rawQuery('SELECT COUNT (*) from $incidentsTable WHERE $incidentUserId = $userId');
+    int result = Sqflite.firstIntValue(x);
+    return result;
+  }
+
+  Future<int> checkLocalIncidentCountClientAdmin(int organisationId) async {
+    Database db = await this.database;
+    List<Map<String, dynamic>> x =
+    await db.rawQuery('SELECT COUNT (*) from $incidentsTable WHERE $incidentOrganisationId = $organisationId');
+    int result = Sqflite.firstIntValue(x);
+    return result;
+  }
+
+  Future<int> checkLocalIncidentCountSuperAdmin() async {
+    Database db = await this.database;
+    List<Map<String, dynamic>> x =
+    await db.rawQuery('SELECT COUNT (*) from $incidentsTable');
+    int result = Sqflite.firstIntValue(x);
+    return result;
+  }
+
+
+  Future<List<Map<String, dynamic>>> getElrsFromRegion(String region) async {
+    Database db = await this.database;
+
+    var result = await db
+        .rawQuery("SELECT * FROM $elrsTable WHERE $regionCode = '$region'");
     return result;
   }
 

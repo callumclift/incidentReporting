@@ -1,5 +1,5 @@
 #Internal package file, do not edit.
-#Fri Feb 01 07:50:20 GMT 2019
+#Sun Feb 10 07:28:15 GMT 2019
 4.path=lib/x86/libflutter.so
 13.baseType=DIRECTORY
 8.set=ASSET

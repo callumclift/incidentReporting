@@ -1,26 +1,17 @@
-import 'dart:convert';
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:random_string/random_string.dart';
 import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server/gmail.dart';
 import 'package:mailer/smtp_server/hotmail.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rxdart/subjects.dart';
-import 'package:http_parser/http_parser.dart';
-import 'package:encrypt/encrypt.dart';
 import 'package:connectivity/connectivity.dart';
 
 import '../models/user.dart';
 import '../models/authenticated_user.dart';
 import '../scoped_models/incidents_model.dart';
-import '../models/auth.dart';
 import '../shared/global_functions.dart';
 import '../shared/global_config.dart';
 import '../utils/database_helper.dart';
@@ -70,65 +61,6 @@ class UsersModel extends Model {
     }
   }
 
-//  Future<Null> fetchUsers(String role, {onlyForUser: false, clearExisting = false}) async{
-//
-//    _isLoading = true;
-//
-//    if (clearExisting) {
-//      _users = [];
-//    }
-//
-//    final List<User> fetchedUserList = [];
-//
-//    Map<String, dynamic> userData = {};
-//
-//
-//    try {
-//
-//      DataSnapshot snapshot;
-//
-//      snapshot = await FirebaseDatabase.instance
-//          .reference().child('users').orderByChild('firstName')
-//          .once();
-//
-//      userData = new Map.from(snapshot.value);
-//
-//      userData.forEach((String userKey, dynamic userData) {
-//        final User user = User(
-//            id: userKey,
-//            authenticationId: userData['authenticationId'],
-//            email: userData['email'],
-//            firstName: userData['firstName'],
-//            surname: userData['surname'],
-//            organisation: userData['organisation'],
-//            role: userData['role'],
-//            hasTemporaryPassword: userData['hasTemporaryPassword'],
-//            acceptedTerms: userData['acceptedTerms'],
-//            suspended: userData['suspended']);
-//        fetchedUserList.add(user);
-//      });
-//
-//      fetchedUserList.sort((User a, User b) => a.firstName.compareTo(b.firstName));
-//
-//      fetchedUserList.forEach((User user){
-//
-//        print(user.firstName);
-//
-//      });
-//
-//      _users = fetchedUserList;
-//      _isLoading = false;
-//      notifyListeners();
-//      //_selUserKey = null;
-//
-//    } catch(e){
-//      _isLoading = false;
-//      notifyListeners();
-//      return;
-//    }
-//  }
-
-
 
   AuthenticatedUser get authenticatedUser {
     return _authenticatedUser;
@@ -138,398 +70,6 @@ class UsersModel extends Model {
 
   PublishSubject<bool> get userSubject {
     return _userSubject;
-  }
-
-  Future<Map<String, dynamic>> addUser() async{
-    _isLoading = true;
-    notifyListeners();
-
-    String message = 'Something went wrong!';
-    bool success = false;
-
-    _isLoading = false;
-    notifyListeners();
-
-    return {'success': success, 'message': message};
-
-  }
-
-//  Future<Map<String, dynamic>> addUser(String firstName, String surname, String email, String organisation, String role) async {
-//    _isLoading = true;
-//    notifyListeners();
-//
-//    if(firstName.length == 1){
-//      firstName = firstName.toUpperCase();
-//    } else {
-//      firstName = '${firstName[0].toUpperCase()}${firstName.substring(1)}';
-//    }
-//
-//    if(surname.length == 1){
-//      surname = surname.toUpperCase();
-//    } else {
-//      surname = '${surname[0].toUpperCase()}${surname.substring(1)}';
-//    }
-//
-//    final String temporaryPassword = randomAlphaNumeric(10);
-//
-//    final Map<String, dynamic> authData = {
-//      'email': email,
-//      'password': temporaryPassword,
-//      'returnSecureToken': false
-//    };
-//
-//    String message = 'Something went wrong!';
-//    bool hasError = true;
-//
-//    http.Response response;
-//
-//    try {
-//      response = await http.post(
-//        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyDGEgZURSQc5zJEv0MbraTJjCY-Nom7MoA',
-//        body: json.encode(authData),
-//        headers: {'Content-Type': 'application/json'},
-//      );
-//
-//
-//      Map<String, dynamic> responseData = json.decode(response.body);
-//
-//
-//
-//
-//      if (responseData.containsKey('idToken')) {
-//        hasError = false;
-//        message = 'authentication succeeded';
-//
-//        final Map<String, dynamic> userData = {
-//          'authenticationId': responseData['localId'],
-//          'firstName': firstName,
-//          'surname': surname,
-//          'organisation': organisation,
-//          'role': role,
-//          'email': email,
-//          'hasTemporaryPassword' : true,
-//          'acceptedTerms' : false,
-//          'suspended' : false
-//        };
-//
-//
-//        final http.Response response = await http.post(
-//            'https://incident-reporting-a5394.firebaseio.com/users.json?auth=${_authenticatedUser
-//                .token}',
-//            body: json.encode(userData));
-//
-//        if (response.statusCode != 200 && response.statusCode != 201) {
-//
-//          await http.post(
-//            'https://www.googleapis.com/identitytoolkit/v3/relyingparty/deleteAccount?key=AIzaSyDGEgZURSQc5zJEv0MbraTJjCY-Nom7MoA',
-//            body: json.encode({'idToken' : responseData['localId']}),
-//            headers: {'Content-Type': 'application/json'},
-//          );
-//          _isLoading = false;
-//          notifyListeners();
-//          hasError = true;
-//          message = 'something went wrong';
-//        }
-//
-//        final User newUser = User(
-//            authenticationId: responseData['id'],
-//            id: responseData['name'],
-//            firstName: firstName,
-//            surname: surname,
-//            email: email,
-//            organisation: organisation,
-//            role: role,
-//            hasTemporaryPassword: true,
-//            acceptedTerms: false,
-//            suspended: false
-//        );
-//        _users.add(newUser);
-//        await signUpEmail(temporaryPassword, email, firstName);
-//        hasError = false;
-//        message = 'user added successfully';
-//
-//      } else if (responseData['error']['message'] == 'EMAIL_NOT_FOUND') {
-//        message = 'Email not found';
-//      } else if (responseData['error']['message'] == 'INVALID_PASSWORD') {
-//        message = 'Incorrect password';
-//      } else if (responseData['error']['message'] == 'EMAIL_EXISTS') {
-//        message = 'This email already exists';
-//      }
-//    } catch(e){
-//      _isLoading = false;
-//      notifyListeners();
-//      return {'success': !hasError, 'message': message};
-//
-//    }
-//
-//    print('this is the selected user key');
-//
-//    print(_selUserKey);
-//
-//
-//    _isLoading = false;
-//    notifyListeners();
-//    return {'success': !hasError, 'message': message};
-//
-//  }
-
-//  Future<Map<String, dynamic>> newPassword(String newPassword) async {
-//    _isLoading = true;
-//    notifyListeners();
-//
-//    String idToken = _authenticatedUser.session;
-//
-//    print(idToken);
-//
-//
-//
-//    final Map<String, dynamic> authData = {
-//      'idToken': idToken,
-//      'password': newPassword,
-//      'returnSecureToken': true
-//    };
-//
-//    String message = 'Something went wrong!';
-//    bool hasError = true;
-//
-//    http.Response response;
-//
-//    try {
-//      response = await http.post(
-//        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/setAccountInfo?key=AIzaSyDGEgZURSQc5zJEv0MbraTJjCY-Nom7MoA',
-//        body: json.encode(authData),
-//        headers: {'Content-Type': 'application/json'},
-//      );
-//
-//
-//      Map<String, dynamic> responseData = json.decode(response.body);
-//
-//      print(responseData);
-//
-//
-//
-//
-//      if (responseData.containsKey('passwordHash')) {
-//        hasError = false;
-//        message = 'your password has been changed';
-//
-//        _authenticatedUser = AuthenticatedUser(
-//            id: _authenticatedUser.id,
-//            email: _authenticatedUser.email,
-//            token: responseData['idToken'],
-//            suspended: _authenticatedUser.suspended,
-//            acceptedTerms: _authenticatedUser.acceptedTerms,
-//            hasTemporaryPassword: false,
-//            organisationId: 1,
-//            organisationName: _authenticatedUser.organisationName,
-//            surname: _authenticatedUser.surname,
-//            firstName: _authenticatedUser.firstName,
-//            role: _authenticatedUser.role,
-//            authenticationId: _authenticatedUser.authenticationId);
-//
-//
-//
-//
-//
-//        setAuthTimeout(int.parse(responseData['expiresIn']));
-//        //_userSubject.add(true);
-//
-//        final DateTime now = DateTime.now();
-//        print('this is the time currently now' + now.toIso8601String());
-//
-//        final DateTime expiryTime =
-//        now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
-//        print('this is the expiry time at the point of logging in' +
-//            expiryTime.toIso8601String());
-//
-//        final SharedPreferences prefs = await SharedPreferences
-//            .getInstance();
-//        prefs.setString('id', _authenticatedUser.id);
-//        prefs.setString('email', _authenticatedUser.email);
-//        prefs.setString('token', _authenticatedUser.token);
-//        prefs.setBool('suspended', _authenticatedUser.suspended);
-//        prefs.setBool('acceptedTerms', _authenticatedUser.acceptedTerms);
-//        prefs.setBool('hasTemporaryPassword', _authenticatedUser.hasTemporaryPassword);
-//        prefs.setString('organisation', _authenticatedUser.organisationName);
-//        prefs.setString('surname', _authenticatedUser.firstName);
-//        prefs.setString('firstName', _authenticatedUser.surname);
-//        prefs.setString('role', _authenticatedUser.role);
-//        prefs.setString('authenticationId', _authenticatedUser.authenticationId);
-//        prefs.setString('expiryTime', expiryTime.toIso8601String());
-//
-//
-//
-//      } else if (responseData['error']['message'] == 'CREDENTIAL_TOO_OLD_LOGIN_AGAIN') {
-//        message = 'Your session has expired please login again with your temporary password';
-//      }
-//    } catch(e){
-//
-//      print(e);
-//
-//    }
-//
-//    print('this is the selected user key');
-//
-//    print(_selUserKey);
-//
-//
-//    _isLoading = false;
-//    notifyListeners();
-//
-//    final Map<String, dynamic> updateData = {
-//      'authenticationId': _authenticatedUser.authenticationId,
-//      'firstName': _authenticatedUser.firstName,
-//      'surname': _authenticatedUser.surname,
-//      'organisation': _authenticatedUser.organisationName,
-//      'role': _authenticatedUser.role,
-//      'email': _authenticatedUser.email,
-//      'hasTemporaryPassword' : false,
-//      'acceptedTerms' : _authenticatedUser.acceptedTerms,
-//      'suspended' : _authenticatedUser.suspended
-//    };
-//    try {
-//      await FirebaseDatabase.instance.reference().child('users').child(_authenticatedUser.id).update(updateData);
-//    } catch(e) {
-//      print(e);
-//    }
-//    return {'success': !hasError, 'message': message};
-//
-//  }
-
-//  Future<bool> acceptTerms() async {
-//    _isLoading = true;
-//    notifyListeners();
-//
-//    bool successful = false;
-//
-//    final Map<String, dynamic> updateData = {
-//      'authenticationId': _authenticatedUser.authenticationId,
-//      'firstName': _authenticatedUser.firstName,
-//      'surname': _authenticatedUser.surname,
-//      'organisation': _authenticatedUser.organisationName,
-//      'role': _authenticatedUser.role,
-//      'email': _authenticatedUser.email,
-//      'hasTemporaryPassword' : _authenticatedUser.hasTemporaryPassword,
-//      'acceptedTerms' : true,
-//      'suspended' : _authenticatedUser.suspended
-//    };
-//
-//    try {
-//      await FirebaseDatabase.instance.reference().child('users').child(_authenticatedUser.id).update(updateData);
-//      successful = true;
-//      _authenticatedUser.acceptedTerms = true;
-//      final SharedPreferences prefs = await SharedPreferences
-//          .getInstance();
-//      prefs.setBool('acceptedTerms', true);
-//
-//    } catch(e) {
-//      successful = false;
-//      print(e);
-//    }
-//
-//
-//    _isLoading = false;
-//    notifyListeners();
-//    return successful;
-//
-//  }
-
-//  Future<Map<String, dynamic>>suspendResumeUser(String userKey, bool suspended) async {
-//
-//    bool hasError = true;
-//    String message = 'Something went wrong';
-//
-//    try {
-//      await FirebaseDatabase.instance.reference().child('users').child(userKey).update({'suspended': !suspended});
-//    } catch(e) {
-//      print(e);
-//      return {'success' : hasError, 'message' : message};
-//    }
-//
-//    if(!suspended == true) {
-//      message = 'User has been suspended';
-//    } else {
-//      message = 'User has been resumed';
-//    }
-//
-//    return {'success' : !hasError, 'message' : message};
-//  }
-
-//  Future<Map<String, dynamic>>voidUnvoidIncident(String incidentKey, bool voided) async {
-//
-//    bool hasError = true;
-//    String message = 'Something went wrong';
-//
-//    try {
-//      await FirebaseDatabase.instance.reference().child('incidents').child(incidentKey).update({'voided': !voided});
-//    } catch(e) {
-//      print(e);
-//      return {'success' : hasError, 'message' : message};
-//    }
-//
-//    if(!voided == true) {
-//      message = 'Incident has been voided';
-//    } else {
-//      message = 'Incident has been unvoided';
-//    }
-//
-//    return {'success' : !hasError, 'message' : message};
-//  }
-
-//  Future<Map<String, dynamic>>editUser(User user, String firstName, String surname, String email, String organisation, String role) async {
-//
-//    _isLoading = true;
-//    notifyListeners();
-//
-//    bool hasError = true;
-//    String message = 'Something went wrong';
-//
-//    final Map<String, dynamic> updateData = {
-//      'authenticationId': user.authenticationId,
-//      'firstName': firstName,
-//      'surname': surname,
-//      'organisation': organisation,
-//      'role': role,
-//      'email': email,
-//      'hasTemporaryPassword' : user.hasTemporaryPassword,
-//      'acceptedTerms' : user.acceptedTerms,
-//      'suspended' : user.suspended
-//    };
-//
-//    print('its got here before the fail');
-//
-//
-//    try {
-//      await FirebaseDatabase.instance.reference().child('users').child(user.id).update(updateData);
-//      message = 'User has been edited';
-//      hasError = false;
-//    } catch(e) {
-//      print(e);
-//    }
-//
-//
-//
-//    _isLoading = false;
-//    notifyListeners();
-//    return {'success' : !hasError, 'message' : message};
-//  }
-
-  Future signUpEmail(String temporaryPassword String email, String firstName) async {
-
-
-  final smtpServer = hotmail('callum.clift@on-trac.co.uk', 'jhjhjhj');
-
-  final message = new Message()
-  ..from = new Address('callum.clift@on-trac.co.uk', 'Accounts')
-  ..recipients.add(email)
-  ..subject = 'You have been registered as a user on Callums app'
-  ..text = 'This is the plain text.\nThis is line 2 of the text part.'
-  ..html = "<p>Dear "+ firstName +",</p>\n<p>You have been registered as a user on Callums app.</p>\n"
-  "<p>Please login using your email and temporary password below, please be sure to change the temporary password after you have logged in for the first time</p>\n"
-  "<p>Temporary password: "+ temporaryPassword +"</p>";
-
-  await send(message, smtpServer);
-
   }
 
   Future<Map<String, dynamic>> login(String username, String password, bool rememberMe, BuildContext context) async {
@@ -558,7 +98,39 @@ class UsersModel extends Model {
 
       if(connectivityResult == ConnectivityResult.none){
 
-        message = 'No data connection, please try again later';
+        print(GlobalFunctions.decryptString(prefs.get('username')));
+        print(GlobalFunctions.decryptString(prefs.get('password')));
+
+
+        if(username == GlobalFunctions.decryptString(prefs.get('username')) && password == GlobalFunctions.decryptString(prefs.get('password'))){
+          print('ok its in hereeeeeee');
+
+          _authenticatedUser = AuthenticatedUser(
+              userId: prefs.getInt('userId'),
+              firstName: GlobalFunctions.decryptString(prefs.get('firstName')),
+              lastName: GlobalFunctions.decryptString(prefs.get('lastName')),
+              username: GlobalFunctions.decryptString(prefs.get('username')),
+              password: GlobalFunctions.decryptString(prefs.get('password')),
+              suspended: prefs.getBool('suspended'),
+              organisationId: prefs.getInt('organisationId'),
+              organisationName: prefs.get('organisationName'),
+              session: GlobalFunctions.decryptString(prefs.get('session')),
+              deleted: prefs.getBool('deleted'),
+              isClientAdmin: prefs.getBool('isClientAdmin'),
+              isSuperAdmin: prefs.getBool('isSuperAdmin'),
+              termsAccepted: prefs.get('termsAccepted'),
+              forcePasswordReset: prefs.getBool('forcePasswordReset'),
+              darkMode: prefs.getBool('darkMode'));
+
+          if(prefs.get('cookie') != null) cookie = GlobalFunctions.decryptString(prefs.get('cookie'));
+          print('here is the cookie after auto login');
+          print(cookie);
+          success = true;
+          notifyListeners();
+
+        } else {
+          message = 'No data connection, please try again later';
+        }
 
       } else {
 
@@ -590,6 +162,10 @@ class UsersModel extends Model {
             now.add(Duration(minutes: 28));
             print('this is the expiry time at the point of logging in' +
                 cookieExpiryTime.toIso8601String());
+
+
+
+
 
 
             _authenticatedUser = AuthenticatedUser(
@@ -635,6 +211,9 @@ class UsersModel extends Model {
 
 
             if (existingUser == 0) {
+
+              authenticatedUser.darkMode = false;
+
               Map<String, dynamic> userData = {
                 'user_id': _authenticatedUser.userId,
                 'first_name': encryptedFirstName,
@@ -660,6 +239,7 @@ class UsersModel extends Model {
               } else {
                 final SharedPreferences prefs = await SharedPreferences
                     .getInstance();
+
                 prefs.setInt('userId', _authenticatedUser.userId);
                 prefs.setString('firstName', encryptedFirstName);
                 prefs.setString('lastName', encryptedLastName);
@@ -681,7 +261,10 @@ class UsersModel extends Model {
                 prefs.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
               }
             } else {
+
               Map<String, dynamic> userData = {
+
+
                 'user_id': _authenticatedUser.userId,
                 'first_name': encryptedFirstName,
                 'last_name': encryptedLastName,
@@ -698,7 +281,7 @@ class UsersModel extends Model {
                 'force_password_reset': _authenticatedUser.forcePasswordReset,
               };
 
-              int updatedUser = await databaseHelper.updateUser1(userData);
+              int updatedUser = await databaseHelper.updateUser(userData);
               if (updatedUser == 0) {
                 message = 'Unable to update user locally on the device';
               } else {
@@ -716,6 +299,8 @@ class UsersModel extends Model {
                 } else if (user[0]['dark_mode'] is int){
                   darkMode = user[0]['dark_mode'] == 1 ? true : false;
                 }
+
+                authenticatedUser.darkMode = darkMode;
 
                 final SharedPreferences prefs = await SharedPreferences
                     .getInstance();
@@ -765,10 +350,24 @@ class UsersModel extends Model {
             final IncidentsModel _incidentsModel =
             ScopedModel.of<IncidentsModel>(context);
 
-            final Map<String, dynamic> incidentTypes = await _incidentsModel.getCustomIncidents();
+            final Map<String, dynamic> incidentTypes = await _incidentsModel.getCustomIncidents(_authenticatedUser);
 
             if(incidentTypes['success']) success = true;
 
+            //Add the ELRs to the Database if the table count is 0
+            int elrCount = await databaseHelper.checkElrCount();
+
+            if(elrCount == 0){
+              print('the ELR count is 0 so it is going to get them now');
+
+              final Map<String, dynamic> elrResult = await this.getElrs();
+
+              if(elrResult['success']){
+                success = true;
+              }  else {
+                success = false;
+              }
+            }
 
           } else {
             message = 'no valid session found';
@@ -789,6 +388,209 @@ class UsersModel extends Model {
     _userSubject.add(true);
     _isLoading = false;
     notifyListeners();
+
+    return {'success': success, 'message': message};
+  }
+
+
+  Future<Map<String, dynamic>> getElrs() async {
+
+    bool success = false;
+    String message = 'Something went wrong';
+
+    try {
+      var connectivityResult = await (new Connectivity().checkConnectivity());
+
+      if (connectivityResult == ConnectivityResult.none) {
+        message = 'No data connection, unable to fetch Elr Data';
+      } else {
+
+        final Map<String, dynamic> requestData = {
+          'incidentData': {},
+        };
+
+        bool isCookieExpired = await GlobalFunctions.isCookieExpired();
+        Map<String, dynamic> renewSession = {};
+
+        if (isCookieExpired) {
+          renewSession = await this.renewSession(
+              authenticatedUser.username,
+              authenticatedUser.password);
+          message = renewSession['message'];
+        }
+
+        Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
+            serverUrl + 'getElrs', requestData)
+            .timeout(Duration(seconds: 90));
+
+        if (serverResponse != null) {
+
+          if (serverResponse['error'] != null &&
+              serverResponse['error'] == 'Token missing or invalid') {
+            message = 'token missing or invalied';
+          } else if (serverResponse['error'] != null &&
+              serverResponse['error'] == 'Access Denied.') {
+            print('its in access denied, trying to renew the session');
+
+            Map<String, dynamic> renewSession = await this.renewSession(
+                authenticatedUser.username,
+                authenticatedUser.password);
+
+            message = renewSession['message'];
+          } else if (serverResponse['error'] != null &&
+              serverResponse['error'] == 'terms_not_accepted') {
+            message =
+            'You need to accept the terms & conditions before using this app';
+          } else if (serverResponse['error'] != null &&
+              serverResponse['error'] == 'change_password') {
+            message = 'You are required to change your password';
+          } else if (serverResponse['response']['elrs'] != null) {
+            List<dynamic> elrList = serverResponse['response']['elrs'];
+
+            DatabaseHelper databaseHelper = DatabaseHelper();
+            print('its done the database helper');
+
+            for (Map<String, dynamic> elrData in elrList) {
+
+                Map<String, dynamic> databaseData = {
+                  'region_code': elrData['HdElrLookup']['region'],
+                  'elr': elrData['HdElrLookup']['elr'],
+                  'description': elrData['HdElrLookup']['description'],
+                  'start_miles': elrData['HdElrLookup']['start_miles'],
+                  'end_miles': elrData['HdElrLookup']['end_miles'],
+                };
+
+                int result = await databaseHelper.addElr(databaseData);
+
+                if (result != 0) {
+                  message = 'Elr not added to the database';
+                }
+            }
+
+            int count = await databaseHelper.checkElrCount();
+            print('this is the count of the elrs: ' + count.toString());
+            success = true;
+            message = 'waheyyyyy';
+          }
+        } else {
+          message = 'no valid session found';
+        }
+      }
+    } on TimeoutException catch (_) {
+      message = 'Request timeout, unable to fetch Elr data';
+      // A timeout occurred.
+    } catch (error) {
+      print(error);
+      message = 'Unable to fetch Elr data';
+    }
+
+    return {'success': success, 'message': message};
+  }
+
+  Future<Map<String, dynamic>> updateElrs() async {
+
+    bool success = false;
+    String message = 'Something went wrong';
+
+    try {
+      var connectivityResult = await (new Connectivity().checkConnectivity());
+
+      if (connectivityResult == ConnectivityResult.none) {
+        message = 'No data connection, unable to fetch Elr Data';
+      } else {
+
+        final Map<String, dynamic> requestData = {
+          'incidentData': {},
+        };
+
+        bool isCookieExpired = await GlobalFunctions.isCookieExpired();
+        Map<String, dynamic> renewSession = {};
+
+        if (isCookieExpired) {
+          renewSession = await this.renewSession(
+              authenticatedUser.username,
+              authenticatedUser.password);
+          message = renewSession['message'];
+        }
+
+        Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
+            serverUrl + 'getElrs', requestData)
+            .timeout(Duration(seconds: 90));
+
+        if (serverResponse != null) {
+
+          if (serverResponse['error'] != null &&
+              serverResponse['error'] == 'Token missing or invalid') {
+            message = 'token missing or invalied';
+          } else if (serverResponse['error'] != null &&
+              serverResponse['error'] == 'Access Denied.') {
+            print('its in access denied, trying to renew the session');
+
+            Map<String, dynamic> renewSession = await this.renewSession(
+                authenticatedUser.username,
+                authenticatedUser.password);
+
+            message = renewSession['message'];
+          } else if (serverResponse['error'] != null &&
+              serverResponse['error'] == 'terms_not_accepted') {
+            message =
+            'You need to accept the terms & conditions before using this app';
+          } else if (serverResponse['error'] != null &&
+              serverResponse['error'] == 'change_password') {
+            message = 'You are required to change your password';
+          } else if (serverResponse['response']['elrs'] != null) {
+            List<dynamic> elrList = serverResponse['response']['elrs'];
+
+            DatabaseHelper databaseHelper = DatabaseHelper();
+            print('its done the database helper');
+
+            for (Map<String, dynamic> elrData in elrList) {
+
+              Map<String, dynamic> databaseData = {
+                'region_code': elrData['HdElrLookup']['region'],
+                'elr': elrData['HdElrLookup']['elr'],
+                'description': elrData['HdElrLookup']['description'],
+                'start_miles': elrData['HdElrLookup']['start_miles'],
+                'end_miles': elrData['HdElrLookup']['end_miles'],
+              };
+
+              int alreadyExists = await databaseHelper.checkElrExists(databaseData['elr'], databaseData['region_code']);
+
+              if(alreadyExists == 0){
+
+                int result = await databaseHelper.addElr(databaseData);
+
+                if (result != 0) {
+                  message = 'Elr not added to the database';
+                }
+              } else {
+
+                int result = await databaseHelper.updateElr(databaseData);
+
+                if (result != 0) {
+                  message = 'Elr not updated';
+                }
+
+              }
+
+            }
+
+            int count = await databaseHelper.checkElrCount();
+            print('this is the count of the elrs: ' + count.toString());
+            success = true;
+            message = 'waheyyyyy';
+          }
+        } else {
+          message = 'no valid session found';
+        }
+      }
+    } on TimeoutException catch (_) {
+      message = 'Request timeout, unable to fetch Elr data';
+      // A timeout occurred.
+    } catch (error) {
+      print(error);
+      message = 'Unable to fetch Elr data';
+    }
 
     return {'success': success, 'message': message};
   }
@@ -866,7 +668,8 @@ class UsersModel extends Model {
                 isClientAdmin: serverResponse['response']['is_client_admin'],
                 isSuperAdmin: serverResponse['response']['is_super_admin'],
                 termsAccepted: serverResponse['response']['terms_accepted'],
-                forcePasswordReset: serverResponse['response']['force_password_reset']);
+                forcePasswordReset: serverResponse['response']['force_password_reset'],
+            darkMode: prefs.getBool('darkMode'));
 
 
 
@@ -956,7 +759,7 @@ class UsersModel extends Model {
                 'force_password_reset': _authenticatedUser.forcePasswordReset,
               };
 
-              int updatedUser = await databaseHelper.updateUser1(userData);
+              int updatedUser = await databaseHelper.updateUser(userData);
               if (updatedUser == 0) {
                 message = 'Unable to update user locally on the device';
               } else {
@@ -1009,9 +812,7 @@ class UsersModel extends Model {
       }
 
     } on TimeoutException catch (_) {
-
       message = 'Request timeout, unable renew session';
-      // A timeout occurred.
     } catch(error){
       print(error);
       message = 'Something went wrong';
@@ -1047,7 +848,8 @@ class UsersModel extends Model {
           isClientAdmin: prefs.getBool('isClientAdmin'),
           isSuperAdmin: prefs.getBool('isSuperAdmin'),
           termsAccepted: prefs.get('termsAccepted'),
-          forcePasswordReset: prefs.getBool('forcePasswordReset'));
+          forcePasswordReset: prefs.getBool('forcePasswordReset'),
+      darkMode: prefs.getBool('darkMode'));
 
       if(prefs.get('cookie') != null) cookie = GlobalFunctions.decryptString(prefs.get('cookie'));
       print('here is the cookie after auto login');
@@ -1055,327 +857,51 @@ class UsersModel extends Model {
 
       notifyListeners();
 
-    } else {
-      prefs.remove('userId');
-      prefs.remove('firstName');
-      prefs.remove('lastName');
-      prefs.remove('username');
-      prefs.remove('password');
-      prefs.remove('suspended');
-      prefs.remove('organisationId');
-      prefs.remove('organisationName');
-      prefs.remove('session');
-      prefs.remove('deleted');
-      prefs.remove('isClientAdmin');
-      prefs.remove('isSuperAdmin');
-      prefs.remove('termsAccepted');
-      prefs.remove('forcePasswordReset');
-      prefs.remove('cookie');
-      prefs.remove('cookieExpiryTime');
     }
+
+//    else {
+//      prefs.remove('userId');
+//      prefs.remove('firstName');
+//      prefs.remove('lastName');
+//      prefs.remove('username');
+//      prefs.remove('password');
+//      prefs.remove('suspended');
+//      prefs.remove('organisationId');
+//      prefs.remove('organisationName');
+//      prefs.remove('session');
+//      prefs.remove('deleted');
+//      prefs.remove('isClientAdmin');
+//      prefs.remove('isSuperAdmin');
+//      prefs.remove('termsAccepted');
+//      prefs.remove('forcePasswordReset');
+//      prefs.remove('cookie');
+//      prefs.remove('cookieExpiryTime');
+//    }
   }
 
-
-
-
-//  Future<Map<String, dynamic>> login(String email, String password) async {
-//    _isLoading = true;
-//    notifyListeners();
-//    final Map<String, dynamic> authData = {
-//      'email': email,
-//      'password': password,
-//      'returnSecureToken': true
-//    };
-//
-//    http.Response response;
-//    response = await http.post(
-//      'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyDGEgZURSQc5zJEv0MbraTJjCY-Nom7MoA',
-//      body: json.encode(authData),
-//      headers: {'Content-Type': 'application/json'},);
-//
-//    Map<String, dynamic> responseData = json.decode(response.body);
-//
-//    bool hasError = true;
-//    String message = 'Something went wrong!';
-//
-//    Map<String, dynamic> userData;
-//    if (responseData.containsKey('idToken')) {
-//      message = 'authentication succeeded';
-//
-//      DataSnapshot snapshot;
-//
-//      snapshot = await FirebaseDatabase.instance
-//          .reference().child('users').orderByChild('email')
-//          .equalTo(email)
-//          .once();
-//
-//      print('this is the snapshot');
-//      print(snapshot);
-//
-//
-//      userData = new Map.from(snapshot.value);
-//
-//      userData.forEach((String key, dynamic value) {
-//        print(key);
-//        print(value['firstName']);
-//        _authenticatedUser = AuthenticatedUser(
-//            id: key,
-//            email: email,
-//            token: responseData['idToken'],
-//            suspended: value['suspended'],
-//            acceptedTerms: value['acceptedTerms'],
-//            hasTemporaryPassword: value['hasTemporaryPassword'],
-//            organisationId: 1,
-//            organisationName: value['organisation'],
-//            surname: value['surname'],
-//            firstName: value['firstName'],
-//            role: value['role'],
-//            authenticationId: value['authenticationId']);
-//
-//        print('should not print this till after snapshot');
-//      });
-//      //this will trigger the listener in the main.dart for isAuthenticated
-//      if (_authenticatedUser.suspended == true) {
-//        print('at least it got here');
-//        message = 'your account has been suspended please contact your system admin';
-//      } else {
-//        hasError = false;
-//        setAuthTimeout(int.parse(responseData['expiresIn']));
-//        _userSubject.add(true);
-//
-//        final DateTime now = DateTime.now();
-//        print('this is the time currently now' + now.toIso8601String());
-//
-//        final DateTime expiryTime =
-//        now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
-//        print('this is the expiry time at the point of logging in' +
-//            expiryTime.toIso8601String());
-//
-//        final SharedPreferences prefs = await SharedPreferences
-//            .getInstance();
-//        prefs.setString('id', _authenticatedUser.id);
-//        prefs.setString('email', _authenticatedUser.email);
-//        prefs.setString('token', _authenticatedUser.token);
-//        prefs.setBool('suspended', _authenticatedUser.suspended);
-//        prefs.setBool('acceptedTerms', _authenticatedUser.acceptedTerms);
-//        prefs.setBool('hasTemporaryPassword', _authenticatedUser.hasTemporaryPassword);
-//        prefs.setString('organisation', _authenticatedUser.organisationName);
-//        prefs.setString('surname', _authenticatedUser.surname);
-//        prefs.setString('firstName', _authenticatedUser.firstName);
-//        prefs.setString('role', _authenticatedUser.role);
-//        prefs.setString('authenticationId', _authenticatedUser.authenticationId);
-//        prefs.setString('expiryTime', expiryTime.toIso8601String());
-//      }
-//    }
-//
-//    else if (responseData['error']['message'] == 'EMAIL_NOT_FOUND') {
-//      message = 'Email not found';
-//      //_authenticatedUser = User(id: '1234', email: email, password: password);
-//      //print('this is the email:' + currentUser.email);
-//
-//
-//    } else if (responseData['error']['message'] == 'INVALID_PASSWORD') {
-//      message = 'Incorrect password';
-//
-//    }
-//
-//    _isLoading = false;
-//    notifyListeners();
-//    print('ok so its here aswekk');
-//    print(message);
-//    return {'success': !hasError, 'message': message};
-////_authenticatedUser = User(id: '1234', email: email, password: password);
-////print('this is the email:' + currentUser.email);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//  }
-
-//  void autoLogin() async {
-//    print('entring auto login');
-//    final SharedPreferences prefs = await SharedPreferences.getInstance();
-//
-//    final String token = await prefs.get('token');
-//    final String expiryTimeString = prefs.get('expiryTime');
-//
-//    if (token != null) {
-//      final DateTime now = DateTime.now();
-//      print('this is the current time: ' + now.toIso8601String());
-//      final DateTime parsedExpiryTime = DateTime.parse(expiryTimeString);
-//      print('this is the expiry time: ' + parsedExpiryTime.toIso8601String());
-//
-//      if (parsedExpiryTime.isBefore(now)) {
-//        print('yes its passed its expiry timeeeee');
-//        _authenticatedUser = null;
-//        notifyListeners();
-//        return;
-//      }
-//      print('no it has not passed its expiry timeeeee');
-//      final String id = await prefs.get('id');
-//      final String email = await prefs.get('email');
-//      final bool suspended = await prefs.get('suspended');
-//      final bool acceptedTerms = await prefs.get('acceptedTerms');
-//      final bool hasTemporaryPassword = await prefs.get('hasTemporaryPassword');
-//      final String organisation = await prefs.get('organisation');
-//      final String surname = await prefs.get('surname');
-//      final String firstName = await prefs.get('firstName');
-//      final String role = await prefs.get('role');
-//      final String authenticationId = await prefs.get('authenticationId');
-//
-//
-//      final int tokenLifespan = parsedExpiryTime.difference(now).inSeconds;
-//      setAuthTimeout(tokenLifespan);
-//      print('this is the new lifespan:' + tokenLifespan.toString());
-//
-//      _authenticatedUser = _authenticatedUser = AuthenticatedUser(
-//          id: id,
-//          email: email,
-//          token: token,
-//          suspended: suspended,
-//          acceptedTerms: acceptedTerms,
-//          hasTemporaryPassword: hasTemporaryPassword,
-//          organisationId: 1,
-//          organisationName: organisation,
-//          surname: surname,
-//          firstName: firstName,
-//          role: role,
-//          authenticationId: authenticationId);
-//      _userSubject.add(true);
-//      notifyListeners();
-//    }
-//  }
-
-//  Future<Map<String, dynamic>> authenticate(String email, String password,
-//      [AuthMode mode = AuthMode.Login]) async {
-//    _isLoading = true;
-//    notifyListeners();
-//    final Map<String, dynamic> authData = {
-//      'email': email,
-//      'password': password,
-//      'returnSecureToken': true
-//    };
-//
-//    http.Response response;
-//
-//    if (mode == AuthMode.Login) {
-//      response = await http.post(
-//        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyDGEgZURSQc5zJEv0MbraTJjCY-Nom7MoA',
-//        body: json.encode(authData),
-//        headers: {'Content-Type': 'application/json'},
-//      );
-//      //else signUp
-//    } else {
-//      response = await http.post(
-//        'https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyDGEgZURSQc5zJEv0MbraTJjCY-Nom7MoA',
-//        body: json.encode(authData),
-//        headers: {'Content-Type': 'application/json'},
-//      );
-//    }
-//
-//    Map<String, dynamic> responseData = json.decode(response.body);
-//
-//    bool hasError = true;
-//    String message = 'Something went wrong!';
-//
-//    if (responseData.containsKey('idToken')) {
-//      hasError = false;
-//      message = 'authentication succeeded';
-//      _authenticatedUser = AuthenticatedUser(
-//          id: responseData['localId'],
-//          email: email,
-//          token: responseData['idToken']);
-//      setAuthTimeout(int.parse(responseData['expiresIn']));
-//      //this will trigger the listener in the main.dart for isAuthenticated
-//      _userSubject.add(true);
-//
-//      final DateTime now = DateTime.now();
-//      print('this is the time currently now' + now.toIso8601String());
-//
-//      final DateTime expiryTime =
-//      now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
-//      print('this is the expiry time at the point of logging in' +
-//          expiryTime.toIso8601String());
-//
-//      final SharedPreferences prefs = await SharedPreferences.getInstance();
-//      prefs.setString('token', responseData['idToken']);
-//      prefs.setString('userEmail', email);
-//      prefs.setString('userId', responseData['localId']);
-//      prefs.setString('expiryTime', expiryTime.toIso8601String());
-//    } else if (responseData['error']['message'] == 'EMAIL_NOT_FOUND') {
-//      message = 'Email not found';
-//    } else if (responseData['error']['message'] == 'INVALID_PASSWORD') {
-//      message = 'Incorrect password';
-//    } else if (responseData['error']['message'] == 'EMAIL_EXISTS') {
-//      message = 'This email already exists';
-//    }
-//    _isLoading = false;
-//    notifyListeners();
-//    return {'success': !hasError, 'message': message};
-//    //_authenticatedUser = User(id: '1234', email: email, password: password);
-//    //print('this is the email:' + currentUser.email);
-//  }
-
-//  void autoAuthenticate() async {
-//    print('entering auto authenticate');
-//    final SharedPreferences prefs = await SharedPreferences.getInstance();
-//
-//    final String token = await prefs.get('token');
-//    final String expiryTimeString = prefs.get('expiryTime');
-//
-//    if (token != null) {
-//      final DateTime now = DateTime.now();
-//      print('this is the current time: ' + now.toIso8601String());
-//      final DateTime parsedExpiryTime = DateTime.parse(expiryTimeString);
-//      print('this is the expiry time: ' + parsedExpiryTime.toIso8601String());
-//
-//      if (parsedExpiryTime.isBefore(now)) {
-//        print('yes its passed its expiry timeeeee');
-//        _authenticatedUser = null;
-//        notifyListeners();
-//        return;
-//      }
-//      print('no it has not passed its expiry timeeeee');
-//      final String userEmail = await prefs.get('userEmail');
-//      final String userId = await prefs.get('userId');
-//
-//      final int tokenLifespan = parsedExpiryTime.difference(now).inSeconds;
-//      setAuthTimeout(tokenLifespan);
-//      print('this is the new lifespan:' + tokenLifespan.toString());
-//
-//      _authenticatedUser = AuthenticatedUser(id: userId, email: userEmail, token: token);
-//      _userSubject.add(true);
-//      notifyListeners();
-//    }
-//  }
 
    void logout() async {
     print('logout happened');
     _selUserKey = null;
     _authenticatedUser = null;
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove('userId');
-    prefs.remove('firstName');
-    prefs.remove('lastName');
-    prefs.remove('username');
-    prefs.remove('password');
-    prefs.remove('suspended');
-    prefs.remove('organisationId');
-    prefs.remove('organisationName');
-    prefs.remove('session');
-    prefs.remove('deleted');
-    prefs.remove('isAdmin');
-    prefs.remove('termsAccepted');
-    prefs.remove('forcePasswordReset');
-    prefs.remove('darkMode');
-    prefs.remove('rememberMe');
-    prefs.remove('cookie');
-    prefs.remove('cookieExpiryTime');
+//    final SharedPreferences prefs = await SharedPreferences.getInstance();
+//    prefs.remove('userId');
+//    prefs.remove('firstName');
+//    prefs.remove('lastName');
+//    prefs.remove('username');
+//    prefs.remove('password');
+//    prefs.remove('suspended');
+//    prefs.remove('organisationId');
+//    prefs.remove('organisationName');
+//    prefs.remove('session');
+//    prefs.remove('deleted');
+//    prefs.remove('isAdmin');
+//    prefs.remove('termsAccepted');
+//    prefs.remove('forcePasswordReset');
+//    prefs.remove('darkMode');
+//    prefs.remove('rememberMe');
+//    prefs.remove('cookie');
+//    prefs.remove('cookieExpiryTime');
   }
 
   void setAuthTimeout(int time) {

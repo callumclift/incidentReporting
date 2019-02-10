@@ -96,7 +96,7 @@ class _SideDrawerState extends State<SideDrawer> {
 
 
 
-    model.uploadPendingIncidents(authenticatedUser).then((Map<String, dynamic> response){
+    model.uploadPendingIncidents1(authenticatedUser, context).then((Map<String, dynamic> response){
 
       if(response['success']){
         setState(() {
@@ -121,7 +121,6 @@ class _SideDrawerState extends State<SideDrawer> {
             textColor: Colors.black);
       }
 
-
     });
 
 
@@ -140,7 +139,7 @@ class _SideDrawerState extends State<SideDrawer> {
       return Drawer(
         child: Column(
           children: <Widget>[
-            AppBar(
+            AppBar(backgroundColor: orangeDesign1,
                 automaticallyImplyLeading: false,
                 title: LayoutBuilder(builder:
                     (BuildContext context, BoxConstraints constraints) {

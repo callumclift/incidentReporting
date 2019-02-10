@@ -8,6 +8,7 @@ class DropdownFormField extends StatefulWidget {
   final Function validator;
   final Function onSaved;
   final String initialValue;
+  final bool expanded;
 
   DropdownFormField({
     @required this.hint,
@@ -17,6 +18,7 @@ class DropdownFormField extends StatefulWidget {
     @required this.validator,
     @required this.initialValue,
     @required this.onSaved,
+    @required this.expanded
   });
 
   @override
@@ -41,8 +43,9 @@ class _DropdownFormField extends State<DropdownFormField> {
           isEmpty: widget.value == '' || widget.value == null,
           child: DropdownButtonHideUnderline(
             child: DropdownButton(
+              isExpanded: true,
               value: widget.value,
-              isDense: true,
+              isDense: widget.expanded ? false : true,
               onChanged: (dynamic newValue) {
                 state.didChange(newValue);
                 widget.onChanged(newValue);
@@ -50,7 +53,7 @@ class _DropdownFormField extends State<DropdownFormField> {
               items: widget.items.map((dynamic value) {
                 return DropdownMenuItem(
                   value: value,
-                  child: Text(value),
+                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[Container(child: Text(value))],),
                 );
               }).toList(),
             ),

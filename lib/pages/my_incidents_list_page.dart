@@ -7,8 +7,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import './view_my_incident_page.dart';
 import '../models/incident.dart';
+import '../models/authenticated_user.dart';
 import '../widgets/helpers/app_side_drawer.dart';
 import '../scoped_models/incidents_model.dart';
+import '../scoped_models/users_model.dart';
 import '../shared/global_config.dart';
 
 class MyIncidentsListPage extends StatefulWidget {
@@ -24,17 +26,21 @@ class MyIncidentsListPage extends StatefulWidget {
 }
 
 class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
+
+  AuthenticatedUser _authenticatedUser;
+
   @override
   initState() {
+
+    _authenticatedUser = ScopedModel.of<UsersModel>(context).authenticatedUser;
     getIncidents();
     //widget.model.fetchMyIncidents();
     super.initState();
   }
 
   getIncidents() async {
-    widget.model.getIncidents().then((Map<String, dynamic> success) {
+    widget.model.getIncidents(_authenticatedUser).then((Map<String, dynamic> success) {
       if (success['success'] != true ) {
-
         Fluttertoast.showToast(
             msg: success['message'],
             toastLength: Toast.LENGTH_SHORT,
@@ -42,9 +48,25 @@ class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
             gravity: ToastGravity.BOTTOM,
             backgroundColor: orangeDesign1,
             textColor: Colors.black);
-
-        print('uh ohhhhhh');
-        print(success['message']);
+      } else {
+        if(success['message'] == 'No incidents available' ){
+          Fluttertoast.showToast(
+              msg: success['message'],
+              toastLength: Toast.LENGTH_SHORT,
+              timeInSecForIos: 2,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: orangeDesign1,
+              textColor: Colors.black);
+        }
+        if(success['message'] == 'No data connection, unable to fetch latest Incidents'){
+          Fluttertoast.showToast(
+              msg: success['message'],
+              toastLength: Toast.LENGTH_SHORT,
+              timeInSecForIos: 2,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: orangeDesign1,
+              textColor: Colors.black);
+        }
       }
     });
   }
@@ -124,6 +146,7 @@ class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
           if (value == 'Delete') {
           } else if (value == 'View') {
             print('index is:' + index.toString());
+            print(model.allMyIncidents[index].id);
             model.selectMyIncident(model.allMyIncidents[index].incidentId);
             print('here is the selected incident');
             print(model.selectedMyIncident.incidentId);
@@ -157,7 +180,8 @@ class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
         List<Incident> incidents = model.allMyIncidents;
         return Scaffold(
             appBar: AppBar(
-              title: Text('Incidents'),
+              backgroundColor: orangeDesign1,
+              title: Text('Incidents', style: TextStyle(color: Colors.black),),
             ),
             drawer: SideDrawer(),
             body: _buildPageContent(model, incidents));

@@ -15,6 +15,7 @@ class AuthenticatedUser {
   final bool isSuperAdmin;
   final String termsAccepted;
   final bool forcePasswordReset;
+  bool darkMode;
 
   AuthenticatedUser(
       {@required this.userId,
@@ -30,5 +31,6 @@ class AuthenticatedUser {
       @required this.isClientAdmin,
       @required this.isSuperAdmin,
       @required this.termsAccepted,
-      @required this.forcePasswordReset});
+      @required this.forcePasswordReset,
+      this.darkMode});
 }

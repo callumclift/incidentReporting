@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../scoped_models/users_model.dart';
+import '../shared/global_config.dart';
 import '../widgets/helpers/app_side_drawer.dart';
 import '../utils/database_helper.dart';
 import '../shared/global_functions.dart';
@@ -42,6 +43,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               children: <Widget>[
                 _enableDarkMode(_model),
+                _getElrs(_model),
               ],
             ),
           ),
@@ -55,10 +57,11 @@ class _SettingsPageState extends State<SettingsPage> {
     bool _darkMode = widget.preferences.getBool('darkMode') == null? false : widget.preferences.getBool('darkMode');
 
     return CheckboxListTile(
-        activeColor: Colors.grey,
+        activeColor: model.authenticatedUser.darkMode? orangeDesign1 : Colors.grey,
         title: Text('Enable Dark Mode'),
         value: _darkMode,
         onChanged: (bool value) => setState(() {
+              model.authenticatedUser.darkMode = value;
               DatabaseHelper databaseHelper = DatabaseHelper();
 
               databaseHelper.database.then((Database database) {
@@ -71,7 +74,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     widget.preferences.setBool('darkMode', value);
                     _darkMode = value;
                     setState(() {
-                      GlobalFunctions.toggleDarkMode(context);
+
+                      if(_darkMode){
+                        GlobalFunctions.setDarkMode(context);
+                      } else {
+                        GlobalFunctions.setLightMode(context);
+                      }
                     });
 
                   } else {
@@ -94,12 +102,32 @@ class _SettingsPageState extends State<SettingsPage> {
             }));
   }
 
+  Widget _getElrs(UsersModel model) {
+
+    return ListTile(leading: Text('Resync ELRs', style: TextStyle(fontSize: 16.0),), trailing: IconButton(icon: Icon(Icons.refresh), color: orangeDesign1, onPressed: () {
+
+      GlobalFunctions.showLoadingDialog(context, 'Fetching ELR data');
+      model.updateElrs().then((Map<String, dynamic> result){
+        if(result['success']){
+          Navigator.of(context).pop();
+          GlobalFunctions.showToast('ELR data is now up to date');
+        } else {
+          Navigator.of(context).pop();
+          GlobalFunctions.showToast(result['message']);
+        }
+
+      });
+
+
+    }),);
+  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-      appBar: AppBar(backgroundColor: Color.fromARGB(255, 255, 147, 94),
-        title: Text('Settings'),
+      appBar: AppBar(backgroundColor: Color.fromARGB(255, 255, 147, 94,),iconTheme: IconThemeData(color: Colors.black),
+        title: Text('Settings', style: TextStyle(color: Colors.black, fontFamily: 'OpenSans'),),
       ),
       drawer: SideDrawer(),
       body: _buildPageContent(),
