@@ -275,10 +275,22 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 //      if(incident['type'] == null && incident['anonymous'] != 1 && incident['incident_date'] == null && incident['location_drop']){}
 
           if(incident['type'] != null){
-            setState(() {
-              _incidentValue = incident['type'];
 
-            });
+            //check to see if that incident type still exists as maybe it has been changed on the server
+
+            bool exists = _incidentDrop.contains(incident['type']);
+
+            if(exists){
+              setState(() {
+                _incidentValue = incident['type'];
+
+              });
+
+            } else {
+              _incidentValue = 'Incident';
+            }
+
+
           }
           print('here is anonymous');
           print(incident['anonymous']);
@@ -384,30 +396,46 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
           if(incident['images'] != null){
             _temporaryPaths = jsonDecode(incident['images']);
           }
-          if(incident['custom_fields'] != null){
+          if(incident['custom_fields'] != null) {
             List<dynamic> customFields = jsonDecode(incident['custom_fields']);
 
-            _customFieldCount = customFields.length;
+            if (_incidentValue != 'Incident'){
 
-            if(_customFieldCount >= 1){
+              _customFieldCount = customFields.length;
 
+            if (_customFieldCount >= 1) {
               _customLabel1 = customFields[0]['label'];
               _customPlaceholder1 = customFields[0]['placeholder'];
-              _customField1Controller.text = incident['custom_value1'] == null || incident['custom_value1'] == 'null' ? '' : incident['custom_value1'];
-
+              _customField1Controller.text =
+              incident['custom_value1'] == null ||
+                  incident['custom_value1'] == 'null'
+                  ? ''
+                  : incident['custom_value1'];
             }
-            if (_customFieldCount >= 2){
-
+            if (_customFieldCount >= 2) {
               _customLabel2 = customFields[1]['label'];
               _customPlaceholder2 = customFields[1]['placeholder'];
-              _customField2Controller.text = incident['custom_value2'] == null || incident['custom_value2'] == 'null' ? '' : incident['custom_value2'];
-
+              _customField2Controller.text =
+              incident['custom_value2'] == null ||
+                  incident['custom_value2'] == 'null'
+                  ? ''
+                  : incident['custom_value2'];
             }
-            if (_customFieldCount >= 3){
-
+            if (_customFieldCount >= 3) {
               _customLabel3 = customFields[2]['label'];
               _customPlaceholder3 = customFields[2]['placeholder'];
-              _customField3Controller.text = incident['custom_value3'] == null || incident['custom_value3'] == 'null' ? '' : incident['custom_value3'];
+              _customField3Controller.text =
+              incident['custom_value3'] == null ||
+                  incident['custom_value3'] == 'null'
+                  ? ''
+                  : incident['custom_value3'];
+            }
+          } else {
+              _customFieldCount = 0;
+              _incidentsModel.updateTemporaryIncidentField('custom_fields', null, _usersModel.authenticatedUser.userId);
+              _incidentsModel.updateTemporaryIncidentField('custom_value1', null, _usersModel.authenticatedUser.userId);
+              _incidentsModel.updateTemporaryIncidentField('custom_value2', null, _usersModel.authenticatedUser.userId);
+              _incidentsModel.updateTemporaryIncidentField('custom_value3', null, _usersModel.authenticatedUser.userId);
 
             }
           }
@@ -1496,6 +1524,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     _pickInProgress = true;
     Navigator.pop(context);
     var image = await ImagePicker.pickImage(source: source, maxWidth: 800.0);
+    print('after taking');
 
     if (image != null) {
       bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
@@ -1586,10 +1615,10 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     double height;
 
     if(MediaQuery.of(context).orientation == Orientation.portrait){
-      height = image == null? _deviceHeight * 0.15 : _deviceHeight * 0.22;
+      height = image == null? _deviceHeight * 0.3 : _deviceHeight * 0.37;
 
     } else {
-      height = image == null? _deviceHeight * 0.30 : _deviceHeight * 0.44;
+      height = image == null? _deviceHeight * 0.4 : _deviceHeight * 0.56;
     }
 
     return height;
@@ -1598,7 +1627,46 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
   void _openImagePicker(BuildContext context, int index) {
 
-    showModalBottomSheet(
+    bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
+
+    if(isAndroid){
+
+      Permission.requestPermissions([PermissionName.Camera, PermissionName.Storage]);
+    } else {
+      print('its ios');
+      //Permission.requestSinglePermission(PermissionName.Camera);
+    }
+
+    _showBottomSheet(index);
+
+
+
+//    Permission.getPermissionsStatus([PermissionName.Camera]).then((
+//        List<Permissions> status) {
+//      print(status[0].permissionStatus);
+//      if (status[0] == Permissions(PermissionName.Camera, PermissionStatus.notDecided) ||
+//          status[0] == Permissions(PermissionName.Camera, PermissionStatus.deny)) {
+//        Permission.requestPermissions([PermissionName.Camera]).then((
+//            List<Permissions> status) {
+//          if (status[0] == Permissions(PermissionName.Camera, PermissionStatus.allow)) {
+//
+//            _showBottomSheet(index);
+//
+//          }
+//        });
+//      } else {
+//        print(status[0].permissionStatus);
+//
+//        _showBottomSheet(index);
+//
+//
+//      }
+//    });
+
+  }
+
+  Future<Widget> _showBottomSheet(int index) async{
+    return showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
           return Container(
@@ -1623,11 +1691,12 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                 ? sheetHeight * 0.425
                                 : sheetHeight * 0.283,
                             child: FlatButton(
-                              textColor: Theme.of(context).primaryColor,
+                              textColor: Theme
+                                  .of(context)
+                                  .primaryColor,
                               onPressed: () {
                                 setState(() {
                                   _disableScreen = true;
-
                                 });
                                 _pickPhoto(ImageSource.camera, index);
                               },
@@ -1638,7 +1707,9 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                 ? sheetHeight * 0.425
                                 : sheetHeight * 0.283,
                             child: FlatButton(
-                              textColor: Theme.of(context).primaryColor,
+                              textColor: Theme
+                                  .of(context)
+                                  .primaryColor,
                               onPressed: () {
                                 setState(() {
                                   _disableScreen = true;
@@ -1652,7 +1723,9 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                             : Container(
                             height: sheetHeight * 0.283,
                             child: FlatButton(
-                              textColor: Theme.of(context).primaryColor,
+                              textColor: Theme
+                                  .of(context)
+                                  .primaryColor,
                               onPressed: () {
                                 setState(() {
                                   print('this is the start');

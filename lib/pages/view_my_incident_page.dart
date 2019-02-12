@@ -31,7 +31,6 @@ class ViewMyIncidentPage extends StatefulWidget {
 }
 
 class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
-  String imageMessage = '';
   bool refreshIcon = false;
   GoogleMapController _mapController;
   String _location = '';
@@ -62,8 +61,9 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
       refreshIcon = false;
 
       if (!map['success']) {
+        print('its in map not success');
+
         if (map['message'] == 'No data connection, please try again later') {
-          imageMessage = 'Unable to Load Images, pull down to refresh';
           refreshIcon = true;
 
           Fluttertoast.showToast(
@@ -76,7 +76,8 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
         }
       } else if (map['success'] &&
           map['message'] == 'There are no images attached to this incident') {
-        imageMessage = map['message'];
+        print('this is where it should be');
+
       }
     });
   }

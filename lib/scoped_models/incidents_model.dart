@@ -967,6 +967,7 @@ class IncidentsModel extends Model {
             print(localImages);
 
             if(localImages.length > 0){
+              print('its in here');
 
               for(String localImage in localImages){
 
@@ -976,14 +977,20 @@ class IncidentsModel extends Model {
                 _imagesList.add(bytes);
               }
 
+              if(_imagesList.length > 0){
+                selectedMyIncident.images = _imagesList;
+                success = true;
+              }
+
+            } else {
+              print('its in here where it should be');
+              message = 'There are no images attached to this incident';
+              selectedMyIncident.images = _imagesList;
+              success = true;
             }
 
-        if(_imagesList.length > 0){
-          selectedMyIncident.images = _imagesList;
-          success = true;
-        }
-
-      } else if (connectivityResult == ConnectivityResult.none) {
+      }
+      else if (connectivityResult == ConnectivityResult.none) {
         print('no connection');
 
           message = 'No data connection, please try again later';

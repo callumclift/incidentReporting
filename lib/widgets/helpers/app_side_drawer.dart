@@ -153,54 +153,48 @@ class _SideDrawerState extends State<SideDrawer> {
                     width: drawerWidth,
                   );
                 })),
-            ListTile(
-              leading: Icon(Icons.create),
-              title: Text('Raise Incident'),
-              onTap: () =>
-                  Navigator.of(context).pushReplacementNamed('/raiseIncident'),
-            ),
-            Divider(),
-            _buildUserAdmin(context, model.authenticatedUser),
-            _extraDivider ? Divider() : new Container(),
-            _buildIncidentAdmin(context, model.authenticatedUser),
-            _extraDivider ? Divider() : new Container(),
-            ListTile(
-              leading: Icon(Icons.description),
-              title: Text('My Incidents'),
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/myIncidents');
-              },
-            ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/settings');
-              },
-            ),
-            Divider(),
-            LogoutListTile(),
-            Expanded(
-              child: new Align(
-                alignment: FractionalOffset.bottomRight,
-                child: _pendingItems
-                    ? Container(
-                    padding: EdgeInsets.all(20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: <Widget>[
-                        Text('Upload Incidents'),
-                        IconButton(
-                          color: orangeDesign1,
-                          icon: Icon(Icons.file_upload),
-                          onPressed: () => _uploadPendingIncidents(_incidentsModel, model.authenticatedUser),
-                        )
-                      ],
-                    ))
-                    : Container(),
+            Expanded(child: ListView(padding: EdgeInsets.symmetric(vertical: 0.0), children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.create),
+                title: Text('Raise Incident'),
+                onTap: () =>
+                    Navigator.of(context).pushReplacementNamed('/raiseIncident'),
               ),
-            ),
+              Divider(),
+              _buildUserAdmin(context, model.authenticatedUser),
+              _extraDivider ? Divider() : new Container(),
+              _buildIncidentAdmin(context, model.authenticatedUser),
+              _extraDivider ? Divider() : new Container(),
+              ListTile(
+                leading: Icon(Icons.description),
+                title: Text('My Incidents'),
+                onTap: () {
+                  Navigator.pushReplacementNamed(context, '/myIncidents');
+                },
+              ),
+              Divider(),
+              ListTile(
+                leading: Icon(Icons.settings),
+                title: Text('Settings'),
+                onTap: () {
+                  Navigator.pushReplacementNamed(context, '/settings');
+                },
+              ),
+              _pendingItems ? Column(children: <Widget>[
+                Divider(),
+                ListTile(
+                  leading: Icon(Icons.file_upload, color: orangeDesign1,),
+                  title: Text('Upload Incidents'),
+                  onTap: () => _uploadPendingIncidents(_incidentsModel, model.authenticatedUser),
+
+                ),
+              ],) : Container(),
+              Divider(),
+              LogoutListTile(),
+
+            ],)),
+
+
           ],
         ),
       );

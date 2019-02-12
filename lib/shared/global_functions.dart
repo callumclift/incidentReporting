@@ -9,7 +9,6 @@ import 'package:connectivity/connectivity.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:location/location.dart' as geoLocation;
 import 'package:dynamic_theme/dynamic_theme.dart';
-import 'package:map_view/map_view.dart';
 import 'package:random_string/random_string.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +19,7 @@ import 'package:encrypt/encrypt.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 import '../shared/global_config.dart';
+import '../widgets/helpers/static_map_provider.dart';
 
 class GlobalFunctions {
   static Future<Map<String, dynamic>> apiRequest(
@@ -275,11 +275,11 @@ class GlobalFunctions {
 
       final StaticMapProvider staticMapViewProvider = StaticMapProvider(apiKey);
       staticMapUri = staticMapViewProvider.getStaticUriWithMarkers(
-          [Marker('position', 'Position', latitude, longitude)],
-          center: Location(latitude, longitude),
+          latitude: latitude,
+          longitude: longitude,
           width: 500,
           height: 300,
-          maptype: StaticMapViewType.roadmap);
+          );
       success = true;
     } catch (error) {
       print(error);
