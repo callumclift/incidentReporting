@@ -4,27 +4,15 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:random_string/random_string.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server/gmail.dart';
-import 'package:mailer/smtp_server/hotmail.dart';
-import 'package:http/http.dart' as http;
-import 'package:mime/mime.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:connectivity/connectivity.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../models/authenticated_user.dart';
 import '../models/incident.dart';
 import '../models/incident_type.dart';
-import '../models/location_data.dart';
 import '../utils/database_helper.dart';
 import '../shared/global_config.dart';
 import '../shared/global_functions.dart';
@@ -1351,8 +1339,6 @@ class IncidentsModel extends Model {
 
     try {
       List<Map<String, dynamic>> base64Images = [];
-      List<String> encryptedBase64Images = [];
-      var encodedEncryptedImages;
       var encodedImages;
       var connectivityResult = await (new Connectivity().checkConnectivity());
 
@@ -1907,174 +1893,93 @@ class IncidentsModel extends Model {
     return {'success': success, 'message': message};
   }
 
-  Future<Map<String, dynamic>> addIncident(AuthenticatedUser authenticatedUser,
-      String incidentType,
-      String reporterFirstName,
-      String reporterLastName,
-      String dateTime,
-      LocationData locationData,
-      String projectName,
-      String route,
-      String elr,
-      double mileage,
-      String summary,
-      List<File> images) async {
-    _isLoading = true;
-    notifyListeners();
 
-    String message = 'Something went wrong!';
-    bool hasError = true;
-
-    try {
-      print('ok its in the try');
-      List<Map<String, dynamic>> uploadData =
-      await uploadImages(authenticatedUser, images);
-
-      print('upload data inside add product');
-      print(uploadData);
-
-      //because we return null in all error cases
-
-      uploadData.forEach((upload) {
-        if (upload == null) {
-          print('Upload Failed');
-        }
-      });
-
-      List<String> imagePaths = [];
-      List<String> imageUrls = [];
-
-      uploadData.forEach((upload) {
-        imagePaths.add(upload['imagePath']);
-        imageUrls.add(upload['imageUrl']);
-      });
-
-      print('the image paths inside the addproduct1');
-      print(imagePaths);
-
-      final Map<String, dynamic> incidentData = {
-        'incidentType': incidentType,
-        'reporterFirstName': reporterFirstName,
-        'reporterLastName': reporterLastName,
-        'dateTime': dateTime,
-        'loc_lat': locationData.latitude,
-        'loc_lng': locationData.longitude,
-        'projectName': projectName,
-        'route': route,
-        'elr': elr,
-        'mileage': mileage,
-        'summary': summary,
-        'imagePaths': imagePaths,
-        'imageUrls': imageUrls,
-        'organisation': authenticatedUser.organisationName,
-        'reporterEmail': authenticatedUser.email,
-        'voided': false
-      };
-
-      final http.Response response = await http.post(
-          'https://incident-reporting-a5394.firebaseio.com/incidents.json?auth=${authenticatedUser
-              .token}',
-          body: json.encode(incidentData));
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        hasError = false;
-        message = 'Incident has been successfully uploaded';
-      }
-    } catch (error) {
-      print(error);
-    }
-
-    _isLoading = false;
-    notifyListeners();
-    return {'success': !hasError, 'message': message};
-  }
-
-  Future<Map<String, dynamic>> addIncidentType(String name,
-      String customField1,
-      String customField2,
-      String customField3,
-      int organisationId,
-      String organisationName) async {
-    _isLoading = true;
-    notifyListeners();
-
-    String message = 'Something went wrong!';
-    bool success = true;
-
-    //create an instance of the database class
-
-    DatabaseHelper databaseHelper = DatabaseHelper();
-
-    int count = await databaseHelper.getCount();
-    int id;
-
-    if (count == 0) {
-      id = 1;
-    } else {
-      id = count + 1;
-    }
-
-    Map<String, dynamic> incidentTypeData = new Map<String, dynamic>();
-    Map<String, dynamic> localIncidentTypeData = new Map<String, dynamic>();
-
-    incidentTypeData = {
-      'name': name,
-      'customField1': customField1,
-      'customField2': customField2,
-      'customField3': customField3,
-      'organisationId': organisationId,
-      'organisationName': organisationName,
-    };
-
-    localIncidentTypeData = {
-      'name': name,
-      'customField1': customField1,
-      'customField2': customField2,
-      'customField3': customField3,
-      'organisationId': organisationId,
-      'organisationName': GlobalFunctions.encryptString(organisationName)
-    };
-
-    try {
-      //Make the POST request to the server
-      Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
-          serverUrl + 'addIncidentType', incidentTypeData);
-
-      if (serverResponse != null) {
-        if (serverResponse['error'] != null &&
-            serverResponse['error'] == 'incorrect_details') {
-          message = 'Incorrect username or password given';
-        } else if (serverResponse['error'] != null &&
-            serverResponse['error'] == 'terms_not_accepted') {
-          message =
-          'You need to accept the terms & conditions before using this app';
-        } else if (serverResponse['error'] != null &&
-            serverResponse['error'] == 'change_password') {
-          message = 'You are required to change your password';
-        } else if (serverResponse['response']['session'] != null) {
-          success = true;
-        } else {
-          message = 'no valid session found';
-        }
-
-        print(serverResponse);
-      }
-
-      int result = await databaseHelper.addIncident(incidentData);
-
-      if (result != 0) {
-        print('Incident has successfully been added to local database');
-        success = false;
-        message = 'Incident has been successfully uploaded';
-      }
-    } catch (error) {
-      print(error);
-    }
-
-    _isLoading = false;
-    notifyListeners();
-    return {'success': success, 'message': message};
-  }
+//  Future<Map<String, dynamic>> addIncidentType(String name,
+//      String customField1,
+//      String customField2,
+//      String customField3,
+//      int organisationId,
+//      String organisationName) async {
+//    _isLoading = true;
+//    notifyListeners();
+//
+//    String message = 'Something went wrong!';
+//    bool success = true;
+//
+//    //create an instance of the database class
+//
+//    DatabaseHelper databaseHelper = DatabaseHelper();
+//
+//    int count = await databaseHelper.getCount();
+//    int id;
+//
+//    if (count == 0) {
+//      id = 1;
+//    } else {
+//      id = count + 1;
+//    }
+//
+//    Map<String, dynamic> incidentTypeData = new Map<String, dynamic>();
+//    Map<String, dynamic> localIncidentTypeData = new Map<String, dynamic>();
+//
+//    incidentTypeData = {
+//      'name': name,
+//      'customField1': customField1,
+//      'customField2': customField2,
+//      'customField3': customField3,
+//      'organisationId': organisationId,
+//      'organisationName': organisationName,
+//    };
+//
+//    localIncidentTypeData = {
+//      'name': name,
+//      'customField1': customField1,
+//      'customField2': customField2,
+//      'customField3': customField3,
+//      'organisationId': organisationId,
+//      'organisationName': GlobalFunctions.encryptString(organisationName)
+//    };
+//
+//    try {
+//      //Make the POST request to the server
+//      Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
+//          serverUrl + 'addIncidentType', incidentTypeData);
+//
+//      if (serverResponse != null) {
+//        if (serverResponse['error'] != null &&
+//            serverResponse['error'] == 'incorrect_details') {
+//          message = 'Incorrect username or password given';
+//        } else if (serverResponse['error'] != null &&
+//            serverResponse['error'] == 'terms_not_accepted') {
+//          message =
+//          'You need to accept the terms & conditions before using this app';
+//        } else if (serverResponse['error'] != null &&
+//            serverResponse['error'] == 'change_password') {
+//          message = 'You are required to change your password';
+//        } else if (serverResponse['response']['session'] != null) {
+//          success = true;
+//        } else {
+//          message = 'no valid session found';
+//        }
+//
+//        print(serverResponse);
+//      }
+//
+//      int result = await databaseHelper.addIncident(incidentData);
+//
+//      if (result != 0) {
+//        print('Incident has successfully been added to local database');
+//        success = false;
+//        message = 'Incident has been successfully uploaded';
+//      }
+//    } catch (error) {
+//      print(error);
+//    }
+//
+//    _isLoading = false;
+//    notifyListeners();
+//    return {'success': success, 'message': message};
+//  }
 
   Future<int> checkPendingIncidents(AuthenticatedUser authenticatedUser) async {
     DatabaseHelper databaseHelper = DatabaseHelper();
