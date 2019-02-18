@@ -15,7 +15,9 @@ MERGED from [:firebase_database] /Users/callumclift/StudioProjects/ontrac_incide
 MERGED from [:cloud_functions] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/cloud_functions/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:google_maps_flutter] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/google_maps_flutter/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:shared_preferences] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/shared_preferences/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
+MERGED from [:device_info] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/device_info/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:firebase_core] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_core/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
+MERGED from [:camera] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/camera/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-10:12
 MERGED from [:flutter_exif_rotation] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/flutter_exif_rotation/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:fluttertoast] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/fluttertoast/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
 MERGED from [:sqflite] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/sqflite/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:2:1-7:12
@@ -251,8 +253,12 @@ MERGED from [:google_maps_flutter] /Users/callumclift/StudioProjects/ontrac_inci
 MERGED from [:google_maps_flutter] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/google_maps_flutter/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:shared_preferences] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/shared_preferences/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:shared_preferences] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/shared_preferences/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:device_info] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/device_info/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:device_info] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/device_info/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:firebase_core] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_core/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:firebase_core] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/firebase_core/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:camera] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/camera/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
+MERGED from [:camera] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/camera/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:flutter_exif_rotation] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/flutter_exif_rotation/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:flutter_exif_rotation] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/flutter_exif_rotation/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
 MERGED from [:fluttertoast] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/fluttertoast/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:5:5-44
@@ -357,6 +363,8 @@ INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/androi
 		INJECTED from /Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/AndroidManifest.xml
 uses-permission#android.permission.CAMERA
 ADDED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:9:5-65
+MERGED from [:camera] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/camera/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-65
+MERGED from [:camera] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/camera/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:7:5-65
 	android:name
 		ADDED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:9:22-62
 provider#io.flutter.plugins.imagepicker.ImagePickerFileProvider
@@ -375,6 +383,10 @@ ADDED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_rep
 		ADDED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:19:17-72
 	android:name
 		ADDED from [:image_picker] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/image_picker/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:18:17-67
+uses-permission#android.permission.RECORD_AUDIO
+ADDED from [:camera] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/camera/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:8:5-71
+	android:name
+		ADDED from [:camera] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/camera/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:8:22-68
 activity#io.flutter.plugins.urllauncher.UrlLauncherPlugin$WebViewActivity
 ADDED from [:url_launcher] /Users/callumclift/StudioProjects/ontrac_incident_reporting/build/url_launcher/intermediates/merged_manifests/debug/processDebugManifest/merged/AndroidManifest.xml:8:9-11:74
 	android:exported

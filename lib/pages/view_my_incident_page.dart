@@ -16,7 +16,6 @@ import '../widgets/ui_elements/adaptive_progress_indicator.dart';
 import '../widgets/form_inputs/locate_user.dart';
 import '../scoped_models/incidents_model.dart';
 import '../scoped_models/users_model.dart';
-import '../pages/test_maps.dart';
 
 class ViewMyIncidentPage extends StatefulWidget {
   final IncidentsModel model;
@@ -109,7 +108,7 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
 
   Widget _buildPageContent(BuildContext context, IncidentsModel model) {
     final double deviceWidth = MediaQuery.of(context).size.width;
-    final double targetWidth = deviceWidth > 768.0 ? 500.0 : deviceWidth * 0.95;
+    final double targetWidth = deviceWidth > 800.0 ? 500.0 : deviceWidth * 0.95;
     final double targetPadding = deviceWidth - targetWidth;
 
     print('building page content');

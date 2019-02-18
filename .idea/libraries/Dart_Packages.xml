@@ -37,6 +37,13 @@
             </list>
           </value>
         </entry>
+        <entry key="camera">
+          <value>
+            <list>
+              <option value="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/camera-0.2.9+1/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="charcode">
           <value>
             <list>
@@ -97,6 +104,13 @@
           <value>
             <list>
               <option value="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/datetime_picker_formfield-0.1.7/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="device_info">
+          <value>
+            <list>
+              <option value="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/device_info-0.3.0/lib" />
             </list>
           </value>
         </entry>
@@ -451,6 +465,7 @@
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/args-1.5.1/lib" />
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/async-2.0.8/lib" />
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/boolean_selector-1.0.4/lib" />
+      <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/camera-0.2.9+1/lib" />
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/charcode-1.1.2/lib" />
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/cloud_functions-0.0.5/lib" />
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/collection-1.14.11/lib" />
@@ -460,6 +475,7 @@
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/cupertino_icons-0.1.2/lib" />
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/dart2_constant-1.0.2+dart2/lib" />
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/datetime_picker_formfield-0.1.7/lib" />
+      <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/device_info-0.3.0/lib" />
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/dynamic_theme-1.0.0/lib" />
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/encrypt-1.0.0+1/lib" />
       <root url="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-0.6.6/lib" />

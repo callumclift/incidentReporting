@@ -25,6 +25,8 @@ dependencies:
   rxdart: ^0.18.1
   location: ^1.4.1
   image_picker: ^0.4.12+1
+  camera: ^0.2.9+1
+  device_info: ^0.3.0
   mime: ^0.9.6+2
   url_launcher: ^3.0.3
   random_string: ^0.0.2

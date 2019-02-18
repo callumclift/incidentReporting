@@ -150,11 +150,60 @@ class _LoginPageState extends State<LoginPage> with AfterLayoutMixin<LoginPage> 
     }
   }
 
+
+  Widget _buildLoadingLogin(UsersModel model){
+
+    Widget returnedWidget;
+
+    if(model.isLoading) {
+
+      if(model.loadingElrs){
+
+        returnedWidget = Column(children: <Widget>[
+          CircularProgressIndicator(
+            valueColor:
+            new AlwaysStoppedAnimation<Color>(
+                orangeDesign1),
+          ),
+          SizedBox(height: 10.0,),
+          Text('Syncing ELR data, please wait...'),
+          SizedBox(height: 10.0,)
+
+        ],);
+
+      } else {
+        returnedWidget = Column(children: <Widget>[
+          CircularProgressIndicator(
+            valueColor:
+            new AlwaysStoppedAnimation<Color>(
+                orangeDesign1),
+          ),
+          SizedBox(height: 10.0,)
+
+        ],);
+      }
+
+
+
+
+
+
+    } else {
+      returnedWidget= RaisedButton(color: orangeDesign1,
+        textColor: Colors.white,
+        onPressed: () => _submitForm(model),
+        child: Text('Login'),
+      );
+    }
+
+    return returnedWidget;
+  }
+
   @override
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double deviceHeight = MediaQuery.of(context).size.height;
-    final double targetWidth = deviceWidth > 768.0 ? deviceWidth * 0.5 : deviceWidth * 0.9;
+    final double targetWidth = deviceWidth > 800.0 ? deviceWidth * 0.5 : deviceWidth * 0.9;
     final double targetHeight = deviceHeight * 0.4;
     print('[AuthPage] - build page');
     print(_rememberMe);
@@ -207,17 +256,7 @@ class _LoginPageState extends State<LoginPage> with AfterLayoutMixin<LoginPage> 
                               Widget child,
                               UsersModel model,
                             ) {
-                              return model.isLoading
-                                  ? CircularProgressIndicator(
-                                      valueColor:
-                                          new AlwaysStoppedAnimation<Color>(
-                                              orangeDesign1),
-                                    )
-                                  : RaisedButton(color: orangeDesign1,
-                                      textColor: Colors.white,
-                                      onPressed: () => _submitForm(model),
-                                      child: Text('Login'),
-                                    );
+                              return _buildLoadingLogin(model);
                             }),
 //                            RaisedButton(onPressed: _handleSignIn),
                           ],

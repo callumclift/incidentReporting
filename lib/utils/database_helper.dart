@@ -117,6 +117,10 @@ class DatabaseHelper {
   String elrStartMiles = 'start_miles';
   String elrEndMiles = 'end_miles';
 
+  //Image Path Table
+  String imagePathTable = 'image_path_table';
+  String imagePath = 'image_path';
+
 
 
   //Named constructor to create instance of DatabaseHelper
@@ -182,6 +186,9 @@ class DatabaseHelper {
 
     await db.execute(
         'CREATE TABLE $elrsTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $regionCode VARCHAR(20) default NULL, $elr VARCHAR(20) default NULL, $elrDescription VARCHAR(255) default NULL, $elrStartMiles VARCHAR(20) default NULL, $elrEndMiles VARCHAR(20) default NULL)');
+
+    await db.execute(
+        'CREATE TABLE $imagePathTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $imagePath VARCHAR(255) default NULL)');
     
     await db.rawInsert("INSERT INTO $routesTable ($routeName, $routeCode) VALUES "
         "('Anglia', 'QT'),"
@@ -219,6 +226,14 @@ class DatabaseHelper {
     Database db = await this.database;
 
     var result = await db.insert(temporaryIncidentsTable, incidentData);
+
+    return result;
+  }
+
+  Future<int> addImagePath(Map<String, dynamic> imagePathData) async {
+    Database db = await this.database;
+
+    var result = await db.insert(imagePathTable, imagePathData);
 
     return result;
   }
@@ -292,6 +307,14 @@ class DatabaseHelper {
     return result;
   }
 
+  Future<int> getImagePathCount() async {
+    Database db = await this.database;
+    List<Map<String, dynamic>> x =
+    await db.rawQuery('SELECT COUNT (*) from $imagePathTable');
+    int result = Sqflite.firstIntValue(x);
+    return result;
+  }
+
   //Insert Operation: Insert an incident object to the database
   Future<int> addUser(Map<String, dynamic> incidentData) async {
     Database db = await this.database;
@@ -330,6 +353,7 @@ class DatabaseHelper {
     Database db = await this.database;
 
     var result = await db.insert(elrsTable, elrData);
+    //db.close();
 
     return result;
   }
@@ -483,15 +507,16 @@ class DatabaseHelper {
     Database db = await this.database;
 
     var result = await db
-        .rawQuery('SELECT * FROM $incidentsTable WHERE $incidentServerUploaded = 1 AND $incidentUserId = $userId');
+        .rawQuery('SELECT * FROM $incidentsTable WHERE $incidentServerUploaded = 1 AND $incidentUserId = $userId ORDER BY $incidentId DESC');
     return result;
   }
+
 
   Future<List<Map<String, dynamic>>> getIncidentsSuperAdmin() async {
     Database db = await this.database;
 
     var result = await db
-        .rawQuery('SELECT * FROM $incidentsTable WHERE $incidentServerUploaded = 1');
+        .rawQuery('SELECT * FROM $incidentsTable WHERE $incidentServerUploaded = 1 ORDER BY $incidentId DESC');
     return result;
   }
 
@@ -499,7 +524,7 @@ class DatabaseHelper {
     Database db = await this.database;
 
     var result = await db
-        .rawQuery('SELECT * FROM $incidentsTable WHERE $incidentServerUploaded = 1 AND $incidentOrganisationId = $organisationId');
+        .rawQuery('SELECT * FROM $incidentsTable WHERE $incidentServerUploaded = 1 AND $incidentOrganisationId = $organisationId ORDER BY $incidentId DESC');
     return result;
   }
 
@@ -542,6 +567,20 @@ class DatabaseHelper {
     var result = await db
         .rawQuery("SELECT * FROM $elrsTable WHERE $regionCode = '$region'");
     return result;
+  }
+
+  Future<String> getImagePath() async {
+    Database db = await this.database;
+    String imagePath;
+
+    var result = await db
+        .rawQuery('SELECT * FROM $imagePathTable');
+
+    if(result != null){
+      imagePath = result[0]['image_path'];
+    }
+
+    return imagePath;
   }
 
 

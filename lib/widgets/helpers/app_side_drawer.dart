@@ -47,45 +47,45 @@ class _SideDrawerState extends State<SideDrawer> {
   }
 
 
-  Widget _buildUserAdmin(BuildContext context, AuthenticatedUser user) {
-    Widget returnedWidget;
-
-    if (user == null) {
-      returnedWidget = new Container();
-    } else if (user.isClientAdmin || user.isSuperAdmin) {
-      returnedWidget = ListTile(
-        leading: Icon(Icons.people),
-        title: Text('Add Users'),
-        onTap: () {
-          Navigator.pushReplacementNamed(context, '/usersAdmin');
-        },
-      );
-      _extraDivider = true;
-    } else {
-      returnedWidget = new Container();
-    }
-    return returnedWidget;
-  }
-
-  Widget _buildIncidentAdmin(BuildContext context, AuthenticatedUser user) {
-    Widget returnedWidget;
-
-    if (user == null) {
-      returnedWidget = new Container();
-    } else if (user.isClientAdmin || user.isSuperAdmin) {
-      returnedWidget = ListTile(
-        leading: Icon(Icons.insert_drive_file),
-        title: Text('Incident Types'),
-        onTap: () {
-          Navigator.pushReplacementNamed(context, '/incidentTypes');
-        },
-      );
-      _extraDivider = true;
-    } else {
-      returnedWidget = new Container();
-    }
-    return returnedWidget;
-  }
+//  Widget _buildUserAdmin(BuildContext context, AuthenticatedUser user) {
+//    Widget returnedWidget;
+//
+//    if (user == null) {
+//      returnedWidget = new Container();
+//    } else if (user.isClientAdmin || user.isSuperAdmin) {
+//      returnedWidget = ListTile(
+//        leading: Icon(Icons.people),
+//        title: Text('Add Users'),
+//        onTap: () {
+//          Navigator.pushReplacementNamed(context, '/usersAdmin');
+//        },
+//      );
+//      _extraDivider = true;
+//    } else {
+//      returnedWidget = new Container();
+//    }
+//    return returnedWidget;
+//  }
+//
+//  Widget _buildIncidentAdmin(BuildContext context, AuthenticatedUser user) {
+//    Widget returnedWidget;
+//
+//    if (user == null) {
+//      returnedWidget = new Container();
+//    } else if (user.isClientAdmin || user.isSuperAdmin) {
+//      returnedWidget = ListTile(
+//        leading: Icon(Icons.insert_drive_file),
+//        title: Text('Incident Types'),
+//        onTap: () {
+//          Navigator.pushReplacementNamed(context, '/incidentTypes');
+//        },
+//      );
+//      _extraDivider = true;
+//    } else {
+//      returnedWidget = new Container();
+//    }
+//    return returnedWidget;
+//  }
 
   void _uploadPendingIncidents(IncidentsModel model, AuthenticatedUser authenticatedUser){
 
@@ -161,13 +161,13 @@ class _SideDrawerState extends State<SideDrawer> {
                     Navigator.of(context).pushReplacementNamed('/raiseIncident'),
               ),
               Divider(),
-              _buildUserAdmin(context, model.authenticatedUser),
-              _extraDivider ? Divider() : new Container(),
-              _buildIncidentAdmin(context, model.authenticatedUser),
-              _extraDivider ? Divider() : new Container(),
+//              _buildUserAdmin(context, model.authenticatedUser),
+//              _extraDivider ? Divider() : new Container(),
+//              _buildIncidentAdmin(context, model.authenticatedUser),
+//              _extraDivider ? Divider() : new Container(),
               ListTile(
                 leading: Icon(Icons.description),
-                title: Text('My Incidents'),
+                title: model.authenticatedUser.isSuperAdmin || model.authenticatedUser.isClientAdmin ? Text('Incidents') : Text('My Incidents'),
                 onTap: () {
                   Navigator.pushReplacementNamed(context, '/myIncidents');
                 },

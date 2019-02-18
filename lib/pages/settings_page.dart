@@ -27,7 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildPageContent() {
     final _model = ScopedModel.of<UsersModel>(context, rebuildOnChange: true);
     final double deviceWidth = MediaQuery.of(context).size.width;
-    final double targetWidth = deviceWidth > 768.0 ? 500.0 : deviceWidth * 0.95;
+    final double targetWidth = deviceWidth > 800.0 ? 500.0 : deviceWidth * 0.95;
     final double targetPadding = deviceWidth - targetWidth;
 
     return GestureDetector(

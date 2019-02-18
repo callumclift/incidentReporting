@@ -34,11 +34,6 @@ class GlobalFunctions {
       request.headers.set('Cookie', 'CAKEPHP=' + cookie);
       dataMap['incidentData']['incident_token'] = secureIncidentToken;
     }
-    print('this is data map');
-    print(dataMap);
-    print('this is the request');
-    print(request.connectionInfo);
-    print(request.headers);
     request.add(utf8.encode(json.encode(dataMap)));
     HttpClientResponse response = await request.close();
     // todo - you should check the response.statusCode
@@ -142,15 +137,12 @@ class GlobalFunctions {
     );
   }
 
-  static String getBase64Image(File image) {
-    print('about to try the new thing');
+  static List<int> compressImageAndroid(File image) {
+    print('about to try the compression ios');
 
     List<int> compressedImage = imagePackage.encodeJpg(imagePackage.decodeImage(image.readAsBytesSync()), quality: 50);
-    print('done the new thing');
-    //List<int> imageBytes = image.readAsBytesSync();
-    String base64Image = base64Encode(compressedImage);
 
-    return base64Image;
+    return compressedImage;
   }
 
   static Future<List<int>> compressImageIos(File image) async{
@@ -161,7 +153,17 @@ class GlobalFunctions {
     return compressedImage;
   }
 
-  static String getBase64ImageIos(List<int> imageBytes) {
+  static Future <Map<String, dynamic>> compressImage(File image, String path) async{
+
+
+    List<int> compressedImage = await FlutterImageCompress.compressWithFile(image.absolute.path, quality: 50);
+
+    File compressedFile = await FlutterImageCompress.compressAndGetFile(image.absolute.path, path, quality: 50);
+
+    return {'image_bytes' : compressedImage, 'compressed_file': compressedFile};
+  }
+
+  static String getBase64Image(List<int> imageBytes) {
     print('about to try the new thing');
     String base64Image = base64Encode(imageBytes);
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:io';
+import 'dart:io' show Platform;
 import 'dart:convert';
 import 'dart:async';
 import 'package:intl/intl.dart';
@@ -17,9 +18,11 @@ import 'package:image/image.dart' as imagePackage;
 import 'package:path/path.dart' as path;
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:camera/camera.dart';
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission/permission.dart';
+import 'package:device_info/device_info.dart';
 
 
 import '../models/location_data.dart';
@@ -56,6 +59,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   bool _showElr = false;
   String _currentMileage = '';
   bool _loadingTemporary = false;
+  bool _showImage = false;
 
   List<Map<String, dynamic>> _routes = [];
   List<Map<String, dynamic>> _currentElrList = [];
@@ -112,6 +116,9 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
   final dateFormat = DateFormat("dd/MM/yyyy HH:mm");
   DateTime date;
+
+  DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+  AndroidDeviceInfo androidInfo;
 
   TextEditingController _reporterTextController = TextEditingController();
   final TextEditingController _summaryTextController = TextEditingController();
@@ -188,7 +195,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   @override
   void initState() {
     _loadingTemporary = true;
-    print('inside initState');
     _incidentsModel = ScopedModel.of<IncidentsModel>(context);
     _usersModel = ScopedModel.of<UsersModel>(context);
 
@@ -200,14 +206,14 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 //
 //      }
 //    }
+    _getDeviceInfo();
     _getRoutes();
 
 
     _getIncidentTypes();
     //_getTemporaryIncident();
 
-    print('this should print after');
-    
+
     _setupTextListeners(_incidentsModel, _usersModel);
 
     _populateImageFiles();
@@ -234,6 +240,18 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
   }
 
+  _getDeviceInfo() async{
+
+    if(Platform.isAndroid){
+
+      androidInfo = await deviceInfo.androidInfo;
+      print(androidInfo.model);
+    }
+
+
+
+  }
+
   _populateImageFiles() {
     _incidentsModel
         .getTemporaryIncident(_usersModel.authenticatedUser.userId)
@@ -241,13 +259,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       if (incident['images'] != null) {
         _temporaryPaths = jsonDecode(incident['images']);
 
-        print('this is where i need to be');
-        print(_temporaryPaths);
-        print('ok done');
-
         if (_temporaryPaths != null) {
-          print('here is the temporary paths');
-          print(_temporaryPaths);
 
           int index = 0;
           _temporaryPaths.forEach((dynamic path) {
@@ -292,8 +304,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
 
           }
-          print('here is anonymous');
-          print(incident['anonymous']);
+
           if(incident['anonymous'] != null && incident['anonymous'] == 1 || incident['anonymous'] == 'true'){
             setState(() {
               _isAnonymous = true;
@@ -339,9 +350,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
               _incidentsModel.getElrsFromRegion(currentRoute['route_code'])
                   .then((List<Map<String, dynamic>> elrs) {
 
-                print('this should be elrs');
-                print(elrs);
-
 
 
                 for(Map<String, dynamic> elr in elrs){
@@ -365,15 +373,8 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                     _currentElr = null;
                     _currentMileage = '';
                   } else {
-                    print('ok here is the elr list');
-                    print(_currentElrList);
-                    print('ok here is the current ELR where the issue is being caused');
-                    print(incident['elr']);
-                    print('ok done with the current ELR');
 
                     List<String> parts = incident['elr'].split(':');
-                    print('here is the parts');
-                    print(parts[0]);
                     _currentElr = _currentElrList
                         .firstWhere((elr) => elr['elr'] == parts[0]);
                     _currentMileage = _currentElr['start_miles'] + ' miles to ' + _currentElr['end_miles'] + ' miles';
@@ -440,7 +441,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             }
           }
 
-          print('its getting here before stopping loading');
           setState(() {
             _loadingTemporary = false;
           });
@@ -604,12 +604,8 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   }
 
   Widget _buildIncidentDrop() {
-    print('building incident drop');
-    print('here is trhe value of the incident drop');
-    print(_incidentDrop);
-    print(_incidentValue);
 
-    print('done');
+
     return DropdownFormField(
       expanded: true,
       hint: 'Incident Type',
@@ -698,7 +694,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                   });
                 }
               } else {
-                print('not a custom');
                 setState(() {
                   _customFieldCount = 0;
                   _incidentsModel.updateTemporaryIncidentField('custom_fields', null, _usersModel.authenticatedUser.userId);
@@ -719,7 +714,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   }
 
   Widget _buildRouteDrop() {
-    print('building route drop');
     return DropdownFormField(
       expanded: true,
       hint: 'Route',
@@ -777,7 +771,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   }
 
   Widget _buildElrDrop() {
-    print('building elr drop');
     return DropdownFormFieldExpanded(
       expanded: true,
       hint: 'ELR',
@@ -797,7 +790,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             .firstWhere((elr) => elr['elr'] == parts[0]);
               _currentMileage = _currentElr['start_miles'] + ' miles to ' + _currentElr['end_miles'] + ' miles';
             }
-            print(_currentMileage);
             _incidentsModel.updateTemporaryIncidentField('mileage_tip', _currentMileage, _usersModel.authenticatedUser.userId);
 
 
@@ -807,8 +799,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       },
       initialValue: _elrDrop[0],
       onSaved: (val) => setState(() {
-        print('saved elr');
-        print(val);
             _elrValue = val;
             _formData['elr'] = _elrValue;
 
@@ -929,14 +919,12 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   }
 
   Widget _buildLocationDrop() {
-    print('building location drop');
     return DropdownFormField(
       expanded: true,
       hint: 'Location Type',
       value: _locationValue,
       items: _locationDrop.toList(),
       onChanged: (val) => setState(() {
-            print(val);
             _locationValue = val;
             _incidentsModel.updateTemporaryIncidentField('location_drop', val, _usersModel.authenticatedUser.userId);
 
@@ -977,7 +965,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                           })),
               controller: _postcodeController,
               validator: (String value) {
-                print(value);
 
                 if (_locationValue == 'Post Code' && value.isNotEmpty) {
                   bool validPostCode = RegExp(
@@ -1049,11 +1036,11 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                 enabled: true,
                 decoration: InputDecoration(labelText: 'Location'),
                 controller: _locationController,
-                validator: (String value) {
-                  if (value.trim().length <= 0 && value.isEmpty) {
-                    return 'please enter a location latitude & longitude';
-                  }
-                },
+//                validator: (String value) {
+//                  if (value.trim().length <= 0 && value.isEmpty) {
+//                    return 'please enter a location latitude & longitude';
+//                  }
+//                },
                 onSaved: (String value) {
                   setState(() {
                     _formData['latitude'] = _latitude;
@@ -1088,7 +1075,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                   color: orangeDesign1,
                 ),
                 onPressed: () {
-                  print('inside the right on pressed');
 
                   GlobalFunctions.getUserLocation().then((Map<String, dynamic> result) {
                     if (!result['success']) {
@@ -1429,7 +1415,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
               child: Text('Save'),
               onPressed: () => _disableScreen == true
                   ? null
-                  : _submitForm(incidentsModel.addIncident,
+                  : _submitForm(
                       incidentsModel.saveIncident, usersModel),
             )));
   }
@@ -1517,95 +1503,452 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     }
   }
 
+  void onTakePictureButtonPressed(int index, CameraController controller, GlobalKey<ScaffoldState> scaffoldKey) async{
+
+    String filePath = await takePicture(scaffoldKey, controller);
+
+
+    int pathCount = await _incidentsModel.checkImagePathCount();
+    if(pathCount == 0){
+
+      String path = filePath;
+
+      int lastIndex = path.lastIndexOf('/');
+
+      String picturesFolder = path.substring(0, lastIndex);
+
+      await _incidentsModel.addImagePath(picturesFolder);
+    }
+
+
+      if (mounted) {
+        setState(() {
+          //imagePath = filePath;
+        });
+        if (filePath != null) {
+          File image = File(filePath);
+
+          if (image != null) {
+            bool isAndroid = Theme
+                .of(context)
+                .platform == TargetPlatform.android;
+
+            if (isAndroid)
+              image = await FlutterExifRotation.rotateImage(path: image.path);
+
+            final Directory extDir = await getApplicationDocumentsDirectory();
+            final String dirPath = '${extDir.path}/images' + index.toString() +
+                _usersModel.authenticatedUser.userId.toString();
+
+            if (Directory(dirPath).existsSync()) {
+              print('it exists');
+              imageCache.clear();
+              var dir = new Directory(dirPath);
+              dir.deleteSync(recursive: true);
+              if (Directory(dirPath).existsSync()) {
+                print('still exists');
+              } else {
+                print('doesnt exist');
+              }
+            }
+
+            new Directory(dirPath).createSync(recursive: true);
+            String path =
+                '$dirPath/temporaryIncidentImage' + index.toString() + '.jpg';
+
+            File changedImage = image.copySync(path);
+
+            path = changedImage.path;
+
+
+            if (images[index] != null) {
+              setState(() {
+                //this is setting the image locally here
+                images[index] = image;
+                if (_temporaryPaths.length == 0) {
+                  _temporaryPaths.add(path);
+                } else if (_temporaryPaths.length < index + 1) {
+                  _temporaryPaths.add(path);
+                } else {
+                  _temporaryPaths[index] = path;
+                }
+              });
+            } else {
+              setState(() {
+                images[index] = changedImage;
+                if (_temporaryPaths.length == 0) {
+                  _temporaryPaths.add(path);
+                } else if (index == 0 && _temporaryPaths.length >= 1) {
+                  _temporaryPaths[index] = path;
+                } else if (index == 1 && _temporaryPaths.length < 2) {
+                  _temporaryPaths.add(path);
+                } else if (index == 1 && _temporaryPaths.length >= 2) {
+                  _temporaryPaths[index] = path;
+                } else if (index == 2 && _temporaryPaths.length < 3) {
+                  _temporaryPaths.add(path);
+                } else if (index == 2 && _temporaryPaths.length >= 3) {
+                  _temporaryPaths[index] = path;
+                } else if (index == 3 && _temporaryPaths.length < 4) {
+                  _temporaryPaths.add(path);
+                } else if (index == 3 && _temporaryPaths.length >= 4) {
+                  _temporaryPaths[index] = path;
+                } else if (index == 4 && _temporaryPaths.length < 5) {
+                  _temporaryPaths.add(path);
+                } else if (index == 4 && _temporaryPaths.length >= 5) {
+                  _temporaryPaths[index] = path;
+                }
+              });
+            }
+            _formData['images'] = images;
+
+            var encodedPaths = jsonEncode(_temporaryPaths);
+
+            _incidentsModel.updateTemporaryIncidentField(
+                'images', encodedPaths, _usersModel.authenticatedUser.userId);
+          }
+
+
+
+
+
+
+
+          setState(() {
+            print('its in here where it should be');
+            setState(() {
+              images[index] = File(filePath);
+              _disableScreen = false;
+              _pickInProgress = false;
+            });
+            Navigator.pop(context);
+            SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown, DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+          });
+
+        }
+      }
+
+  }
+
+  void showInSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String message) {
+    scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<String> takePicture(GlobalKey<ScaffoldState> scaffoldKey, CameraController controller) async {
+
+    String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
+
+    if (!controller.value.isInitialized) {
+      showInSnackBar(scaffoldKey, 'Error: select a camera first.');
+      return null;
+    }
+    final Directory extDir = await getApplicationDocumentsDirectory();
+    final String dirPath = '${extDir.path}/Pictures/flutter_test';
+    await Directory(dirPath).create(recursive: true);
+    final String filePath = '$dirPath/${timestamp()}.jpg';
+
+    if (controller.value.isTakingPicture) {
+      // A capture is already pending, do nothing.
+      return null;
+    }
+
+    try {
+      await controller.takePicture(filePath);
+    } on CameraException catch (e) {
+      _showCameraException(scaffoldKey, e);
+      return null;
+    }
+    return filePath;
+  }
+
+  /// Returns a suitable camera icon for [direction].
+  IconData getCameraLensIcon(CameraLensDirection direction) {
+    switch (direction) {
+      case CameraLensDirection.back:
+        return Icons.camera_rear;
+      case CameraLensDirection.front:
+        return Icons.camera_front;
+      case CameraLensDirection.external:
+        return Icons.camera;
+    }
+    throw ArgumentError('Unknown lens direction');
+  }
+
+  void onNewCameraSelected(CameraDescription cameraDescription, CameraController controller, GlobalKey<ScaffoldState> scaffoldKey) async {
+    print('here is the cam desc');
+    print(cameraDescription);
+    if (controller != null) {
+      print('its disposing');
+      await controller.dispose();
+    }
+    controller = CameraController(cameraDescription, ResolutionPreset.medium);
+
+    // If the controller is updated then update the UI.
+    controller.addListener(() {
+      if (mounted) setState(() {});
+      if (controller.value.hasError) {
+        showInSnackBar(scaffoldKey, 'Camera error ${controller.value.errorDescription}');
+      }
+    });
+
+    try {
+      await controller.initialize();
+      setState(() {
+
+      });
+    } on CameraException catch (e) {
+      _showCameraException(scaffoldKey, e);
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  /// Display the thumbnail of the captured image or video.
+//  Widget _thumbnailWidget() {
+//    return Expanded(
+//      child: Align(
+//        alignment: Alignment.centerRight,
+//        child: videoController == null && imagePath == null
+//            ? null
+//            : SizedBox(
+//          child: (videoController == null)
+//              ? Image.file(File(imagePath))
+//              : Container(
+//            child: Center(
+//              child: AspectRatio(
+//                  aspectRatio: videoController.value.size != null
+//                      ? videoController.value.aspectRatio
+//                      : 1.0,
+//                  child: VideoPlayer(videoController)),
+//            ),
+//            decoration: BoxDecoration(
+//                border: Border.all(color: Colors.pink)),
+//          ),
+//          width: 64.0,
+//          height: 64.0,
+//        ),
+//      ),
+//    );
+//  }
+
+  Widget _cameraTogglesRowWidget(CameraController controller, List<CameraDescription> cameras, GlobalKey<ScaffoldState> scaffoldKey) {
+    final List<Widget> toggles = <Widget>[];
+
+    if (cameras.isEmpty) {
+      return const Text('No camera found');
+    } else {
+      for (CameraDescription cameraDescription in cameras) {
+        toggles.add(
+          SizedBox(
+            width: 90.0,
+            child: RadioListTile<CameraDescription>(
+              title: Icon(getCameraLensIcon(cameraDescription.lensDirection)),
+              groupValue: controller?.description,
+              value: cameraDescription,
+              onChanged: (CameraDescription cameraDescription){
+                print('on changed');
+                print(cameraDescription);
+
+                  onNewCameraSelected(cameraDescription, controller, scaffoldKey);
+                }
+
+
+
+            ),
+          ),
+        );
+      }
+    }
+
+    return Row(children: toggles);
+  }
+
+  void _showCameraException(GlobalKey<ScaffoldState> scaffoldKey, CameraException e) {
+    logError(e.code, e.description);
+    showInSnackBar(scaffoldKey, 'Error: ${e.code}\n${e.description}');
+  }
+
+  void logError(String code, String message) =>
+      print('Error: $code\nError Message: $message');
+
+
   _pickPhoto(ImageSource source, int index) async {
     if (_pickInProgress) {
       return;
     }
     _pickInProgress = true;
     Navigator.pop(context);
-    var image = await ImagePicker.pickImage(source: source, maxWidth: 800.0);
-    print('after taking');
 
-    if (image != null) {
-      bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
 
-      if (isAndroid)
-        image = await FlutterExifRotation.rotateImage(path: image.path);
 
-      final Directory extDir = await getApplicationDocumentsDirectory();
-      final String dirPath = '${extDir.path}/images' + index.toString() + _usersModel.authenticatedUser.userId.toString();
 
-      if (Directory(dirPath).existsSync()) {
-        print('it exists');
-        imageCache.clear();
-        var dir = new Directory(dirPath);
-        dir.deleteSync(recursive: true);
+    if (source == ImageSource.camera && Platform.isAndroid && androidInfo.model == 'SM-T365') {
+
+      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+      List<CameraDescription> cameras = await availableCameras();
+      print(cameras);
+      CameraController controller = CameraController(cameras[0], ResolutionPreset.medium);
+      await controller.initialize();
+      setState(() {
+
+      });
+      if(controller.value.isInitialized){
+        final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+        print('its initialized');
+        Navigator.of(context, rootNavigator: true).push(
+          new MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (BuildContext context) {
+              return Scaffold(key: _scaffoldKey,
+                appBar: AppBar(
+                  backgroundColor: orangeDesign1,
+                  title: Text('Camera', style: TextStyle(color: Colors.black),),
+                ),
+                body: Column(
+                  children: <Widget>[
+
+                      Container(
+                        child: Padding(
+                          padding: const EdgeInsets.all(1.0),
+                          child: Center(
+                            child: AspectRatio(
+                              aspectRatio: controller.value.aspectRatio,
+                              child: CameraPreview(controller),
+                            ),
+                          ),
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          border: Border.all(
+                            color: Colors.grey,
+                            width: 3.0,
+                          ),
+                        ),
+                      ),
+
+              Center(child: IconButton(
+              icon: const Icon(Icons.camera_alt, size: 40.0,),padding: EdgeInsets.all(20.0),
+              color: orangeDesign1,
+              onPressed: () => controller != null && controller.value.isInitialized ? onTakePictureButtonPressed(index, controller, _scaffoldKey) : null
+              )),
+                  ],
+                ),
+              );
+            },
+          ),
+        ).then((_){
+          controller.dispose();
+          print(controller.value.isInitialized);
+
+        });
+
+      }
+
+
+      
+      
+    } else {
+      var image = await ImagePicker.pickImage(source: source, maxWidth: 800.0);
+
+      int pathCount = await _incidentsModel.checkImagePathCount();
+      if(pathCount == 0){
+
+        String path = image.path;
+
+        int lastIndex = path.lastIndexOf('/');
+
+        String picturesFolder = path.substring(0, lastIndex);
+
+        await _incidentsModel.addImagePath(picturesFolder);
+      }
+
+      if (image != null) {
+        bool isAndroid = Theme
+            .of(context)
+            .platform == TargetPlatform.android;
+
+        if (isAndroid)
+          image = await FlutterExifRotation.rotateImage(path: image.path);
+
+        final Directory extDir = await getApplicationDocumentsDirectory();
+        final String dirPath = '${extDir.path}/images' + index.toString() +
+            _usersModel.authenticatedUser.userId.toString();
+
         if (Directory(dirPath).existsSync()) {
-          print('still exists');
-        } else {
-          print('doesnt exist');
-        }
-      }
-
-      new Directory(dirPath).createSync(recursive: true);
-      String path =
-          '$dirPath/temporaryIncidentImage' + index.toString() + '.jpg';
-
-      File changedImage = image.copySync(path);
-
-      path = changedImage.path;
-
-
-      if (images[index] != null) {
-        setState(() {
-          //this is setting the image locally here
-          images[index] = image;
-          if(_temporaryPaths.length == 0){
-            _temporaryPaths.add(path);
-          } else if(_temporaryPaths.length < index +1){
-            _temporaryPaths.add(path);
+          print('it exists');
+          imageCache.clear();
+          var dir = new Directory(dirPath);
+          dir.deleteSync(recursive: true);
+          if (Directory(dirPath).existsSync()) {
+            print('still exists');
           } else {
-            _temporaryPaths[index] = path;
+            print('doesnt exist');
           }
+        }
 
-        });
-      } else {
-        setState(() {
-          images[index] = changedImage;
-          if (_temporaryPaths.length == 0) {
-            _temporaryPaths.add(path);
-          } else if (index == 0 && _temporaryPaths.length >= 1) {
-            _temporaryPaths[index] = path;
-          } else if (index == 1 && _temporaryPaths.length < 2) {
-            _temporaryPaths.add(path);
-          } else if (index == 1 && _temporaryPaths.length >= 2) {
-            _temporaryPaths[index] = path;
-          } else if (index == 2 && _temporaryPaths.length < 3) {
-            _temporaryPaths.add(path);
-          } else if (index == 2 && _temporaryPaths.length >= 3) {
-            _temporaryPaths[index] = path;
-          } else if (index == 3 && _temporaryPaths.length < 4) {
-            _temporaryPaths.add(path);
-          } else if (index == 3 && _temporaryPaths.length >= 4) {
-            _temporaryPaths[index] = path;
-          } else if (index == 4 && _temporaryPaths.length < 5) {
-            _temporaryPaths.add(path);
-          } else if (index == 4 && _temporaryPaths.length >= 5) {
-            _temporaryPaths[index] = path;
-          }
-        });
+        new Directory(dirPath).createSync(recursive: true);
+        String path =
+            '$dirPath/temporaryIncidentImage' + index.toString() + '.jpg';
+
+        File changedImage = image.copySync(path);
+
+        path = changedImage.path;
+
+
+        if (images[index] != null) {
+          setState(() {
+            //this is setting the image locally here
+            images[index] = image;
+            if (_temporaryPaths.length == 0) {
+              _temporaryPaths.add(path);
+            } else if (_temporaryPaths.length < index + 1) {
+              _temporaryPaths.add(path);
+            } else {
+              _temporaryPaths[index] = path;
+            }
+          });
+        } else {
+          setState(() {
+            images[index] = changedImage;
+            if (_temporaryPaths.length == 0) {
+              _temporaryPaths.add(path);
+            } else if (index == 0 && _temporaryPaths.length >= 1) {
+              _temporaryPaths[index] = path;
+            } else if (index == 1 && _temporaryPaths.length < 2) {
+              _temporaryPaths.add(path);
+            } else if (index == 1 && _temporaryPaths.length >= 2) {
+              _temporaryPaths[index] = path;
+            } else if (index == 2 && _temporaryPaths.length < 3) {
+              _temporaryPaths.add(path);
+            } else if (index == 2 && _temporaryPaths.length >= 3) {
+              _temporaryPaths[index] = path;
+            } else if (index == 3 && _temporaryPaths.length < 4) {
+              _temporaryPaths.add(path);
+            } else if (index == 3 && _temporaryPaths.length >= 4) {
+              _temporaryPaths[index] = path;
+            } else if (index == 4 && _temporaryPaths.length < 5) {
+              _temporaryPaths.add(path);
+            } else if (index == 4 && _temporaryPaths.length >= 5) {
+              _temporaryPaths[index] = path;
+            }
+          });
+        }
+        _formData['images'] = images;
+
+        var encodedPaths = jsonEncode(_temporaryPaths);
+
+        _incidentsModel.updateTemporaryIncidentField(
+            'images', encodedPaths, _usersModel.authenticatedUser.userId);
       }
-      _formData['images'] = images;
-
-      var encodedPaths = jsonEncode(_temporaryPaths);
-
-      _incidentsModel.updateTemporaryIncidentField(
-          'images', encodedPaths, _usersModel.authenticatedUser.userId);
     }
     setState(() {
       _disableScreen = false;
+      _pickInProgress = false;
     });
-    _pickInProgress = false;
+
   }
 
 
@@ -1634,35 +1977,9 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       Permission.requestPermissions([PermissionName.Camera, PermissionName.Storage]);
     } else {
       print('its ios');
-      //Permission.requestSinglePermission(PermissionName.Camera);
     }
 
     _showBottomSheet(index);
-
-
-
-//    Permission.getPermissionsStatus([PermissionName.Camera]).then((
-//        List<Permissions> status) {
-//      print(status[0].permissionStatus);
-//      if (status[0] == Permissions(PermissionName.Camera, PermissionStatus.notDecided) ||
-//          status[0] == Permissions(PermissionName.Camera, PermissionStatus.deny)) {
-//        Permission.requestPermissions([PermissionName.Camera]).then((
-//            List<Permissions> status) {
-//          if (status[0] == Permissions(PermissionName.Camera, PermissionStatus.allow)) {
-//
-//            _showBottomSheet(index);
-//
-//          }
-//        });
-//      } else {
-//        print(status[0].permissionStatus);
-//
-//        _showBottomSheet(index);
-//
-//
-//      }
-//    });
-
   }
 
   Future<Widget> _showBottomSheet(int index) async{
@@ -1728,12 +2045,9 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                   .primaryColor,
                               onPressed: () {
                                 setState(() {
-                                  print('this is the start');
-                                  print(images);
 
                                   images[index] = null;
                                   _temporaryPaths[index] = null;
-                                  print(images.length);
 
                                   int maxImageNo = images.length - 1;
 
@@ -1829,8 +2143,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                     _temporaryPaths[plusFour] = null;
                                   }
 
-                                  print('this is the end');
-                                  print(images);
                                   var encodedPaths =
                                   jsonEncode(_temporaryPaths);
                                   _incidentsModel.updateTemporaryIncidentField(
@@ -1860,7 +2172,34 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
         padding: EdgeInsets.all(2.0),
         width: constraints.maxWidth / 5,
         height: constraints.maxWidth / 5,
-        child: GestureDetector(
+        child: GestureDetector(onLongPress: (){
+
+          if(images[index] != null){
+
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return Dialog(
+//                    shape: RoundedRectangleBorder(
+//                        borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                    child: MediaQuery.of(context).orientation == Orientation.landscape ? Container(width: MediaQuery.of(context).size.width * 0.3,child: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min,children: <Widget>[
+                      Image.file(images[index]),
+                      FlatButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text('Close', style: TextStyle(color: orangeDesign1),),
+                      )
+                    ],),)) :SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min,children: <Widget>[
+                      Image.file(images[index]),
+                      FlatButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text('Close', style: TextStyle(color: orangeDesign1),),
+                      )
+                    ],),),
+                  );
+                });
+          }
+
+        },
           onTap: () {
             int minusIndex = index - 1;
             if (index == 0) {
@@ -1881,7 +2220,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   Widget _buildPageContent(BuildContext context, IncidentsModel incidentsModel,
       UsersModel usersModel) {
     final double deviceWidth = MediaQuery.of(context).size.width;
-    final double targetWidth = deviceWidth > 768.0 ? 500.0 : deviceWidth * 0.95;
+    final double targetWidth = deviceWidth > 800.0 ? 500.0 : deviceWidth * 0.95;
     final double targetPadding = deviceWidth - targetWidth;
 
     return GestureDetector(
@@ -1934,7 +2273,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     );
   }
 
-  void _submitForm(Function addIncident, Function saveIncident,
+  void _submitForm(Function saveIncident,
       UsersModel usersModel) {
     //if the form fails the validation then return and dont execute anymore code
     //or is the image is null and we are not in edit mode
@@ -2014,7 +2353,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             context: context
     )
         .then((Map<String, dynamic> response) {
-      print(response);
       if (response['success']) {
         Navigator.pop(context);
         Fluttertoast.showToast(
@@ -2024,11 +2362,9 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             gravity: ToastGravity.CENTER,
             backgroundColor: orangeDesign1,
             textColor: Colors.black);
-        print('waheyyyyyy');
         //Navigator.pushReplacementNamed(context, '/raiseIncident');
 
       } else {
-        print('booooo');
         Navigator.pop(context);
         Fluttertoast.showToast(
             msg: response['message'],
@@ -2096,6 +2432,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                     _currentElrList = [];
                     _elrDrop = ['Select an ELR'];
                     _showElr = false;
+
                   });
 
                   Navigator.of(context).pop();

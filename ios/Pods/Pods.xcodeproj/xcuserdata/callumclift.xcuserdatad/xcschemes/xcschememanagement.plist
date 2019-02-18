@@ -59,12 +59,22 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>camera.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>cloud_functions.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 		</dict>
 		<key>connectivity.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>device_info.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>

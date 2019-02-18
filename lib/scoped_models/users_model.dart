@@ -24,10 +24,15 @@ class UsersModel extends Model {
   int _selUserKey;
   bool _isLoading = false;
   Timer _authTimer;
+  bool _loadingElrs = false;
 
 
   bool get isLoading {
     return _isLoading;
+  }
+
+  bool get loadingElrs {
+    return _loadingElrs;
   }
 
 
@@ -75,10 +80,7 @@ class UsersModel extends Model {
   Future<Map<String, dynamic>> login(String username, String password, bool rememberMe, BuildContext context) async {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print('before shared prefs');
-    String test = prefs.get('firstName');
-    print(test);
-    print('ok after test');
+
 
 
     _isLoading = true;
@@ -96,15 +98,14 @@ class UsersModel extends Model {
 
       var connectivityResult = await (new Connectivity().checkConnectivity());
 
-      if(connectivityResult == ConnectivityResult.none){
+      if(connectivityResult == ConnectivityResult.none) {
+        if (prefs.get('username') == null && prefs.get('password') == null) {
+          message = 'No data connection, please try again later';
+        } else {
 
-        print(GlobalFunctions.decryptString(prefs.get('username')));
-        print(GlobalFunctions.decryptString(prefs.get('password')));
 
-
-        if(username == GlobalFunctions.decryptString(prefs.get('username')) && password == GlobalFunctions.decryptString(prefs.get('password'))){
-          print('ok its in hereeeeeee');
-
+        if (username == GlobalFunctions.decryptString(prefs.get('username')) &&
+            password == GlobalFunctions.decryptString(prefs.get('password'))) {
           _authenticatedUser = AuthenticatedUser(
               userId: prefs.getInt('userId'),
               firstName: GlobalFunctions.decryptString(prefs.get('firstName')),
@@ -122,15 +123,15 @@ class UsersModel extends Model {
               forcePasswordReset: prefs.getBool('forcePasswordReset'),
               darkMode: prefs.getBool('darkMode'));
 
-          if(prefs.get('cookie') != null) cookie = GlobalFunctions.decryptString(prefs.get('cookie'));
-          print('here is the cookie after auto login');
-          print(cookie);
+          if (prefs.get('cookie') != null)
+            cookie = GlobalFunctions.decryptString(prefs.get('cookie'));
+
           success = true;
           notifyListeners();
-
         } else {
           message = 'No data connection, please try again later';
         }
+      }
 
       } else {
 
@@ -150,22 +151,14 @@ class UsersModel extends Model {
               serverResponse['error'] == 'change_password') {
             message = 'You are required to change your password';
           } else if (serverResponse['response']['session'] != null) {
-            print(serverResponse);
 
             cookie = serverResponse['response']['session'];
             prefs.setString('cookie', GlobalFunctions.encryptString(cookie));
 
             final DateTime now = DateTime.now();
-            print('this is the time currently now: ' + now.toIso8601String());
 
             final DateTime cookieExpiryTime =
             now.add(Duration(minutes: 28));
-            print('this is the expiry time at the point of logging in' +
-                cookieExpiryTime.toIso8601String());
-
-
-
-
 
 
             _authenticatedUser = AuthenticatedUser(
@@ -358,8 +351,9 @@ class UsersModel extends Model {
             int elrCount = await databaseHelper.checkElrCount();
 
             if(elrCount == 0){
-              print('the ELR count is 0 so it is going to get them now');
-
+              print('going to get ELRs');
+              _loadingElrs = true;
+              notifyListeners();
               final Map<String, dynamic> elrResult = await this.getElrs();
 
               if(elrResult['success']){
@@ -367,6 +361,8 @@ class UsersModel extends Model {
               }  else {
                 success = false;
               }
+              _loadingElrs = false;
+              notifyListeners();
             }
 
           } else {
@@ -430,7 +426,6 @@ class UsersModel extends Model {
             message = 'token missing or invalied';
           } else if (serverResponse['error'] != null &&
               serverResponse['error'] == 'Access Denied.') {
-            print('its in access denied, trying to renew the session');
 
             Map<String, dynamic> renewSession = await this.renewSession(
                 authenticatedUser.username,
@@ -448,7 +443,6 @@ class UsersModel extends Model {
             List<dynamic> elrList = serverResponse['response']['elrs'];
 
             DatabaseHelper databaseHelper = DatabaseHelper();
-            print('its done the database helper');
 
             for (Map<String, dynamic> elrData in elrList) {
 
@@ -542,7 +536,6 @@ class UsersModel extends Model {
             List<dynamic> elrList = serverResponse['response']['elrs'];
 
             DatabaseHelper databaseHelper = DatabaseHelper();
-            print('its done the database helper');
 
             for (Map<String, dynamic> elrData in elrList) {
 
@@ -639,18 +632,14 @@ class UsersModel extends Model {
               serverResponse['error'] == 'change_password') {
             message = 'You are required to change your password, unable to process this request';
           } else if (serverResponse['response']['session'] != null) {
-            print(serverResponse);
 
             cookie = serverResponse['response']['session'];
             prefs.setString('cookie', GlobalFunctions.encryptString(cookie));
 
             final DateTime now = DateTime.now();
-            print('this is the time currently now: ' + now.toIso8601String());
 
             final DateTime cookieExpiryTime =
             now.add(Duration(minutes: 28));
-            print('this is the expiry time at the point of logging in' +
-                cookieExpiryTime.toIso8601String());
 
 
             _authenticatedUser = AuthenticatedUser(
@@ -827,10 +816,7 @@ class UsersModel extends Model {
 
 
     autoLogin(SharedPreferences prefs){
-    print('entring auto login');
     final bool rememberMe = prefs.getBool('rememberMe');
-    print('this is remember me');
-    print(rememberMe);
 
     if(rememberMe != null && rememberMe == true){
 
@@ -852,8 +838,6 @@ class UsersModel extends Model {
       darkMode: prefs.getBool('darkMode'));
 
       if(prefs.get('cookie') != null) cookie = GlobalFunctions.decryptString(prefs.get('cookie'));
-      print('here is the cookie after auto login');
-      print(cookie);
 
       notifyListeners();
 

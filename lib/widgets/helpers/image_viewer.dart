@@ -14,7 +14,7 @@ class ImageViewer extends StatelessWidget {
       children: <Widget>[
         SizedBox(
           // you may want to use an aspect ratio here for tablet support
-          height: photos.length == 1 ? deviceHeight * 0.45 : deviceHeight * 0.5,
+          height: _containerHeight(photos, context, deviceHeight),
           child: PageView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: photos.length,
@@ -31,10 +31,29 @@ class ImageViewer extends StatelessWidget {
     );
   }
 
+  double _containerHeight(List<Uint8List> photos, BuildContext context, double deviceHeight){
+
+    double height;
+
+    if(photos.length == 1 && MediaQuery.of(context).orientation == Orientation.portrait){
+      height = deviceHeight * 0.45;
+
+    } else if (photos.length != 1 && MediaQuery.of(context).orientation == Orientation.portrait){
+      height = deviceHeight * 0.5;
+    } else if(photos.length == 1 && MediaQuery.of(context).orientation == Orientation.landscape){
+      height = deviceHeight * 0.68;
+
+    } else if (photos.length != 1 && MediaQuery.of(context).orientation == Orientation.landscape){
+      height = deviceHeight * 0.77;
+    }
+
+    return height;
+  }
+
   Widget _buildCarouselItem(BuildContext context, int carouselIndex,
       int photoIndex, List<Uint8List> photos) {
     final double deviceHeight = MediaQuery.of(context).size.height;
-    final imageHeight = deviceHeight * 0.45;
+    final imageHeight = MediaQuery.of(context).orientation == Orientation.portrait? deviceHeight * 0.45 : deviceHeight * 0.68;
 
     return Column(
       children: <Widget>[

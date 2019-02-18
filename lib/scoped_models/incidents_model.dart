@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:image/image.dart' as imagePackage;
 
 import '../models/authenticated_user.dart';
 import '../models/incident.dart';
@@ -28,6 +29,7 @@ class IncidentsModel extends Model {
   int _selIncidentTypeId;
   bool _isLoading = false;
   bool _pendingIncidents = false;
+  String _deviceImagePath;
 
   bool get isLoading {
     return _isLoading;
@@ -35,6 +37,10 @@ class IncidentsModel extends Model {
 
   bool get pendingIncidents {
     return _pendingIncidents;
+  }
+
+  String get deviceImagePath{
+    return _deviceImagePath;
   }
 
   List<Incident> get allIncidents {
@@ -176,7 +182,6 @@ class IncidentsModel extends Model {
             customPlaceholder2: databaseIncidentType['custom_placeholder2'] == null || databaseIncidentType['custom_placeholder2'] == 'null' ? null : databaseIncidentType['custom_placeholder2'],
             customPlaceholder3: databaseIncidentType['custom_placeholder3'] == null || databaseIncidentType['custom_placeholder3'] == 'null' ? null : databaseIncidentType['custom_placeholder3'],
           );
-          print('ok about to add');
           _incidentTypeList.add(incidentType);
 
 
@@ -189,8 +194,6 @@ class IncidentsModel extends Model {
 
         message = 'No data connection, unable to fetch latest Incidents';
       } else {
-        print('this is the cookie');
-        print(cookie);
 
         //Make the POST request to the server
         final Map<String, dynamic> requestData = {
@@ -205,22 +208,14 @@ class IncidentsModel extends Model {
           renewSession = await _usersModel.renewSession(
               authenticatedUser.username,
               authenticatedUser.password);
-          print('this is the renew session message');
-          print(renewSession['message']);
           message = renewSession['message'];
         }
 
         Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
             serverUrl + 'getCustomIncidents', requestData)
             .timeout(Duration(seconds: 90));
-        print('this is the cookie');
-        print(cookie);
-        print('server response:');
-        print(serverResponse);
-        print('done with server response');
 
         if (serverResponse != null) {
-          print('its inside the server response');
           if (serverResponse['error'] != null &&
               serverResponse['error'] == 'incorrect_details') {
             message = 'Incorrect username or password given';
@@ -246,14 +241,10 @@ class IncidentsModel extends Model {
           } else if (serverResponse['response']['custom_incidents'] != null) {
             List<
                 dynamic> incidentTypes = serverResponse['response']['custom_incidents'];
-            print('ok herrrreeee');
-            print(incidentTypes);
-
 
 
             for (Map<String, dynamic> incidentTypeData in incidentTypes) {
-              print('the start of the for' +
-                  incidentTypeData['CustomIncidents']['id']);
+
 
               int count = await databaseHelper.getIncidentCount();
               int id;
@@ -297,17 +288,13 @@ class IncidentsModel extends Model {
                     ? null
                     : incidentTypeData['CustomIncidents']['custom_fields'][2]['placeholder'],
               );
-              print('ok about to add');
               _incidentTypeList.add(incidentType);
 
               int incidentExists = await databaseHelper.checkIncidentTypeExists(
                   int.parse(incidentTypeData['CustomIncidents']['id']));
 
               if (incidentExists == 0) {
-                print('hi');
-                print(incidentType.customLabel1);
-                print(incidentType.customLabel2);
-                print(incidentType.customLabel3);
+
                 Map<String, dynamic> databaseData = {
                   'incident_type_id': incidentType.id,
                   'user_id': incidentType.userId,
@@ -332,10 +319,7 @@ class IncidentsModel extends Model {
               }
 
               if (incidentExists == 1) {
-                print('hi');
-                print(incidentType.customLabel1);
-                print(incidentType.customLabel2);
-                print(incidentType.customLabel3);
+
                 Map<String, dynamic> databaseData = {
                   'incident_type_id': incidentType.id,
                   'user_id': incidentType.userId,
@@ -387,7 +371,6 @@ class IncidentsModel extends Model {
           customPlaceholder2: databaseIncidentType['custom_placeholder2'] == null || databaseIncidentType['custom_placeholder2'] == 'null' ? null : databaseIncidentType['custom_placeholder2'],
           customPlaceholder3: databaseIncidentType['custom_placeholder3'] == null || databaseIncidentType['custom_placeholder3'] == 'null' ? null : databaseIncidentType['custom_placeholder3'],
         );
-        print('ok about to add');
         _incidentTypeList.add(incidentType);
 
 
@@ -403,7 +386,6 @@ class IncidentsModel extends Model {
       message = 'Unable to fetch latest incident types';
     }
 
-    print(_myIncidents);
     _isLoading = false;
     notifyListeners();
     return {'success': success, 'message': message};
@@ -454,9 +436,6 @@ class IncidentsModel extends Model {
           if(localIncidents.length >0){
 
             for (Map<String, dynamic> localIncident in localIncidents) {
-              print('its inside the locals');
-              print('printing value');
-              print(localIncident['anonymous']);
 
               bool anonymousLocal = false;
 
@@ -471,13 +450,10 @@ class IncidentsModel extends Model {
               List<Map<String, dynamic>> customFields = [];
 
               if (localIncident['custom_fields'] != null) {
-                print('before decoding');
-                print(localIncident['custom_fields']);
+
                 decodedCustomFields = jsonDecode(localIncident['custom_fields']);
-                print('after decoding');
 
                 for (dynamic custom in decodedCustomFields) {
-                  print('inside the custom loop');
 
                   customFields.add(custom);
                 }
@@ -551,7 +527,6 @@ class IncidentsModel extends Model {
                       : customFields,
                   anonymous: localIncident['anonymous'] == null ||
                       localIncident['anonymous'] == 'null' ? null : anonymousLocal);
-              print('ok about to add');
               _incidentList.add(incident);
             }
             _myIncidents = _incidentList;
@@ -566,8 +541,7 @@ class IncidentsModel extends Model {
           success = true;
         }
       } else {
-        print('this is the cookie');
-        print(cookie);
+
 
         //Make the POST request to the server
         final Map<String, dynamic> requestData = {
@@ -582,22 +556,16 @@ class IncidentsModel extends Model {
           renewSession = await _usersModel.renewSession(
               authenticatedUser.username,
               authenticatedUser.password);
-          print('this is the renew session message');
-          print(renewSession['message']);
+
           message = renewSession['message'];
         }
 
         Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
             serverUrl + 'getIncidents', requestData)
             .timeout(Duration(seconds: 90));
-        print('this is the cookie');
-        print(cookie);
-        print('server response:');
-        print(serverResponse);
-        print('done with server response');
+
 
         if (serverResponse != null) {
-          print('its inside the server response');
           if (serverResponse['error'] != null &&
               serverResponse['error'] == 'incorrect_details') {
             message = 'Incorrect username or password given';
@@ -621,15 +589,12 @@ class IncidentsModel extends Model {
               serverResponse['error'] == 'change_password') {
             message = 'You are required to change your password';
           } else if (serverResponse['response']['incidents'] != null) {
-            print('its here when it shouldnt be');
 
             List<dynamic> incidents = serverResponse['response']['incidents'];
-            print('ok herrrreeee');
-            print(incidents);
+
 
             if(incidents.length > 0){
               for (Map<String, dynamic> incidentData in incidents) {
-                print('the start of the for' + incidentData['Incidents']['id']);
 
                 List<dynamic> decodedCustomFields = [];
                 List<Map<String, dynamic>> customFields = [];
@@ -690,7 +655,6 @@ class IncidentsModel extends Model {
                     organisationName: incidentData['Organisation']['name'],
                     customFields: incidentData['Incidents']['custom_fields'] == null? null : customFields,
                     anonymous: incidentData['Incidents']['anonymous']);
-                print('ok about to add');
                 _incidentList.add(incident);
 
                 int incidentExists = await databaseHelper.checkIncidentExists(
@@ -761,6 +725,13 @@ class IncidentsModel extends Model {
               }
               success = true;
               message = 'waheyyyyy';
+
+              //order by date time
+
+
+              _incidentList.sort((Incident a, Incident b) => b.incidentId.compareTo(a.incidentId));
+
+
               _myIncidents = _incidentList;
             } else {
               _myIncidents = [];
@@ -806,9 +777,6 @@ class IncidentsModel extends Model {
         if(localIncidents.length >0){
 
           for (Map<String, dynamic> localIncident in localIncidents) {
-            print('its inside the locals');
-            print('printing value');
-            print(localIncident['anonymous']);
 
             bool anonymousLocal = false;
 
@@ -823,13 +791,10 @@ class IncidentsModel extends Model {
             List<Map<String, dynamic>> customFields = [];
 
             if (localIncident['custom_fields'] != null) {
-              print('before decoding');
-              print(localIncident['custom_fields']);
+
               decodedCustomFields = jsonDecode(localIncident['custom_fields']);
-              print('after decoding');
 
               for (dynamic custom in decodedCustomFields) {
-                print('inside the custom loop');
 
                 customFields.add(custom);
               }
@@ -903,7 +868,6 @@ class IncidentsModel extends Model {
                     : customFields,
                 anonymous: localIncident['anonymous'] == null ||
                     localIncident['anonymous'] == 'null' ? null : anonymousLocal);
-            print('ok about to add');
             _incidentList.add(incident);
           }
           _myIncidents = _incidentList;
@@ -924,7 +888,6 @@ class IncidentsModel extends Model {
       message = 'Something went wrong';
     }
 
-    print(_myIncidents);
     _isLoading = false;
     notifyListeners();
     return {'success': success, 'message': message};
@@ -939,8 +902,6 @@ class IncidentsModel extends Model {
 
     List<Uint8List> _imagesList = [];
     DatabaseHelper databaseHelper = DatabaseHelper();
-
-    print('inside get incident images');
 
 
     try {
@@ -1140,32 +1101,36 @@ class IncidentsModel extends Model {
             continue;
           }
 
-          if(connectivityResult != ConnectivityResult.none){
-
-            bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
-            String base64Image;
-            if(isAndroid){
-              base64Image =
-              await compute(GlobalFunctions.getBase64Image, image);
-              base64Images.add({'image_type': 'jpg', 'image_data': base64Image});
-            } else {
-
-              List<int> imageBytes = await GlobalFunctions.compressImageIos(image);
-              base64Image =
-              await compute(GlobalFunctions.getBase64ImageIos, imageBytes);
-              base64Images.add({'image_type': 'jpg', 'image_data': base64Image});
-
-            }
-          }
-
+          Map<String, dynamic> compressedImage;
           if(imageIndex == 0) new Directory(dirPath).createSync(recursive: true);
 
-
           String path = '$dirPath/image' + imageIndex.toString() + '.jpg';
+          String base64Image;
 
-          File savedImage = image.copySync(path);
+          if(connectivityResult != ConnectivityResult.none){
 
-          _imagePaths.add(savedImage.path);
+
+            print('about to compress the image');
+            compressedImage = await GlobalFunctions.compressImage(image, path);
+            print('ok compressed it');
+            List<int> imageBytes = compressedImage['image_bytes'];
+            base64Image =
+            await compute(GlobalFunctions.getBase64Image, imageBytes);
+
+
+
+            base64Images.add({'image_type': 'jpg', 'image_data': base64Image});
+
+
+          }
+
+          if(compressedImage == null){
+
+            image.copySync(path);
+
+          }
+
+          _imagePaths.add(path);
 
           imageIndex ++;
         }
@@ -1297,268 +1262,38 @@ class IncidentsModel extends Model {
               print('ok this check has worked no more pending');
               _pendingIncidents = false;
             }
-          } else {
-            message = 'no valid session found';
-          }
-        }
-      }
-    } on TimeoutException catch (_) {
-      message =
-      'Unable to save incident on the server, please try again later from pending items';
-      // A timeout occurred.
-    } catch (error) {
-      print(error);
-    }
 
-    _isLoading = false;
-    notifyListeners();
-    return {'success': success, 'message': message};
-  }
+            //Delete the temporary images and replace images with compressed ones
+            int imagePathCount = await databaseHelper.getImagePathCount();
 
-  Future<Map<String, dynamic>> addIncidentLocally({@required bool anonymous,
-    @required AuthenticatedUser authenticatedUser,
-    @required String type,
-    @required String incidentDate,
-    @required double latitude,
-    @required double longitude,
-    @required String postcode,
-    @required String projectName,
-    @required String route,
-    @required String elr,
-    @required String mileage,
-    @required String summary,
-    @required List<File> images,
-    @required List<Map<String, dynamic>> customFields}) async {
-    _isLoading = true;
-    _pendingIncidents = true;
-    notifyListeners();
-    print('listeners notified');
-
-    String message = 'Something went wrong!';
-    bool success = false;
-
-    try {
-      List<Map<String, dynamic>> base64Images = [];
-      var encodedImages;
-      var connectivityResult = await (new Connectivity().checkConnectivity());
-
-      DatabaseHelper databaseHelper = DatabaseHelper();
-
-      int count = await databaseHelper.getIncidentCount();
-      int id;
-
-      if (count == 0) {
-        id = 1;
-      } else {
-        id = count + 1;
-      }
-
-      if (images != null) {
-        print(images);
-
-        //JSON Encode the base 64 images
-
-        for (File image in images) {
-          print('here is image: ');
-          print(image);
-
-          print('ok thats the image');
-          if (image == null) {
-            continue;
-          }
-          //Convert each image to Base64
-
-          String base64Image =
-          await compute(GlobalFunctions.getBase64Image, image);
-
-          base64Images.add({'image_type': 'jpg', 'image_data': base64Image});
-
-          print('its created the map');
-          print(base64Images);
-
-          //Encrypt for the local database
-//          String encryptedBase64 = await compute(GlobalFunctions.encryptBase64, base64Image);
-//          print('here is the encypted base64 image');
-//          print(encryptedBase64);
-//          encryptedBase64Images.add(encryptedBase64);
-//          print('here is the list of the encrypted base64s');
-//          print(encryptedBase64Images);
-        }
-
-        //JSON Encode the list of images for storing in the local database
-        //encodedEncryptedImages = jsonEncode(encryptedBase64Images);
-        encodedImages = jsonEncode(base64Images);
-        print('here is the json');
-        print(encodedImages);
-        //var encodedImages = jsonEncode(base64Images);
-      }
-
-      //create an instance of the database class
-      print('here is anonymoussssssssssssssssssss');
-      print(anonymous);
+            if (imagePathCount == 1) {
+              String imagePath = await databaseHelper.getImagePath();
 
 
-      Map<String, dynamic> incidentData = {
-        'incidentData': {
-          'type': type,
-          'incident_date': incidentDate,
-          'latitude': latitude,
-          'longitude': longitude,
-          'postcode': postcode,
-          'project_name': projectName,
-          'route': route,
-          'elr': elr,
-          'mileage': mileage,
-          'summary': summary,
-          'custom_fields': customFields == null ? null : customFields,
-          'anonymous': anonymous,
-          'images': base64Images
-        }
-      };
+            if (imagePath != null) {
+              Directory dir = Directory(imagePath);
+              print('this is the dir');
+              print(dir);
 
-      Map<String, dynamic> databaseData = {
-        'id': id,
-        'incident_id': null,
-        'user_id': authenticatedUser.userId,
-        'type': type,
-        'fullname': anonymous == true
-            ? null
-            : GlobalFunctions.encryptString(
-            authenticatedUser.firstName + ' ' + authenticatedUser.lastName),
-        'username': anonymous == true
-            ? null
-            : GlobalFunctions.encryptString(authenticatedUser.username),
-        'email': null,
-        'incident_date': incidentDate,
-        'created': null,
-        'latitude': latitude,
-        'longitude': longitude,
-        'postcode': postcode,
-        'project_name': projectName,
-        'route': route,
-        'elr': elr,
-        'mileage': mileage,
-        'summary': GlobalFunctions.encryptString(summary),
-        'images': images == null ? null : encodedImages,
-        'organisation_id': authenticatedUser.organisationId,
-        'organisation_name': authenticatedUser.organisationName,
-        'custom_fields': null,
-        'anonymous': anonymous,
-        'server_uploaded': false
-      };
+              if (dir.existsSync()) {
+                print('it exsits tjis directory');
+                List<FileSystemEntity> list = dir.listSync(recursive: false)
+                    .toList();
+                print('thisis the list of the files');
+                print(list);
 
-      int result = await databaseHelper.addIncident(databaseData);
-      print('its added to local');
-
-      if (result != 0) {
-        print('Incident has successfully been added to local database');
-      }
-
-      if (connectivityResult == ConnectivityResult.none) {
-        message = 'No data connection, Incident has been stored locally';
-      } else {
-        //Check the expiry time on the cookie before making the request
-        bool isCookieExpired = await GlobalFunctions.isCookieExpired();
-        Map<String, dynamic> renewSession = {};
-
-        if (isCookieExpired) {
-          renewSession = await _usersModel.renewSession(
-              authenticatedUser.username, authenticatedUser.password);
-          print('this is the renew session message');
-          print(renewSession['message']);
-          message = renewSession['message'];
-        }
-
-        //Make the POST request to the server
-        Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
-            serverUrl + 'saveIncident', incidentData)
-            .timeout(Duration(seconds: 90));
-        print('here is the server response');
-        print(serverResponse);
-
-        if (serverResponse != null) {
-          print(serverResponse);
-
-          if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'incorrect_details') {
-            message = 'Incorrect username or password given';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'terms_not_accepted') {
-            message =
-            'You need to accept the terms & conditions before using this app';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'change_password') {
-            message = 'You are required to change your password';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'Access Denied.') {
-            print('its in access denied, trying to renew the session');
-
-            Map<String, dynamic> renewSession = await _usersModel.renewSession(
-                authenticatedUser.username,
-                authenticatedUser.password);
-
-            message = renewSession['message'];
-          } else if (serverResponse['response']['incident_id'] != null) {
-            //update the local DB incident with the right id and add the created.
-
-            int updateId = await databaseHelper.updateIncidentId(
-                id, int.parse(serverResponse['response']['incident_id']));
-            int updatedServerFlag =
-            await databaseHelper.updateServerUploaded(id, true);
-
-            if (updateId == 1 && updatedServerFlag == 1) {
-
-              databaseHelper.updateLocalIncidentImages(int.parse(serverResponse['response']['incident_id']), null);
-
-              final Directory extDir = await getApplicationDocumentsDirectory();
-              int imageIndex = 0;
-
-              List<String> _imagePaths = [];
-
-              for (File image in images) {
-                print('inside the images');
-
-                if (image == null) {
-                  continue;
+                for (FileSystemEntity file in list) {
+                  if (file.path.contains('.jpg')) file.deleteSync(
+                      recursive: false);
                 }
-
-                final String dirPath = '${extDir.path}/incidentImages/incident' + serverResponse['response']['incident_id'].toString();
-
-                if(imageIndex == 0) new Directory(dirPath).createSync(recursive: true);
-
-
-                String path = '$dirPath/image' + imageIndex.toString() + '.jpg';
-
-                File savedImage = image.copySync(path);
-
-                _imagePaths.add(savedImage.path);
-
-                imageIndex ++;
+              } else {
+                print('this does not exist');
               }
-
-              if(_imagePaths.length > 0){
-
-                var jsonImagePaths = jsonEncode(_imagePaths);
-                databaseHelper.updateLocalIncidentImages(int.parse(serverResponse['response']['incident_id']), jsonImagePaths);
-
-                List<Map<String, dynamic>> test = await databaseHelper.getLocalIncident(int.parse(serverResponse['response']['incident_id']));
-                print('ok so everything should have workeddddddddd');
-                print(test[0]['images']);
-              }
-
-
-              print('local database successfully updated');
             }
-            message = 'everything has worked woo';
-            success = true;
+          }
 
-            //Check for pending Incidents in the local database
-            int pendingIncidentsCheck = await databaseHelper
-                .checkPendingIncidents(authenticatedUser.userId);
-            if (pendingIncidentsCheck == 0) {
-              print('ok this check has worked no more pending');
-              _pendingIncidents = false;
-            }
+
+
           } else {
             message = 'no valid session found';
           }
@@ -1576,6 +1311,268 @@ class IncidentsModel extends Model {
     notifyListeners();
     return {'success': success, 'message': message};
   }
+
+//  Future<Map<String, dynamic>> addIncidentLocally({@required bool anonymous,
+//    @required AuthenticatedUser authenticatedUser,
+//    @required String type,
+//    @required String incidentDate,
+//    @required double latitude,
+//    @required double longitude,
+//    @required String postcode,
+//    @required String projectName,
+//    @required String route,
+//    @required String elr,
+//    @required String mileage,
+//    @required String summary,
+//    @required List<File> images,
+//    @required List<Map<String, dynamic>> customFields}) async {
+//    _isLoading = true;
+//    _pendingIncidents = true;
+//    notifyListeners();
+//    print('listeners notified');
+//
+//    String message = 'Something went wrong!';
+//    bool success = false;
+//
+//    try {
+//      List<Map<String, dynamic>> base64Images = [];
+//      var encodedImages;
+//      var connectivityResult = await (new Connectivity().checkConnectivity());
+//
+//      DatabaseHelper databaseHelper = DatabaseHelper();
+//
+//      int count = await databaseHelper.getIncidentCount();
+//      int id;
+//
+//      if (count == 0) {
+//        id = 1;
+//      } else {
+//        id = count + 1;
+//      }
+//
+//      if (images != null) {
+//        print(images);
+//
+//        //JSON Encode the base 64 images
+//
+//        for (File image in images) {
+//          print('here is image: ');
+//          print(image);
+//
+//          print('ok thats the image');
+//          if (image == null) {
+//            continue;
+//          }
+//          //Convert each image to Base64
+//
+//          String base64Image =
+//          await compute(GlobalFunctions.getBase64Image, image);
+//
+//          base64Images.add({'image_type': 'jpg', 'image_data': base64Image});
+//
+//          print('its created the map');
+//          print(base64Images);
+//
+//          //Encrypt for the local database
+////          String encryptedBase64 = await compute(GlobalFunctions.encryptBase64, base64Image);
+////          print('here is the encypted base64 image');
+////          print(encryptedBase64);
+////          encryptedBase64Images.add(encryptedBase64);
+////          print('here is the list of the encrypted base64s');
+////          print(encryptedBase64Images);
+//        }
+//
+//        //JSON Encode the list of images for storing in the local database
+//        //encodedEncryptedImages = jsonEncode(encryptedBase64Images);
+//        encodedImages = jsonEncode(base64Images);
+//        print('here is the json');
+//        print(encodedImages);
+//        //var encodedImages = jsonEncode(base64Images);
+//      }
+//
+//      //create an instance of the database class
+//      print('here is anonymoussssssssssssssssssss');
+//      print(anonymous);
+//
+//
+//      Map<String, dynamic> incidentData = {
+//        'incidentData': {
+//          'type': type,
+//          'incident_date': incidentDate,
+//          'latitude': latitude,
+//          'longitude': longitude,
+//          'postcode': postcode,
+//          'project_name': projectName,
+//          'route': route,
+//          'elr': elr,
+//          'mileage': mileage,
+//          'summary': summary,
+//          'custom_fields': customFields == null ? null : customFields,
+//          'anonymous': anonymous,
+//          'images': base64Images
+//        }
+//      };
+//
+//      Map<String, dynamic> databaseData = {
+//        'id': id,
+//        'incident_id': null,
+//        'user_id': authenticatedUser.userId,
+//        'type': type,
+//        'fullname': anonymous == true
+//            ? null
+//            : GlobalFunctions.encryptString(
+//            authenticatedUser.firstName + ' ' + authenticatedUser.lastName),
+//        'username': anonymous == true
+//            ? null
+//            : GlobalFunctions.encryptString(authenticatedUser.username),
+//        'email': null,
+//        'incident_date': incidentDate,
+//        'created': null,
+//        'latitude': latitude,
+//        'longitude': longitude,
+//        'postcode': postcode,
+//        'project_name': projectName,
+//        'route': route,
+//        'elr': elr,
+//        'mileage': mileage,
+//        'summary': GlobalFunctions.encryptString(summary),
+//        'images': images == null ? null : encodedImages,
+//        'organisation_id': authenticatedUser.organisationId,
+//        'organisation_name': authenticatedUser.organisationName,
+//        'custom_fields': null,
+//        'anonymous': anonymous,
+//        'server_uploaded': false
+//      };
+//
+//      int result = await databaseHelper.addIncident(databaseData);
+//      print('its added to local');
+//
+//      if (result != 0) {
+//        print('Incident has successfully been added to local database');
+//      }
+//
+//      if (connectivityResult == ConnectivityResult.none) {
+//        message = 'No data connection, Incident has been stored locally';
+//      } else {
+//        //Check the expiry time on the cookie before making the request
+//        bool isCookieExpired = await GlobalFunctions.isCookieExpired();
+//        Map<String, dynamic> renewSession = {};
+//
+//        if (isCookieExpired) {
+//          renewSession = await _usersModel.renewSession(
+//              authenticatedUser.username, authenticatedUser.password);
+//          print('this is the renew session message');
+//          print(renewSession['message']);
+//          message = renewSession['message'];
+//        }
+//
+//        //Make the POST request to the server
+//        Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
+//            serverUrl + 'saveIncident', incidentData)
+//            .timeout(Duration(seconds: 90));
+//        print('here is the server response');
+//        print(serverResponse);
+//
+//        if (serverResponse != null) {
+//          print(serverResponse);
+//
+//          if (serverResponse['error'] != null &&
+//              serverResponse['error'] == 'incorrect_details') {
+//            message = 'Incorrect username or password given';
+//          } else if (serverResponse['error'] != null &&
+//              serverResponse['error'] == 'terms_not_accepted') {
+//            message =
+//            'You need to accept the terms & conditions before using this app';
+//          } else if (serverResponse['error'] != null &&
+//              serverResponse['error'] == 'change_password') {
+//            message = 'You are required to change your password';
+//          } else if (serverResponse['error'] != null &&
+//              serverResponse['error'] == 'Access Denied.') {
+//            print('its in access denied, trying to renew the session');
+//
+//            Map<String, dynamic> renewSession = await _usersModel.renewSession(
+//                authenticatedUser.username,
+//                authenticatedUser.password);
+//
+//            message = renewSession['message'];
+//          } else if (serverResponse['response']['incident_id'] != null) {
+//            //update the local DB incident with the right id and add the created.
+//
+//            int updateId = await databaseHelper.updateIncidentId(
+//                id, int.parse(serverResponse['response']['incident_id']));
+//            int updatedServerFlag =
+//            await databaseHelper.updateServerUploaded(id, true);
+//
+//            if (updateId == 1 && updatedServerFlag == 1) {
+//
+//              databaseHelper.updateLocalIncidentImages(int.parse(serverResponse['response']['incident_id']), null);
+//
+//              final Directory extDir = await getApplicationDocumentsDirectory();
+//              int imageIndex = 0;
+//
+//              List<String> _imagePaths = [];
+//
+//              for (File image in images) {
+//                print('inside the images');
+//
+//                if (image == null) {
+//                  continue;
+//                }
+//
+//                final String dirPath = '${extDir.path}/incidentImages/incident' + serverResponse['response']['incident_id'].toString();
+//
+//                if(imageIndex == 0) new Directory(dirPath).createSync(recursive: true);
+//
+//
+//                String path = '$dirPath/image' + imageIndex.toString() + '.jpg';
+//
+//                File savedImage = image.copySync(path);
+//
+//                _imagePaths.add(savedImage.path);
+//
+//                imageIndex ++;
+//              }
+//
+//              if(_imagePaths.length > 0){
+//
+//                var jsonImagePaths = jsonEncode(_imagePaths);
+//                databaseHelper.updateLocalIncidentImages(int.parse(serverResponse['response']['incident_id']), jsonImagePaths);
+//
+//                List<Map<String, dynamic>> test = await databaseHelper.getLocalIncident(int.parse(serverResponse['response']['incident_id']));
+//                print('ok so everything should have workeddddddddd');
+//                print(test[0]['images']);
+//              }
+//
+//
+//              print('local database successfully updated');
+//            }
+//            message = 'everything has worked woo';
+//            success = true;
+//
+//            //Check for pending Incidents in the local database
+//            int pendingIncidentsCheck = await databaseHelper
+//                .checkPendingIncidents(authenticatedUser.userId);
+//            if (pendingIncidentsCheck == 0) {
+//              print('ok this check has worked no more pending');
+//              _pendingIncidents = false;
+//            }
+//          } else {
+//            message = 'no valid session found';
+//          }
+//        }
+//      }
+//    } on TimeoutException catch (_) {
+//      message =
+//      'Unable to save incident on the server, please try again later from pending items';
+//      // A timeout occurred.
+//    } catch (error) {
+//      print(error);
+//    }
+//
+//    _isLoading = false;
+//    notifyListeners();
+//    return {'success': success, 'message': message};
+//  }
 
   Future<Map<String, dynamic>> uploadPendingIncidents(
       AuthenticatedUser authenticatedUser) async {
@@ -1769,18 +1766,14 @@ class IncidentsModel extends Model {
 
               File image = File(imagePath);
 
-              bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
-              String base64Image;
-              if(isAndroid){
-                base64Image =
-                await compute(GlobalFunctions.getBase64Image, image);
-              } else {
+              Map<String, dynamic> compressedImage = await GlobalFunctions.compressImage(image, imagePath);
 
-                List<int> imageBytes = await GlobalFunctions.compressImageIos(image);
-                base64Image =
-                await compute(GlobalFunctions.getBase64ImageIos, imageBytes);
+              List<int> imageBytes = compressedImage['image_bytes'];
 
-              }
+              String base64Image =
+                await compute(GlobalFunctions.getBase64Image, imageBytes);
+
+
 
               base64Images.add({
                 'image_type': 'jpg',
@@ -2039,5 +2032,31 @@ class IncidentsModel extends Model {
     DatabaseHelper databaseHelper = DatabaseHelper();
     List<Map<String, dynamic>> incidentTypes = await databaseHelper.getIncidentTypes(organisationId);
     return incidentTypes;
+  }
+
+  Future<int> addImagePath(String path) async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    Map<String,dynamic> imagePathData = {'image_path' : path};
+
+    int addCheck =
+    await databaseHelper.addImagePath(imagePathData);
+    return addCheck;
+  }
+
+  Future<int> checkImagePathCount() async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    int count = await databaseHelper.getImagePathCount();
+
+    return count;
+  }
+
+  Future <String> getImagePath() async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    String imagePath = await databaseHelper.getImagePath();
+
+    return imagePath;
   }
 }

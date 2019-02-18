@@ -71,6 +71,20 @@ class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
     });
   }
 
+  void _viewIncident(IncidentsModel model, int index){
+    print('index is:' + index.toString());
+    print(model.allMyIncidents[index].id);
+    model.selectMyIncident(model.allMyIncidents[index].incidentId);
+    print('here is the selected incident');
+    print(model.selectedMyIncident.incidentId);
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (BuildContext context) {
+      return ViewMyIncidentPage(model);
+    })).then((_) {
+      model.selectMyIncident(null);
+    });
+  }
+
   Widget _buildPageContent(IncidentsModel model, List<Incident> incidents) {
     final double deviceHeight = MediaQuery.of(context).size.height;
 
@@ -113,7 +127,8 @@ class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
           itemBuilder: (BuildContext context, int index) {
             return Column(
               children: <Widget>[
-                ListTile(
+                InkWell(onTap: () => _viewIncident(model, index),
+                  child: ListTile(
                   leading: Icon(
                     Icons.warning,
                     color: orangeDesign1,
@@ -121,9 +136,9 @@ class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
                   ),
                   title: Text(incidents[index].type),
                   subtitle: Text(incidents[index].incidentDate),
-                  trailing:
-                      _buildEditButton(model, index, context, incidents[index]),
-                ),
+//                  trailing:
+//                  _buildEditButton(model, index, context, incidents[index]),
+                ),),
                 Divider(),
               ],
             );
