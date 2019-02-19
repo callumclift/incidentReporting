@@ -1789,7 +1789,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
       List<CameraDescription> cameras = await availableCameras();
       print(cameras);
-      CameraController controller = CameraController(cameras[0], ResolutionPreset.medium);
+      CameraController controller = CameraController(cameras[0], ResolutionPreset.high);
       await controller.initialize();
       setState(() {
 

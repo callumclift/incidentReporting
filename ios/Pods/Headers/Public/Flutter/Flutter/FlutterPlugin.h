@@ -1,1 +1,1 @@
-../../../../../../../../appDevelopment/flutter/bin/cache/artifacts/engine/ios/Flutter.framework/Headers/FlutterPlugin.h
+../../../../../../../../appDevelopment/flutter/bin/cache/artifacts/engine/ios-release/Flutter.framework/Headers/FlutterPlugin.h

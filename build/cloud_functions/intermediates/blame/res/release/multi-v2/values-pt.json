@@ -1,0 +1,34 @@
+{
+    "logs": [
+        {
+            "outputFile": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/cloud_functions/intermediates/incremental/mergeReleaseResources/merged.dir/values-pt/values-pt.xml",
+            "map": [
+                {
+                    "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-compat-27.1.1.aar/975e06c96644a2ada8c925905ca0dbb3/res/values-pt/values-pt.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/cloud_functions/intermediates/res/merged/release/values-pt/values-pt.xml",
+            "map": [
+                {
+                    "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-compat-27.1.1.aar/975e06c96644a2ada8c925905ca0dbb3/res/values-pt/values-pt.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "100",
+                        "endOffsets": "151"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:scoped_model/scoped_model.dart';
-//import 'package:map_view/map_view.dart';
+import 'package:map_view/map_view.dart' as map;
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+//import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:flutter/services.dart';
 
 import '../models/incident.dart';
 import '../models/location_data.dart';
@@ -31,7 +32,7 @@ class ViewMyIncidentPage extends StatefulWidget {
 
 class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
   bool refreshIcon = false;
-  GoogleMapController _mapController;
+  //GoogleMapController _mapController;
   String _location = '';
   bool _hasPostcode = false;
   double _latitude;
@@ -136,13 +137,13 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
         widget.model.selectedMyIncident.postcode == null &&
         widget.model.selectedMyIncident.postcode == null) {
       _location = 'No location recorded';
+    } else if (widget.model.selectedMyIncident.postcode != null) {
+      _location = widget.model.selectedMyIncident.postcode;
+      _hasPostcode = true;
     } else if (widget.model.selectedMyIncident.latitude != null &&
         widget.model.selectedMyIncident.longitude != null) {
       _location = widget.model.selectedMyIncident.latitude.toString() +
           widget.model.selectedMyIncident.longitude.toString();
-    } else if (widget.model.selectedMyIncident.postcode != null) {
-      _location = widget.model.selectedMyIncident.postcode;
-      _hasPostcode = true;
     }
 
     return _location;
@@ -182,25 +183,25 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
               enabled: false,
             ),
             GestureDetector(
-              onTap: () {
+              onTap: () async{
                 print('tapped');
                 //_showMap(model)
 
                 if (_location != 'No location recorded') {
-                  if (_hasPostcode) {
-                    GlobalFunctions.geocodePostcode(
-                            model.selectedMyIncident.postcode)
-                        .then((Map<String, dynamic> result) {
+                  if (_hasPostcode && _latitude == null && _longitude == null) {
+
+                    Map<String, dynamic> result = await GlobalFunctions.geocodePostcode(model.selectedMyIncident.postcode);
                       if (result['success']) {
                         _latitude = result['latitude'];
                         _longitude = result['longitude'];
                       } else {
                         GlobalFunctions.showToast(result['message']);
                       }
-                    });
-                  } else {
+
+                  } else if(!_hasPostcode && model.selectedMyIncident.latitude != null && model.selectedMyIncident.longitude != null){
                     _latitude = model.selectedMyIncident.latitude;
                     _longitude = model.selectedMyIncident.longitude;
+
                   }
 
                   if (_latitude != null && _longitude != null) {
@@ -208,34 +209,9 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
                         .checkConnectivity()
                         .then((ConnectivityResult result) {
                       if (result != ConnectivityResult.none) {
-                        Navigator.of(context, rootNavigator: true).push(
-                          new MaterialPageRoute<bool>(
-                            fullscreenDialog: true,
-                            builder: (BuildContext context) {
-                              return Scaffold(
-                                appBar: AppBar(
-                                  backgroundColor: orangeDesign1,
-                                  title: Text('Map of Incident', style: TextStyle(color: Colors.black),),
-                                ),
-                                body: GoogleMap(
-                                  onMapCreated: (controller) {
-                                    _mapController = controller;
-                                    _mapController.addMarker(MarkerOptions(
-                                        infoWindowText: InfoWindowText(
-                                            model.selectedMyIncident.type,
-                                            model.selectedMyIncident
-                                                .incidentDate),
-                                        position:
-                                            LatLng(_latitude, _longitude)));
-                                  },
-                                  initialCameraPosition: CameraPosition(
-                                      target: LatLng(_latitude, _longitude),
-                                      zoom: 15.0),
-                                ),
-                              );
-                            },
-                          ),
-                        );
+
+                        _showMap(model);
+
                       } else {
                         GlobalFunctions.showToast(
                             'No data connection to load Map');
@@ -282,6 +258,31 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
             _buildImagesSection(model),
           ],
         ));
+  }
+
+  void _showMap(IncidentsModel model) {
+    final List<map.Marker> markers = <map.Marker>[
+      map.Marker('position', model.selectedMyIncident.type + ' ' + '(' + model.selectedMyIncident.incidentDate + ')',  _latitude,
+          _longitude)
+    ];
+    final map.CameraPosition cameraPosition = map.CameraPosition(
+        map.Location(_latitude, _longitude), 14.0);
+    final map.MapView mapView = map.MapView();
+    mapView.show(
+      map.MapOptions(showCompassButton: true,
+          title: 'Map of Incident',
+          mapViewType: map.MapViewType.normal,
+          initialCameraPosition: cameraPosition),
+      toolbarActions: [map.ToolbarAction('Close', 1)],
+    );
+    mapView.onToolbarAction.listen((int id) {
+      if (id == 1) {
+        mapView.dismiss();
+      }
+    });
+    mapView.onMapReady.listen((_) {
+      mapView.setMarkers(markers);
+    });
   }
 
   Widget _buildCustomFields() {

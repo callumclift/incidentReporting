@@ -167,7 +167,7 @@ class _SideDrawerState extends State<SideDrawer> {
 //              _extraDivider ? Divider() : new Container(),
               ListTile(
                 leading: Icon(Icons.description),
-                title: model.authenticatedUser.isSuperAdmin || model.authenticatedUser.isClientAdmin ? Text('Incidents') : Text('My Incidents'),
+                title: (model.authenticatedUser != null && model.authenticatedUser.isSuperAdmin) || (model.authenticatedUser != null && model.authenticatedUser.isClientAdmin) ? Text('Incidents') : Text('My Incidents'),
                 onTap: () {
                   Navigator.pushReplacementNamed(context, '/myIncidents');
                 },
