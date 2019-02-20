@@ -1507,18 +1507,21 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
     String filePath = await takePicture(scaffoldKey, controller);
 
+    if(filePath != null){
+      int pathCount = await _incidentsModel.checkImagePathCount();
+      if(pathCount == 0){
 
-    int pathCount = await _incidentsModel.checkImagePathCount();
-    if(pathCount == 0){
+        String path = filePath;
 
-      String path = filePath;
+        int lastIndex = path.lastIndexOf('/');
 
-      int lastIndex = path.lastIndexOf('/');
+        String picturesFolder = path.substring(0, lastIndex);
 
-      String picturesFolder = path.substring(0, lastIndex);
+        await _incidentsModel.addImagePath(picturesFolder);
+      }
 
-      await _incidentsModel.addImagePath(picturesFolder);
     }
+
 
 
       if (mounted) {
@@ -1853,16 +1856,23 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     } else {
       var image = await ImagePicker.pickImage(source: source, maxWidth: 800.0);
 
-      int pathCount = await _incidentsModel.checkImagePathCount();
-      if(pathCount == 0){
 
-        String path = image.path;
+      if(image != null){
+        int pathCount = await _incidentsModel.checkImagePathCount();
+        if(pathCount != null && pathCount == 0){
 
-        int lastIndex = path.lastIndexOf('/');
+          if(image.path != null){
 
-        String picturesFolder = path.substring(0, lastIndex);
+            String path = image.path;
 
-        await _incidentsModel.addImagePath(picturesFolder);
+            int lastIndex = path.lastIndexOf('/');
+
+            String picturesFolder = path.substring(0, lastIndex);
+
+            await _incidentsModel.addImagePath(picturesFolder);
+
+          }
+        }
       }
 
       if (image != null) {

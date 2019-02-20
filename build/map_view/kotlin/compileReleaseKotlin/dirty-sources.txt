@@ -1,6 +1,0 @@
-/Users/callumclift/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/map_view-0.0.14/android/src/main/kotlin/com/apptreesoftware/mapview/MapActivity.kt
-/Users/callumclift/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/map_view-0.0.14/android/src/main/kotlin/com/apptreesoftware/mapview/ToolbarAction.kt
-/Users/callumclift/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/map_view-0.0.14/android/src/main/kotlin/com/apptreesoftware/mapview/MapPolygon.kt
-/Users/callumclift/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/map_view-0.0.14/android/src/main/kotlin/com/apptreesoftware/mapview/MapAnnotation.kt
-/Users/callumclift/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/map_view-0.0.14/android/src/main/kotlin/com/apptreesoftware/mapview/MapPolyline.kt
-/Users/callumclift/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/map_view-0.0.14/android/src/main/kotlin/com/apptreesoftware/mapview/MapViewPlugin.kt

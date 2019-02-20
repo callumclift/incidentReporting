@@ -44,12 +44,12 @@
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/color/abc_btn_colored_text_material.xml"
     },
     {
-        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable_abc_seekbar_track_material.xml.flat",
-        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable/abc_seekbar_track_material.xml"
-    },
-    {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/layout_notification_template_big_media.xml.flat",
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-media-compat-27.1.1.aar/df2b1cc41545337aa2f693d53bd58dd6/res/layout/notification_template_big_media.xml"
+    },
+    {
+        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable_abc_seekbar_track_material.xml.flat",
+        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable/abc_seekbar_track_material.xml"
     },
     {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/layout_abc_alert_dialog_button_bar_material.xml.flat",
@@ -114,10 +114,6 @@
     {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-hdpi-v4_abc_scrubber_control_to_pressed_mtrl_005.png.flat",
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-hdpi-v4/abc_scrubber_control_to_pressed_mtrl_005.png"
-    },
-    {
-        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable_colors.xml.flat",
-        "source": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/res/drawable/colors.xml"
     },
     {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-hdpi-v4_abc_switch_track_mtrl_alpha.9.png.flat",
@@ -228,12 +224,12 @@
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-hdpi-v4/abc_menu_hardkey_panel_mtrl_mult.9.png"
     },
     {
-        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-xhdpi-v4_abc_btn_radio_to_on_mtrl_015.png.flat",
-        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-xhdpi-v4/abc_btn_radio_to_on_mtrl_015.png"
-    },
-    {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable_abc_ic_ab_back_material.xml.flat",
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable/abc_ic_ab_back_material.xml"
+    },
+    {
+        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-xhdpi-v4_abc_btn_radio_to_on_mtrl_015.png.flat",
+        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-xhdpi-v4/abc_btn_radio_to_on_mtrl_015.png"
     },
     {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-hdpi-v4_abc_list_divider_mtrl_alpha.9.png.flat",
@@ -276,20 +272,20 @@
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/play-services-base-16.0.1.aar/091982b898d341e3c12a8d81df50f60f/res/drawable-mdpi-v4/common_google_signin_btn_text_light_normal_background.9.png"
     },
     {
-        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/mipmap-xxhdpi_ic_launcher.png.flat",
-        "source": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png"
-    },
-    {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-mdpi-v4_abc_btn_check_to_on_mtrl_000.png.flat",
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-mdpi-v4/abc_btn_check_to_on_mtrl_000.png"
     },
     {
-        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/layout_notification_template_media.xml.flat",
-        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-media-compat-27.1.1.aar/df2b1cc41545337aa2f693d53bd58dd6/res/layout/notification_template_media.xml"
+        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png"
     },
     {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/layout_support_simple_spinner_dropdown_item.xml.flat",
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/layout/support_simple_spinner_dropdown_item.xml"
+    },
+    {
+        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/layout_notification_template_media.xml.flat",
+        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-media-compat-27.1.1.aar/df2b1cc41545337aa2f693d53bd58dd6/res/layout/notification_template_media.xml"
     },
     {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-xhdpi-v4_abc_btn_switch_to_on_mtrl_00001.9.png.flat",
@@ -300,12 +296,12 @@
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/color-v23/abc_btn_colored_text_material.xml"
     },
     {
-        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-xxhdpi-v4_abc_textfield_default_mtrl_alpha.9.png.flat",
-        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-xxhdpi-v4/abc_textfield_default_mtrl_alpha.9.png"
-    },
-    {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/layout_abc_list_menu_item_icon.xml.flat",
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/layout/abc_list_menu_item_icon.xml"
+    },
+    {
+        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-xxhdpi-v4_abc_textfield_default_mtrl_alpha.9.png.flat",
+        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-xxhdpi-v4/abc_textfield_default_mtrl_alpha.9.png"
     },
     {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-mdpi-v4_abc_scrubber_track_mtrl_alpha.9.png.flat",
@@ -316,16 +312,16 @@
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/support-compat-27.1.1.aar/975e06c96644a2ada8c925905ca0dbb3/res/drawable-hdpi-v4/notification_bg_low_normal.9.png"
     },
     {
-        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-mdpi-v4_abc_textfield_search_activated_mtrl_alpha.9.png.flat",
-        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-mdpi-v4/abc_textfield_search_activated_mtrl_alpha.9.png"
+        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-mdpi-v4_abc_list_divider_mtrl_alpha.9.png.flat",
+        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-mdpi-v4/abc_list_divider_mtrl_alpha.9.png"
     },
     {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-ldrtl-hdpi-v17_abc_ic_menu_cut_mtrl_alpha.png.flat",
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-ldrtl-hdpi-v17/abc_ic_menu_cut_mtrl_alpha.png"
     },
     {
-        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-mdpi-v4_abc_list_divider_mtrl_alpha.9.png.flat",
-        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-mdpi-v4/abc_list_divider_mtrl_alpha.9.png"
+        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-mdpi-v4_abc_textfield_search_activated_mtrl_alpha.9.png.flat",
+        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-mdpi-v4/abc_textfield_search_activated_mtrl_alpha.9.png"
     },
     {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable_abc_text_cursor_material.xml.flat",
@@ -584,16 +580,16 @@
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-xxhdpi-v4/abc_list_divider_mtrl_alpha.9.png"
     },
     {
-        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-xhdpi-v4_abc_textfield_search_activated_mtrl_alpha.9.png.flat",
-        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-xhdpi-v4/abc_textfield_search_activated_mtrl_alpha.9.png"
+        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-xxhdpi-v4_abc_textfield_search_default_mtrl_alpha.9.png.flat",
+        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-xxhdpi-v4/abc_textfield_search_default_mtrl_alpha.9.png"
     },
     {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/color_abc_primary_text_material_light.xml.flat",
         "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/color/abc_primary_text_material_light.xml"
     },
     {
-        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-xxhdpi-v4_abc_textfield_search_default_mtrl_alpha.9.png.flat",
-        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-xxhdpi-v4/abc_textfield_search_default_mtrl_alpha.9.png"
+        "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-xhdpi-v4_abc_textfield_search_activated_mtrl_alpha.9.png.flat",
+        "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/drawable-xhdpi-v4/abc_textfield_search_activated_mtrl_alpha.9.png"
     },
     {
         "merged": "/Users/callumclift/StudioProjects/ontrac_incident_reporting/build/app/intermediates/res/merged/debug/drawable-mdpi-v4_abc_popup_background_mtrl_mult.9.png.flat",

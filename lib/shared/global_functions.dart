@@ -298,6 +298,8 @@ class GlobalFunctions {
 
     try {
       final Map<String, double> currentLocation = await location.getLocation();
+      print('this is the current location');
+      print(currentLocation);
 
       if (currentLocation != null) {
         latitude = currentLocation['latitude'];
