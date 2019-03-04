@@ -167,6 +167,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.4"
+  flutter_native_image:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "691a48cb495aab3b7c4c3caf41f3431ed26abc9c"
+      url: "https://github.com/btastic/flutter_native_image.git"
+    source: git
+    version: "0.0.3"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -214,6 +223,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.6"
+  image_crop:
+    dependency: "direct main"
+    description:
+      name: image_crop
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0"
+  image_cropper:
+    dependency: "direct main"
+    description:
+      name: image_cropper
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   image_picker:
     dependency: "direct main"
     description:
@@ -305,6 +328,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.1"
+  photo_view:
+    dependency: "direct main"
+    description:
+      name: photo_view
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.1"
   pointycastle:
     dependency: transitive
     description:

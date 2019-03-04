@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ontrac.ontracincidentreporting"
     android:versionCode="1"
-    android:versionName="1.0.0" >
+    android:versionName="1.1.1" >
 
     <uses-sdk
         android:minSdkVersion="21"
@@ -20,6 +20,12 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature android:name="android.hardware.camera.flash" />
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
@@ -40,7 +46,7 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:icon="@mipmap/ic_launcher"
-        android:label="ontrac_incident_reporting" >
+        android:label="Incident Reporting" >
         <activity
             android:name="com.ontrac.ontracincidentreporting.MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
@@ -68,10 +74,14 @@
         <activity
             android:name="com.apptreesoftware.mapview.MapActivity"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAqrbJU8emsTegBBVPQzexXK873nRFODXM" />
+            android:value="AIzaSyBXazM8m1tt-F42gJV6tqXzpUpIP7SoF0Y" />
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />

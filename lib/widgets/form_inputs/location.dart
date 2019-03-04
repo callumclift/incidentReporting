@@ -56,7 +56,7 @@ class _LocationInputState extends State<LocationInput> {
       final Uri uri = Uri.https(
         'maps.googleapis.com',
         '/maps/api/geocode/json',
-        {'address': address, 'key': apiKey},
+        {'address': address, 'key': browserApi},
       );
       final http.Response response = await http.get(uri);
       final decodedResponse = json.decode(response.body);
@@ -100,7 +100,7 @@ class _LocationInputState extends State<LocationInput> {
       '/maps/api/geocode/json',
       {
         'latlng': '${lat.toString()},${lng.toString()}',
-        'key': apiKey
+        'key': browserApi
       },
     );
 

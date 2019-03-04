@@ -18,7 +18,7 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="ontrac_incident_reporting"
+        android:label="Incident Reporting"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
@@ -40,7 +40,11 @@
             </intent-filter>
         </activity>
         <activity android:name="com.apptreesoftware.mapview.MapActivity" android:theme="@style/Theme.AppCompat.Light.DarkActionBar"/>
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAqrbJU8emsTegBBVPQzexXK873nRFODXM"/>
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyBXazM8m1tt-F42gJV6tqXzpUpIP7SoF0Y"/>
         <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
     </application>
 </manifest>

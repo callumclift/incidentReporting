@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:map_view/map_view.dart';
 import 'package:location/location.dart' as geoloc;
 import 'package:http/http.dart' as http;
+import 'dart:io' show Platform;
 
 import '../../models/location_data.dart';
 import '../../models/product.dart';
@@ -52,10 +53,11 @@ class _LocateUserState extends State<LocateUser> {
     }
     print('ok its going to geocode');
     if (geocode) {
+
       final Uri uri = Uri.https(
         'maps.googleapis.com',
         '/maps/api/geocode/json',
-        {'address': address, 'key': apiKey},
+        {'address': address, 'key': browserApi},
       );
       final http.Response response = await http.get(uri);
       final decodedResponse = json.decode(response.body);
@@ -73,8 +75,9 @@ class _LocateUserState extends State<LocateUser> {
 
     //prevent memory leaks
     if (mounted) {
+
       final StaticMapProvider staticMapViewProvider =
-          StaticMapProvider(apiKey);
+          StaticMapProvider(browserApi);
       final Uri staticMapUri = staticMapViewProvider.getStaticUriWithMarkers([
         Marker('position', 'Position', _locationData.latitude,
             _locationData.longitude)
@@ -93,12 +96,21 @@ class _LocateUserState extends State<LocateUser> {
 
   Future<String> _getAddress(double lat, double lng) async {
     print('its inside get address');
+
+    String platformType;
+    if(Platform.isIOS)
+      platformType = 'ios';
+    else if(Platform.isAndroid)
+      platformType = 'android';
+
+    print(platformType);
+
     final Uri uri = Uri.https(
       'maps.googleapis.com',
       '/maps/api/geocode/json',
       {
         'latlng': '${lat.toString()},${lng.toString()}',
-        'key': apiKey
+        'key': apiKey[platformType]
       },
     );
 

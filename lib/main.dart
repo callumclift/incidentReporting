@@ -19,7 +19,13 @@ import './scoped_models/users_model.dart';
 Future<void> main() async {
   final SharedPreferences preferences = await SharedPreferences.getInstance();
 
-  MapView.setApiKey(apiKey);
+  String platformType;
+  if(Platform.isIOS)
+    platformType = 'ios';
+  else if(Platform.isAndroid)
+    platformType = 'android';
+
+  MapView.setApiKey(apiKey[platformType]);
 
   runApp(MyApp(
     preferences: preferences,
@@ -83,7 +89,7 @@ class _MyAppState extends State<MyApp> {
                 return new MaterialApp(
                     debugShowCheckedModeBanner: false,
                     theme: theme,
-                    title: 'Demo App',
+                    title: 'Incident Reporting',
                     routes: {
                       '/raiseIncident': (BuildContext context) =>
                           RaiseIncidentPage(),

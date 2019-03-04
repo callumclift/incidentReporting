@@ -265,17 +265,19 @@ class GlobalFunctions {
         final Uri uri = Uri.https(
           'maps.googleapis.com',
           '/maps/api/geocode/json',
-          {'address': postcode.toUpperCase(), 'key': apiKey},
+          {'address': postcode.toUpperCase(), 'key': browserApi},
         );
         final http.Response response = await http.get(uri);
         final decodedResponse = json.decode(response.body);
+        print('here is the response');
+        print(decodedResponse);
         final coordinates =
             decodedResponse['results'][0]['geometry']['location'];
         latitude = coordinates['lat'];
         longitude = coordinates['lng'];
       }
 
-      final StaticMapProvider staticMapViewProvider = StaticMapProvider(apiKey);
+      final StaticMapProvider staticMapViewProvider = StaticMapProvider(browserApi);
       staticMapUri = staticMapViewProvider.getStaticUriWithMarkers(
           latitude: latitude,
           longitude: longitude,
@@ -331,7 +333,7 @@ class GlobalFunctions {
         final Uri uri = Uri.https(
           'maps.googleapis.com',
           '/maps/api/geocode/json',
-          {'address': postcode.toUpperCase(), 'key': apiKey},
+          {'address': postcode.toUpperCase(), 'key': browserApi},
         );
         final http.Response response = await http.get(uri);
         final decodedResponse = json.decode(response.body);

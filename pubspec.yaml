@@ -7,7 +7,7 @@ description: A new Flutter application.
 # Both the version and the builder number may be overridden in flutter
 # build by specifying --build-name and --build-number, respectively.
 # Read more about versioning at semver.org.
-version: 1.0.0+1
+version: 1.1.1+1
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"
@@ -52,6 +52,11 @@ dependencies:
   path: ^1.6.2
   flutter_image_compress: ^0.2.4
   permission: ^0.1.1
+  photo_view: ^0.2.1
+  image_cropper: ^1.0.0
+  image_crop: ^0.2.0
+  flutter_native_image:
+    git: https://github.com/btastic/flutter_native_image.git
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +79,7 @@ flutter:
     - assets/userIcon.png
     - assets/ontrac.png
     - assets/placeholder.png
+    - assets/appIcon.png
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

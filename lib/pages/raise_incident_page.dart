@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:io';
 import 'dart:io' show Platform;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,14 +20,17 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:map_view/map_view.dart';
 import 'package:image/image.dart' as imagePackage;
 import 'package:path/path.dart' as path;
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_crop/image_crop.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:flutter/rendering.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission/permission.dart';
 import 'package:device_info/device_info.dart';
-
 
 import '../models/location_data.dart';
 import '../models/incident_type.dart';
@@ -37,6 +44,7 @@ import '../shared/global_functions.dart';
 import '../shared/global_config.dart';
 import '../scoped_models/incidents_model.dart';
 import '../scoped_models/users_model.dart';
+import 'package:photo_view/photo_view.dart';
 
 class RaiseIncidentPage extends StatefulWidget {
   @override
@@ -66,8 +74,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
   String _incidentValue = 'Incident';
 
-
-
   List<IncidentType> _incidentTypes = [];
 
   List<String> _incidentDrop = [
@@ -96,7 +102,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   ];
 
   final List<String> _locationDrop = ['Latitude/Longitude', 'Post Code'];
-
 
   String _locationValue = 'Latitude/Longitude';
   String _routeValue = 'Select a Route';
@@ -172,7 +177,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     'customPlaceholder1': null,
     'customPlaceholder2': null,
     'customPlaceholder3': null,
-
   };
 
   bool _pickInProgress = false;
@@ -191,13 +195,15 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     _imageFile5,
   ];
 
+  SharedPreferences _prefs;
+
+
 
   @override
   void initState() {
     _loadingTemporary = true;
     _incidentsModel = ScopedModel.of<IncidentsModel>(context);
     _usersModel = ScopedModel.of<UsersModel>(context);
-
 
 //    if (_incidentsModel.allIncidentTypes != null) {
 //      _incidentTypes = _incidentsModel.allIncidentTypes;
@@ -207,48 +213,41 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 //      }
 //    }
     _getDeviceInfo();
+    _getSharedPrefs();
     _getRoutes();
-
 
     _getIncidentTypes();
     //_getTemporaryIncident();
-
 
     _setupTextListeners(_incidentsModel, _usersModel);
 
     _populateImageFiles();
 
-
-
     super.initState();
     _setupFocusNodes();
   }
 
-  _getRoutes(){
-
-    _incidentsModel.getRoutes().then((List<Map<String,dynamic>> routes){
-
+  _getRoutes() {
+    _incidentsModel.getRoutes().then((List<Map<String, dynamic>> routes) {
       _routes = routes;
 
 //      _routes.forEach((Map<String, dynamic> route){
 //        _routeDrop.add(route['route_name']);
 //
 //      });
-
-
     });
-
   }
 
-  _getDeviceInfo() async{
-
-    if(Platform.isAndroid){
-
+  _getDeviceInfo() async {
+    if (Platform.isAndroid) {
       androidInfo = await deviceInfo.androidInfo;
       print(androidInfo.model);
     }
+  }
 
+  _getSharedPrefs() async {
 
+    _prefs = await SharedPreferences.getInstance();
 
   }
 
@@ -260,7 +259,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
         _temporaryPaths = jsonDecode(incident['images']);
 
         if (_temporaryPaths != null) {
-
           int index = 0;
           _temporaryPaths.forEach((dynamic path) {
             if (path != null) {
@@ -276,85 +274,73 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     });
   }
 
-  _getTemporaryIncident(){
-
-    _incidentsModel.checkTemporaryIncidentExists(_usersModel.authenticatedUser).then((int result){
-
-      if(result != 0){
-
-        _incidentsModel.getTemporaryIncident(_usersModel.authenticatedUser.userId).then((Map<String, dynamic> incident){
-
+  _getTemporaryIncident() {
+    _incidentsModel
+        .checkTemporaryIncidentExists(_usersModel.authenticatedUser)
+        .then((int result) {
+      if (result != 0) {
+        _incidentsModel
+            .getTemporaryIncident(_usersModel.authenticatedUser.userId)
+            .then((Map<String, dynamic> incident) {
 //      if(incident['type'] == null && incident['anonymous'] != 1 && incident['incident_date'] == null && incident['location_drop']){}
 
-          if(incident['type'] != null){
-
+          if (incident['type'] != null) {
             //check to see if that incident type still exists as maybe it has been changed on the server
 
             bool exists = _incidentDrop.contains(incident['type']);
 
-            if(exists){
+            if (exists) {
               setState(() {
                 _incidentValue = incident['type'];
-
               });
-
             } else {
               _incidentValue = 'Incident';
             }
-
-
           }
 
-          if(incident['anonymous'] != null && incident['anonymous'] == 1 || incident['anonymous'] == 'true'){
+          if (incident['anonymous'] != null && incident['anonymous'] == 1 ||
+              incident['anonymous'] == 'true') {
             setState(() {
               _isAnonymous = true;
-
             });
-
-
-
           } else {
             _isAnonymous = false;
           }
-          if(incident['incident_date'] != null){
+          if (incident['incident_date'] != null) {
             _dateTimeController1.text = incident['incident_date'];
           }
-          if(incident['location_drop'] != null){
+          if (incident['location_drop'] != null) {
             _locationValue = incident['location_drop'];
           }
-          if(incident['latitude'] != null && incident['longitude'] != null){
-            _locationController.text = incident['latitude'] + ' ' + incident['longitude'];
+          if (incident['latitude'] != null && incident['longitude'] != null) {
+            _locationController.text =
+                incident['latitude'] + ' ' + incident['longitude'];
             _latitude = double.parse(incident['latitude']);
             _longitude = double.parse(incident['longitude']);
           }
-          if(incident['postcode'] != null){
+          if (incident['postcode'] != null) {
             _postcodeController.text = incident['postcode'];
           }
-          if(incident['location_map'] != null){
+          if (incident['location_map'] != null) {
             _staticMapLocation = incident['location_map'];
           }
-          if(incident['postcode_map'] != null){
+          if (incident['postcode_map'] != null) {
             _staticMapPostcode = incident['postcode_map'];
           }
-          if(incident['project_name'] != null){
+          if (incident['project_name'] != null) {
             _projectNameController.text = incident['project_name'];
           }
-          if(incident['route'] != null){
+          if (incident['route'] != null) {
             _routeValue = incident['route'];
             _showElr = false;
-            if(incident['route'] != 'Select a Route'){
+            if (incident['route'] != 'Select a Route') {
+              Map<String, dynamic> currentRoute = _routes.firstWhere(
+                  (route) => route['route_name'] == incident['route']);
 
-              Map<String, dynamic> currentRoute = _routes
-                  .firstWhere((route) => route['route_name'] == incident['route']);
-
-              _incidentsModel.getElrsFromRegion(currentRoute['route_code'])
+              _incidentsModel
+                  .getElrsFromRegion(currentRoute['route_code'])
                   .then((List<Map<String, dynamic>> elrs) {
-
-
-
-                for(Map<String, dynamic> elr in elrs){
-
-
+                for (Map<String, dynamic> elr in elrs) {
                   _elrDrop.add(elr['elr'] + ': ' + elr['description']);
                 }
                 setState(() {
@@ -363,81 +349,81 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                   _incidentValue = _incidentValue;
                 });
 
-
                 //_elrDrop = _elrDrop;
 
-                if(incident['elr'] != null){
+                if (incident['elr'] != null) {
                   _elrValue = incident['elr'];
 
-                  if(incident['elr'] == 'Select an ELR' || incident['elr'] == null || incident['elr'] == 'null'){
+                  if (incident['elr'] == 'Select an ELR' ||
+                      incident['elr'] == null ||
+                      incident['elr'] == 'null') {
                     _currentElr = null;
                     _currentMileage = '';
                   } else {
-
                     List<String> parts = incident['elr'].split(':');
                     _currentElr = _currentElrList
                         .firstWhere((elr) => elr['elr'] == parts[0]);
-                    _currentMileage = _currentElr['start_miles'] + ' miles to ' + _currentElr['end_miles'] + ' miles';
+                    _currentMileage = _currentElr['start_miles'] +
+                        ' miles to ' +
+                        _currentElr['end_miles'] +
+                        ' miles';
                   }
-
-
                 }
               });
-
-
-
             }
           }
-          if(incident['mileage'] != null){
+          if (incident['mileage'] != null) {
             _mileageTextController.text = incident['mileage'];
           }
-          if(incident['summary'] != null){
+          if (incident['summary'] != null) {
             _summaryTextController.text = incident['summary'];
           }
-          if(incident['images'] != null){
+          if (incident['images'] != null) {
             _temporaryPaths = jsonDecode(incident['images']);
           }
-          if(incident['custom_fields'] != null) {
+          if (incident['custom_fields'] != null) {
             List<dynamic> customFields = jsonDecode(incident['custom_fields']);
 
-            if (_incidentValue != 'Incident'){
-
+            if (_incidentValue != 'Incident') {
               _customFieldCount = customFields.length;
 
-            if (_customFieldCount >= 1) {
-              _customLabel1 = customFields[0]['label'];
-              _customPlaceholder1 = customFields[0]['placeholder'];
-              _customField1Controller.text =
-              incident['custom_value1'] == null ||
-                  incident['custom_value1'] == 'null'
-                  ? ''
-                  : incident['custom_value1'];
-            }
-            if (_customFieldCount >= 2) {
-              _customLabel2 = customFields[1]['label'];
-              _customPlaceholder2 = customFields[1]['placeholder'];
-              _customField2Controller.text =
-              incident['custom_value2'] == null ||
-                  incident['custom_value2'] == 'null'
-                  ? ''
-                  : incident['custom_value2'];
-            }
-            if (_customFieldCount >= 3) {
-              _customLabel3 = customFields[2]['label'];
-              _customPlaceholder3 = customFields[2]['placeholder'];
-              _customField3Controller.text =
-              incident['custom_value3'] == null ||
-                  incident['custom_value3'] == 'null'
-                  ? ''
-                  : incident['custom_value3'];
-            }
-          } else {
+              if (_customFieldCount >= 1) {
+                _customLabel1 = customFields[0]['label'];
+                _customPlaceholder1 = customFields[0]['placeholder'];
+                _customField1Controller.text =
+                    incident['custom_value1'] == null ||
+                            incident['custom_value1'] == 'null'
+                        ? ''
+                        : incident['custom_value1'];
+              }
+              if (_customFieldCount >= 2) {
+                _customLabel2 = customFields[1]['label'];
+                _customPlaceholder2 = customFields[1]['placeholder'];
+                _customField2Controller.text =
+                    incident['custom_value2'] == null ||
+                            incident['custom_value2'] == 'null'
+                        ? ''
+                        : incident['custom_value2'];
+              }
+              if (_customFieldCount >= 3) {
+                _customLabel3 = customFields[2]['label'];
+                _customPlaceholder3 = customFields[2]['placeholder'];
+                _customField3Controller.text =
+                    incident['custom_value3'] == null ||
+                            incident['custom_value3'] == 'null'
+                        ? ''
+                        : incident['custom_value3'];
+              }
+            } else {
               _customFieldCount = 0;
-              _incidentsModel.updateTemporaryIncidentField('custom_fields', null, _usersModel.authenticatedUser.userId);
-              _incidentsModel.updateTemporaryIncidentField('custom_value1', null, _usersModel.authenticatedUser.userId);
-              _incidentsModel.updateTemporaryIncidentField('custom_value2', null, _usersModel.authenticatedUser.userId);
-              _incidentsModel.updateTemporaryIncidentField('custom_value3', null, _usersModel.authenticatedUser.userId);
-
+              _incidentsModel.updateTemporaryIncidentField(
+                  'custom_fields', null, _usersModel.authenticatedUser.userId);
+              _incidentsModel.updateTemporaryIncidentField(
+                  'custom_value1', null, _usersModel.authenticatedUser.userId);
+              _incidentsModel.updateTemporaryIncidentField(
+                  'custom_value2', null, _usersModel.authenticatedUser.userId);
+              _incidentsModel.updateTemporaryIncidentField(
+                  'custom_value3', null, _usersModel.authenticatedUser.userId);
             }
           }
 
@@ -445,80 +431,71 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             _loadingTemporary = false;
           });
         });
-
       } else {
         setState(() {
           _loadingTemporary = false;
         });
       }
-
-
     });
-
-
-
-
-
-
   }
 
   _getIncidentTypes() {
-        _incidentsModel
-            .getCustomIncidents(_usersModel.authenticatedUser)
-            .then((Map<String, dynamic> result) {
+    _incidentsModel
+        .getCustomIncidents(_usersModel.authenticatedUser)
+        .then((Map<String, dynamic> result) {
+      if (_incidentsModel.allIncidentTypes != null) {
+        _incidentTypes = _incidentsModel.allIncidentTypes;
+        for (IncidentType incidentType in _incidentTypes) {
+          bool exists = _incidentDrop.contains(incidentType.name);
 
-            if (_incidentsModel.allIncidentTypes != null) {
-              _incidentTypes = _incidentsModel.allIncidentTypes;
-              for (IncidentType incidentType in _incidentTypes) {
+          if (!exists) _incidentDrop.add(incidentType.name);
+        }
 
-                bool exists = _incidentDrop.contains(incidentType.name);
-
-                if(!exists) _incidentDrop.add(incidentType.name);
-
-              }
-
-              setState(() {
-                _incidentDrop = _incidentDrop;
-              });
-            }
-
-            _getTemporaryIncident();
+        setState(() {
+          _incidentDrop = _incidentDrop;
         });
+      }
 
+      _getTemporaryIncident();
+    });
   }
-  
-  _setupTextListeners(IncidentsModel incidentsModel, UsersModel usersModel){
-    
-    _projectNameController.addListener((){
-      incidentsModel.updateTemporaryIncidentField('project_name', _projectNameController.text, usersModel.authenticatedUser.userId);
-    });
-    _postcodeController.addListener((){
-      incidentsModel.updateTemporaryIncidentField('postcode', _postcodeController.text, usersModel.authenticatedUser.userId);
-    });
-    _summaryTextController.addListener((){
-      incidentsModel.updateTemporaryIncidentField('summary', _summaryTextController.text, usersModel.authenticatedUser.userId);
-    });
-    _mileageTextController.addListener((){
-      incidentsModel.updateTemporaryIncidentField('mileage', _mileageTextController.text, usersModel.authenticatedUser.userId);
-    });
-    _dateTimeController1.addListener((){
-      incidentsModel.updateTemporaryIncidentField('incident_date', _dateTimeController1.text, usersModel.authenticatedUser.userId);
-    });
-    _customField1Controller.addListener((){
-      incidentsModel.updateTemporaryIncidentField('custom_value1', _customField1Controller.text, usersModel.authenticatedUser.userId);
-    });
-    _customField2Controller.addListener((){
-      incidentsModel.updateTemporaryIncidentField('custom_value2', _customField2Controller.text, usersModel.authenticatedUser.userId);
-    });
-    _customField3Controller.addListener((){
-      incidentsModel.updateTemporaryIncidentField('custom_value3', _customField3Controller.text, usersModel.authenticatedUser.userId);
-    });
 
-
+  _setupTextListeners(IncidentsModel incidentsModel, UsersModel usersModel) {
+    _projectNameController.addListener(() {
+      incidentsModel.updateTemporaryIncidentField('project_name',
+          _projectNameController.text, usersModel.authenticatedUser.userId);
+    });
+    _postcodeController.addListener(() {
+      incidentsModel.updateTemporaryIncidentField('postcode',
+          _postcodeController.text, usersModel.authenticatedUser.userId);
+    });
+    _summaryTextController.addListener(() {
+      incidentsModel.updateTemporaryIncidentField('summary',
+          _summaryTextController.text, usersModel.authenticatedUser.userId);
+    });
+    _mileageTextController.addListener(() {
+      incidentsModel.updateTemporaryIncidentField('mileage',
+          _mileageTextController.text, usersModel.authenticatedUser.userId);
+    });
+    _dateTimeController1.addListener(() {
+      incidentsModel.updateTemporaryIncidentField('incident_date',
+          _dateTimeController1.text, usersModel.authenticatedUser.userId);
+    });
+    _customField1Controller.addListener(() {
+      incidentsModel.updateTemporaryIncidentField('custom_value1',
+          _customField1Controller.text, usersModel.authenticatedUser.userId);
+    });
+    _customField2Controller.addListener(() {
+      incidentsModel.updateTemporaryIncidentField('custom_value2',
+          _customField2Controller.text, usersModel.authenticatedUser.userId);
+    });
+    _customField3Controller.addListener(() {
+      incidentsModel.updateTemporaryIncidentField('custom_value3',
+          _customField3Controller.text, usersModel.authenticatedUser.userId);
+    });
   }
 
   _setupFocusNodes() {
-
     _projectNameFocusNode.addListener(() {
       if (_projectNameFocusNode.hasFocus) {
         setState(() {
@@ -604,8 +581,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   }
 
   Widget _buildIncidentDrop() {
-
-
     return DropdownFormField(
       expanded: true,
       hint: 'Incident Type',
@@ -617,11 +592,14 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             _customField1Controller.text = '';
             _customField2Controller.text = '';
             _customField3Controller.text = '';
-            _incidentsModel.updateTemporaryIncidentField('type', val, _usersModel.authenticatedUser.userId);
-            _incidentsModel.updateTemporaryIncidentField('custom_value1', null, _usersModel.authenticatedUser.userId);
-            _incidentsModel.updateTemporaryIncidentField('custom_value2', null, _usersModel.authenticatedUser.userId);
-            _incidentsModel.updateTemporaryIncidentField('custom_value3', null, _usersModel.authenticatedUser.userId);
-
+            _incidentsModel.updateTemporaryIncidentField(
+                'type', val, _usersModel.authenticatedUser.userId);
+            _incidentsModel.updateTemporaryIncidentField(
+                'custom_value1', null, _usersModel.authenticatedUser.userId);
+            _incidentsModel.updateTemporaryIncidentField(
+                'custom_value2', null, _usersModel.authenticatedUser.userId);
+            _incidentsModel.updateTemporaryIncidentField(
+                'custom_value3', null, _usersModel.authenticatedUser.userId);
 
             if (_incidentTypes.length > 0) {
               List<String> names = [];
@@ -661,7 +639,10 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                       'placeholder': incidentType.customPlaceholder3
                     });
 
-                    _incidentsModel.updateTemporaryIncidentField('custom_fields', jsonEncode(_temporaryCustomFields), _usersModel.authenticatedUser.userId);
+                    _incidentsModel.updateTemporaryIncidentField(
+                        'custom_fields',
+                        jsonEncode(_temporaryCustomFields),
+                        _usersModel.authenticatedUser.userId);
                   });
                 } else if (incidentType.customLabel2 != null) {
                   setState(() {
@@ -679,7 +660,10 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                       'label': incidentType.customLabel2,
                       'placeholder': incidentType.customPlaceholder2
                     });
-                    _incidentsModel.updateTemporaryIncidentField('custom_fields', jsonEncode(_temporaryCustomFields), _usersModel.authenticatedUser.userId);
+                    _incidentsModel.updateTemporaryIncidentField(
+                        'custom_fields',
+                        jsonEncode(_temporaryCustomFields),
+                        _usersModel.authenticatedUser.userId);
                   });
                 } else if (incidentType.customLabel1 != null) {
                   setState(() {
@@ -690,14 +674,17 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                       'label': incidentType.customLabel1,
                       'placeholder': incidentType.customPlaceholder1
                     });
-                    _incidentsModel.updateTemporaryIncidentField('custom_fields', jsonEncode(_temporaryCustomFields), _usersModel.authenticatedUser.userId);
+                    _incidentsModel.updateTemporaryIncidentField(
+                        'custom_fields',
+                        jsonEncode(_temporaryCustomFields),
+                        _usersModel.authenticatedUser.userId);
                   });
                 }
               } else {
                 setState(() {
                   _customFieldCount = 0;
-                  _incidentsModel.updateTemporaryIncidentField('custom_fields', null, _usersModel.authenticatedUser.userId);
-
+                  _incidentsModel.updateTemporaryIncidentField('custom_fields',
+                      null, _usersModel.authenticatedUser.userId);
                 });
               }
             }
@@ -724,29 +711,28 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             _currentElrList = [];
             _routeValue = val;
             _formData['route'] = _routeValue;
-            _incidentsModel.updateTemporaryIncidentField('route', val, _usersModel.authenticatedUser.userId);
-            _incidentsModel.updateTemporaryIncidentField('elr', null, _usersModel.authenticatedUser.userId);
+            _incidentsModel.updateTemporaryIncidentField(
+                'route', val, _usersModel.authenticatedUser.userId);
+            _incidentsModel.updateTemporaryIncidentField(
+                'elr', null, _usersModel.authenticatedUser.userId);
             _elrDrop = ['Select an ELR'];
             _elrValue = 'Select an ELR';
             _currentMileage = '';
 
-            if(val != 'Select a Route') {
-              Map<String, dynamic> currentRoute = _routes
-                  .firstWhere((route) => route['route_name'] == val);
+            if (val != 'Select a Route') {
+              Map<String, dynamic> currentRoute =
+                  _routes.firstWhere((route) => route['route_name'] == val);
 
-              _incidentsModel.getElrsFromRegion(currentRoute['route_code'])
+              _incidentsModel
+                  .getElrsFromRegion(currentRoute['route_code'])
                   .then((List<Map<String, dynamic>> elrs) {
-
-
-
-                    for(Map<String, dynamic> elr in elrs){
-                      _elrDrop.add(elr['elr'] + ': ' + elr['description']);
-                    }
-                    setState(() {
-                      _showElr = true;
-                      _currentElrList = elrs;
-                    });
-
+                for (Map<String, dynamic> elr in elrs) {
+                  _elrDrop.add(elr['elr'] + ': ' + elr['description']);
+                }
+                setState(() {
+                  _showElr = true;
+                  _currentElrList = elrs;
+                });
 
                 //_elrDrop = _elrDrop;
               });
@@ -754,18 +740,14 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
               _showElr = false;
               _elrDrop = ['Select an ELR'];
             }
-
-
-
-      }),
-      validator: (String message){
-        if(_routeValue == 'Select a Route') return 'Please select a Route';
+          }),
+      validator: (String message) {
+        if (_routeValue == 'Select a Route') return 'Please select a Route';
       },
       initialValue: _routeDrop[0],
       onSaved: (val) => setState(() {
             _routeValue = val;
             _formData['route'] = _routeValue;
-
           }),
     );
   }
@@ -779,32 +761,34 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       onChanged: (val) => setState(() {
             _elrValue = val;
             _formData['elr'] = _elrValue;
-            _incidentsModel.updateTemporaryIncidentField('elr', val, _usersModel.authenticatedUser.userId);
-            if(val == 'Select an ELR'){
+            _incidentsModel.updateTemporaryIncidentField(
+                'elr', val, _usersModel.authenticatedUser.userId);
+            if (val == 'Select an ELR') {
               _currentElr = null;
               _currentMileage = '';
-              _incidentsModel.updateTemporaryIncidentField('elr', null, _usersModel.authenticatedUser.userId);
+              _incidentsModel.updateTemporaryIncidentField(
+                  'elr', null, _usersModel.authenticatedUser.userId);
             } else {
               List<String> parts = val.toString().split(':');
-              _currentElr = _currentElrList
-            .firstWhere((elr) => elr['elr'] == parts[0]);
-              _currentMileage = _currentElr['start_miles'] + ' miles to ' + _currentElr['end_miles'] + ' miles';
+              _currentElr =
+                  _currentElrList.firstWhere((elr) => elr['elr'] == parts[0]);
+              _currentMileage = _currentElr['start_miles'] +
+                  ' miles to ' +
+                  _currentElr['end_miles'] +
+                  ' miles';
             }
-            _incidentsModel.updateTemporaryIncidentField('mileage_tip', _currentMileage, _usersModel.authenticatedUser.userId);
-
-
-      }),
-      validator: (String message){
-        if(_elrValue == 'Select an ELR') return 'Please select an ELR';
+            _incidentsModel.updateTemporaryIncidentField('mileage_tip',
+                _currentMileage, _usersModel.authenticatedUser.userId);
+          }),
+      validator: (String message) {
+        if (_elrValue == 'Select an ELR') return 'Please select an ELR';
       },
       initialValue: _elrDrop[0],
       onSaved: (val) => setState(() {
             _elrValue = val;
             _formData['elr'] = _elrValue;
-
           }),
     );
-
   }
 
   Widget _buildReporterField(UsersModel model) {
@@ -843,10 +827,9 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
         value: _isAnonymous,
         onChanged: (bool value) => setState(() {
               _isAnonymous = value;
-              _incidentsModel.updateTemporaryIncidentField('anonymous', value, _usersModel.authenticatedUser.userId);
-
-
-        }));
+              _incidentsModel.updateTemporaryIncidentField(
+                  'anonymous', value, _usersModel.authenticatedUser.userId);
+            }));
   }
 
   Widget _dateTimeField() {
@@ -863,7 +846,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                   controller: _dateTimeController1,
                   validator: (String value) {
                     if (value.trim().length <= 0 && value.isEmpty) {
-                      return 'please enter a Date & Time';
+                      return 'Please enter a Date & Time';
                     }
                   },
                   onSaved: (String value) {
@@ -926,12 +909,11 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       items: _locationDrop.toList(),
       onChanged: (val) => setState(() {
             _locationValue = val;
-            _incidentsModel.updateTemporaryIncidentField('location_drop', val, _usersModel.authenticatedUser.userId);
-
-      }),
-      validator: (val) => (val == null || val.isEmpty)
-          ? 'Please choose a Location Type'
-          : null,
+            _incidentsModel.updateTemporaryIncidentField(
+                'location_drop', val, _usersModel.authenticatedUser.userId);
+          }),
+      validator: (val) =>
+          (val == null || val.isEmpty) ? 'Please choose a Location Type' : null,
       initialValue: _locationDrop[0],
       onSaved: (val) => setState(() {
             _locationValue = val;
@@ -958,14 +940,18 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                             setState(() {
                               _postcodeController.clear();
                               _staticMapPostcode = null;
-                              _incidentsModel.updateTemporaryIncidentField('postcode', null, _usersModel.authenticatedUser.userId);
-                              _incidentsModel.updateTemporaryIncidentField('postcode_map', null, _usersModel.authenticatedUser.userId);
-
+                              _incidentsModel.updateTemporaryIncidentField(
+                                  'postcode',
+                                  null,
+                                  _usersModel.authenticatedUser.userId);
+                              _incidentsModel.updateTemporaryIncidentField(
+                                  'postcode_map',
+                                  null,
+                                  _usersModel.authenticatedUser.userId);
                             });
                           })),
               controller: _postcodeController,
               validator: (String value) {
-
                 if (_locationValue == 'Post Code' && value.isNotEmpty) {
                   bool validPostCode = RegExp(
                           r"^(GIR ?0AA|[A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]([0-9ABEHMNPRV-Y])?)|[0-9][A-HJKPS-UW]) ?[0-9][ABD-HJLNP-UW-Z]{2})$")
@@ -1009,8 +995,10 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                           } else {
                             setState(() {
                               _staticMapPostcode = result['map'];
-                              _incidentsModel.updateTemporaryIncidentField('postcode_map', _staticMapPostcode, _usersModel.authenticatedUser.userId);
-
+                              _incidentsModel.updateTemporaryIncidentField(
+                                  'postcode_map',
+                                  _staticMapPostcode,
+                                  _usersModel.authenticatedUser.userId);
                             });
                           }
                         });
@@ -1063,10 +1051,16 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                         _formData['latitude'] = null;
                         _formData['longitude'] = null;
 
-                        _incidentsModel.updateTemporaryIncidentField('latitude', null, _usersModel.authenticatedUser.userId);
-                        _incidentsModel.updateTemporaryIncidentField('longitude', null, _usersModel.authenticatedUser.userId);
-                        _incidentsModel.updateTemporaryIncidentField('location_map', null, _usersModel.authenticatedUser.userId);
-
+                        _incidentsModel.updateTemporaryIncidentField('latitude',
+                            null, _usersModel.authenticatedUser.userId);
+                        _incidentsModel.updateTemporaryIncidentField(
+                            'longitude',
+                            null,
+                            _usersModel.authenticatedUser.userId);
+                        _incidentsModel.updateTemporaryIncidentField(
+                            'location_map',
+                            null,
+                            _usersModel.authenticatedUser.userId);
                       });
                     }),
             IconButton(
@@ -1075,21 +1069,23 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                   color: orangeDesign1,
                 ),
                 onPressed: () {
-
-                  GlobalFunctions.getUserLocation().then((Map<String, dynamic> result) {
+                  GlobalFunctions.getUserLocation()
+                      .then((Map<String, dynamic> result) {
                     if (!result['success']) {
                       GlobalFunctions.showToast(
                           'Unable to fetch user Location, please use Post Code option');
                     } else {
-                      _locationController.text = result['latitude'].toString() + ' ' +
+                      _locationController.text = result['latitude'].toString() +
+                          ' ' +
                           result['longitude'].toString();
 
                       _latitude = result['latitude'];
                       _longitude = result['longitude'];
 
-                      _incidentsModel.updateTemporaryIncidentField('latitude', _latitude, _usersModel.authenticatedUser.userId);
-                      _incidentsModel.updateTemporaryIncidentField('longitude', _longitude, _usersModel.authenticatedUser.userId);
-
+                      _incidentsModel.updateTemporaryIncidentField('latitude',
+                          _latitude, _usersModel.authenticatedUser.userId);
+                      _incidentsModel.updateTemporaryIncidentField('longitude',
+                          _longitude, _usersModel.authenticatedUser.userId);
 
                       _formData['latitude'] = result['latitude'];
                       _formData['longitude'] = result['longitude'];
@@ -1112,8 +1108,10 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                             } else {
                               setState(() {
                                 _staticMapLocation = result['map'];
-                                _incidentsModel.updateTemporaryIncidentField('location_map', _staticMapLocation, _usersModel.authenticatedUser.userId);
-
+                                _incidentsModel.updateTemporaryIncidentField(
+                                    'location_map',
+                                    _staticMapLocation,
+                                    _usersModel.authenticatedUser.userId);
                               });
                             }
                           });
@@ -1162,8 +1160,8 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       controller: _summaryTextController,
       //initialValue: product == null ? '' : product.description,
       validator: (String value) {
-        if (value.trim().length <= 0 && value.isEmpty || value.length < 10) {
-          return 'Summary is required and should be 10+ characters long';
+        if (value.trim().length <= 0 || value.isEmpty) {
+          return 'Summary is required';
         }
       },
       onSaved: (String value) {
@@ -1201,7 +1199,8 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   Widget _buildMileageText() {
     return TextFormField(
       focusNode: _mileageFocusNode,
-      decoration: InputDecoration(helperText: _currentMileage == '' ? '' : _currentMileage,
+      decoration: InputDecoration(
+          helperText: _currentMileage == '' ? '' : _currentMileage,
           labelStyle: TextStyle(color: _mileageLabelColor),
           labelText: 'Mileage',
           suffixIcon: _mileageTextController.text == ''
@@ -1408,26 +1407,25 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     return Center(
         child: SizedBox(
             width: MediaQuery.of(context).size.width * 0.5,
-            child: RaisedButton(color: orangeDesign1,
+            child: RaisedButton(
+              color: orangeDesign1,
               textColor: Theme.of(context).brightness == Brightness.dark
                   ? Colors.black
                   : Colors.white,
               child: Text('Save'),
               onPressed: () => _disableScreen == true
                   ? null
-                  : _submitForm(
-                      incidentsModel.saveIncident, usersModel),
+                  : _submitForm(incidentsModel.saveIncident, usersModel),
             )));
   }
 
-  Color photoColor(){
-
+  Color photoColor() {
     Color returnedColor;
 
-    if(_usersModel.authenticatedUser == null){
+    if (_usersModel.authenticatedUser == null) {
       returnedColor = Colors.black;
     } else {
-      if(_usersModel.authenticatedUser.darkMode){
+      if (_usersModel.authenticatedUser.darkMode) {
         returnedColor = orangeDesign1;
       } else {
         returnedColor = Colors.black;
@@ -1435,8 +1433,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     }
 
     return returnedColor;
-
-
   }
 
   Widget gridColor(BuildContext context, int index) {
@@ -1503,14 +1499,13 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     }
   }
 
-  void onTakePictureButtonPressed(int index, CameraController controller, GlobalKey<ScaffoldState> scaffoldKey) async{
-
+  void onTakePictureButtonPressed(int index, CameraController controller,
+      GlobalKey<ScaffoldState> scaffoldKey, double scale) async {
     String filePath = await takePicture(scaffoldKey, controller);
 
-    if(filePath != null){
+    if (filePath != null) {
       int pathCount = await _incidentsModel.checkImagePathCount();
-      if(pathCount == 0){
-
+      if (pathCount == 0) {
         String path = filePath;
 
         int lastIndex = path.lastIndexOf('/');
@@ -1519,125 +1514,217 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
         await _incidentsModel.addImagePath(picturesFolder);
       }
-
     }
 
+    if (mounted) {
+      setState(() {
+        //imagePath = filePath;
+      });
+      if (filePath != null) {
+        File image = File(filePath);
+
+        if (image != null) {
+          bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
+
+          if (isAndroid)
+            image = await FlutterExifRotation.rotateImage(path: image.path);
+
+          //logic for the zoomed image
+          if (scale != null && scale != 1.0) {
+            print('ok its in the scale conditions');
+
+            ImageProperties properties =
+                await FlutterNativeImage.getImageProperties(filePath);
+
+            int width = properties.width;
+            print(width);
+            int height = properties.height;
+            print(height);
+
+            double newWidth = (width / scale);
+            print('this is the newWidth ' + newWidth.toString());
+            double newHeight = (height / scale);
+            print('this is the newHeight ' + newHeight.toString());
+
+            double middleWidth = (width / 2);
+            print('this is the middleWidth ' + middleWidth.toString());
+            double middleHeight = (height / 2);
+            print('this is the middleHeight ' + middleHeight.toString());
+
+            double startingX = middleWidth - (newWidth / 2);
+            print('this is the startingX ' + startingX.toString());
+
+            double startingY = middleHeight - (newHeight / 2);
+            print('this is the startingY ' + startingY.toString());
+
+            print(properties.width);
+            print(properties.height);
+
+            File croppedFile = await FlutterNativeImage.cropImage(
+                filePath,
+                startingX.round(),
+                startingY.round(),
+                newWidth.round(),
+                newHeight.round());
+            print('here is the cropped file path');
+            print(croppedFile.path);
+            image = File(croppedFile.path);
 
 
-      if (mounted) {
-        setState(() {
-          //imagePath = filePath;
-        });
-        if (filePath != null) {
-          File image = File(filePath);
+            ImageProperties croppedProperties = await FlutterNativeImage.getImageProperties(croppedFile.path);
 
-          if (image != null) {
-            bool isAndroid = Theme
-                .of(context)
-                .platform == TargetPlatform.android;
 
-            if (isAndroid)
-              image = await FlutterExifRotation.rotateImage(path: image.path);
+            File compressedFile = await FlutterNativeImage.compressImage(croppedFile.path, quality: 100,
+                targetWidth: 800,
+                targetHeight: (croppedProperties.height * 800 / croppedProperties.width).round());
 
-            final Directory extDir = await getApplicationDocumentsDirectory();
-            final String dirPath = '${extDir.path}/images' + index.toString() +
-                _usersModel.authenticatedUser.userId.toString();
+            print('here is the cropped file path');
+            print(compressedFile.path);
 
-            if (Directory(dirPath).existsSync()) {
-              print('it exists');
-              imageCache.clear();
-              var dir = new Directory(dirPath);
-              dir.deleteSync(recursive: true);
-              if (Directory(dirPath).existsSync()) {
-                print('still exists');
-              } else {
-                print('doesnt exist');
+            image = File(compressedFile.path);
+
+
+            //add the temporary path of the cropped image so that it can be deleted late after the incident has been submitted
+            if (croppedFile.path != null) {
+              int cachedPathCount = await _incidentsModel.checkCachedImagePathCount();
+              if (cachedPathCount == 0) {
+                String path = croppedFile.path;
+
+                int lastIndex = path.lastIndexOf('/');
+
+                String cachedPicturesFolder = path.substring(0, lastIndex);
+
+                print('this is the cache folder path');
+                print(cachedPicturesFolder);
+
+                await _incidentsModel.addCachedImagePath(cachedPicturesFolder);
               }
             }
+          } else if(scale == null || scale == 1.0) {
+            print('it is in here');
 
-            new Directory(dirPath).createSync(recursive: true);
-            String path =
-                '$dirPath/temporaryIncidentImage' + index.toString() + '.jpg';
+            ImageProperties properties = await FlutterNativeImage.getImageProperties(filePath);
 
-            File changedImage = image.copySync(path);
+            File compressedFile = await FlutterNativeImage.compressImage(filePath, quality: 100,
+                targetWidth: 800,
+                targetHeight: (properties.height * 800 / properties.width).round());
 
-            path = changedImage.path;
+            image = File(compressedFile.path);
 
+            //add the temporary path of the cached image so that it can be deleted late after the incident has been submitted
+            if (compressedFile.path != null) {
+              int cachedPathCount = await _incidentsModel.checkCachedImagePathCount();
+              if (cachedPathCount == 0) {
+                String path = compressedFile.path;
 
-            if (images[index] != null) {
-              setState(() {
-                //this is setting the image locally here
-                images[index] = image;
-                if (_temporaryPaths.length == 0) {
-                  _temporaryPaths.add(path);
-                } else if (_temporaryPaths.length < index + 1) {
-                  _temporaryPaths.add(path);
-                } else {
-                  _temporaryPaths[index] = path;
-                }
-              });
-            } else {
-              setState(() {
-                images[index] = changedImage;
-                if (_temporaryPaths.length == 0) {
-                  _temporaryPaths.add(path);
-                } else if (index == 0 && _temporaryPaths.length >= 1) {
-                  _temporaryPaths[index] = path;
-                } else if (index == 1 && _temporaryPaths.length < 2) {
-                  _temporaryPaths.add(path);
-                } else if (index == 1 && _temporaryPaths.length >= 2) {
-                  _temporaryPaths[index] = path;
-                } else if (index == 2 && _temporaryPaths.length < 3) {
-                  _temporaryPaths.add(path);
-                } else if (index == 2 && _temporaryPaths.length >= 3) {
-                  _temporaryPaths[index] = path;
-                } else if (index == 3 && _temporaryPaths.length < 4) {
-                  _temporaryPaths.add(path);
-                } else if (index == 3 && _temporaryPaths.length >= 4) {
-                  _temporaryPaths[index] = path;
-                } else if (index == 4 && _temporaryPaths.length < 5) {
-                  _temporaryPaths.add(path);
-                } else if (index == 4 && _temporaryPaths.length >= 5) {
-                  _temporaryPaths[index] = path;
-                }
-              });
+                int lastIndex = path.lastIndexOf('/');
+
+                String cachedPicturesFolder = path.substring(0, lastIndex);
+
+                print('this is the cache folder path');
+                print(cachedPicturesFolder);
+
+                await _incidentsModel.addCachedImagePath(cachedPicturesFolder);
+              }
             }
-            _formData['images'] = images;
-
-            var encodedPaths = jsonEncode(_temporaryPaths);
-
-            _incidentsModel.updateTemporaryIncidentField(
-                'images', encodedPaths, _usersModel.authenticatedUser.userId);
           }
 
+          final Directory extDir = await getApplicationDocumentsDirectory();
+          final String dirPath = '${extDir.path}/images' +
+              index.toString() +
+              _usersModel.authenticatedUser.userId.toString();
 
+          if (Directory(dirPath).existsSync()) {
+            print('it exists');
+            if (scale == null || scale == 1.0) imageCache.clear();
+            var dir = new Directory(dirPath);
+            dir.deleteSync(recursive: true);
+            if (Directory(dirPath).existsSync()) {
+              print('still exists');
+            } else {
+              print('doesnt exist');
+            }
+          }
 
+          new Directory(dirPath).createSync(recursive: true);
+          String path =
+              '$dirPath/temporaryIncidentImage' + index.toString() + '.jpg';
 
+          File changedImage = image.copySync(path);
 
+          path = changedImage.path;
 
-
-          setState(() {
-            print('its in here where it should be');
+          if (images[index] != null) {
             setState(() {
-              images[index] = File(filePath);
-              _disableScreen = false;
-              _pickInProgress = false;
+              //this is setting the image locally here
+              images[index] = image;
+              if (_temporaryPaths.length == 0) {
+                _temporaryPaths.add(path);
+              } else if (_temporaryPaths.length < index + 1) {
+                _temporaryPaths.add(path);
+              } else {
+                _temporaryPaths[index] = path;
+              }
             });
-            Navigator.pop(context);
-            SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown, DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
-          });
+          } else {
+            setState(() {
+              images[index] = changedImage;
+              if (_temporaryPaths.length == 0) {
+                _temporaryPaths.add(path);
+              } else if (index == 0 && _temporaryPaths.length >= 1) {
+                _temporaryPaths[index] = path;
+              } else if (index == 1 && _temporaryPaths.length < 2) {
+                _temporaryPaths.add(path);
+              } else if (index == 1 && _temporaryPaths.length >= 2) {
+                _temporaryPaths[index] = path;
+              } else if (index == 2 && _temporaryPaths.length < 3) {
+                _temporaryPaths.add(path);
+              } else if (index == 2 && _temporaryPaths.length >= 3) {
+                _temporaryPaths[index] = path;
+              } else if (index == 3 && _temporaryPaths.length < 4) {
+                _temporaryPaths.add(path);
+              } else if (index == 3 && _temporaryPaths.length >= 4) {
+                _temporaryPaths[index] = path;
+              } else if (index == 4 && _temporaryPaths.length < 5) {
+                _temporaryPaths.add(path);
+              } else if (index == 4 && _temporaryPaths.length >= 5) {
+                _temporaryPaths[index] = path;
+              }
+            });
+          }
+          _formData['images'] = images;
 
+          var encodedPaths = jsonEncode(_temporaryPaths);
+
+          _incidentsModel.updateTemporaryIncidentField(
+              'images', encodedPaths, _usersModel.authenticatedUser.userId);
         }
-      }
 
+        setState(() {
+          print('its in here where it should be');
+          setState(() {
+            images[index] = image;
+            _disableScreen = false;
+            _pickInProgress = false;
+          });
+          Navigator.pop(context);
+          SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
+            DeviceOrientation.landscapeLeft,
+            DeviceOrientation.landscapeRight
+          ]);
+        });
+      }
+    }
   }
 
   void showInSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String message) {
     scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<String> takePicture(GlobalKey<ScaffoldState> scaffoldKey, CameraController controller) async {
-
+  Future<String> takePicture(
+      GlobalKey<ScaffoldState> scaffoldKey, CameraController controller) async {
     String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
 
     if (!controller.value.isInitialized) {
@@ -1655,7 +1742,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     }
 
     try {
-      await controller.takePicture(filePath);
+      await controller.takePicture(filePath, FlashMode.auto);
     } on CameraException catch (e) {
       _showCameraException(scaffoldKey, e);
       return null;
@@ -1676,7 +1763,8 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     throw ArgumentError('Unknown lens direction');
   }
 
-  void onNewCameraSelected(CameraDescription cameraDescription, CameraController controller, GlobalKey<ScaffoldState> scaffoldKey) async {
+  void onNewCameraSelected(CameraDescription cameraDescription,
+      CameraController controller, GlobalKey<ScaffoldState> scaffoldKey) async {
     print('here is the cam desc');
     print(cameraDescription);
     if (controller != null) {
@@ -1689,15 +1777,14 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     controller.addListener(() {
       if (mounted) setState(() {});
       if (controller.value.hasError) {
-        showInSnackBar(scaffoldKey, 'Camera error ${controller.value.errorDescription}');
+        showInSnackBar(
+            scaffoldKey, 'Camera error ${controller.value.errorDescription}');
       }
     });
 
     try {
       await controller.initialize();
-      setState(() {
-
-      });
+      setState(() {});
     } on CameraException catch (e) {
       _showCameraException(scaffoldKey, e);
     }
@@ -1735,7 +1822,8 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 //    );
 //  }
 
-  Widget _cameraTogglesRowWidget(CameraController controller, List<CameraDescription> cameras, GlobalKey<ScaffoldState> scaffoldKey) {
+  Widget _cameraTogglesRowWidget(CameraController controller,
+      List<CameraDescription> cameras, GlobalKey<ScaffoldState> scaffoldKey) {
     final List<Widget> toggles = <Widget>[];
 
     if (cameras.isEmpty) {
@@ -1746,19 +1834,16 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
           SizedBox(
             width: 90.0,
             child: RadioListTile<CameraDescription>(
-              title: Icon(getCameraLensIcon(cameraDescription.lensDirection)),
-              groupValue: controller?.description,
-              value: cameraDescription,
-              onChanged: (CameraDescription cameraDescription){
-                print('on changed');
-                print(cameraDescription);
+                title: Icon(getCameraLensIcon(cameraDescription.lensDirection)),
+                groupValue: controller?.description,
+                value: cameraDescription,
+                onChanged: (CameraDescription cameraDescription) {
+                  print('on changed');
+                  print(cameraDescription);
 
-                  onNewCameraSelected(cameraDescription, controller, scaffoldKey);
-                }
-
-
-
-            ),
+                  onNewCameraSelected(
+                      cameraDescription, controller, scaffoldKey);
+                }),
           ),
         );
       }
@@ -1767,14 +1852,14 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     return Row(children: toggles);
   }
 
-  void _showCameraException(GlobalKey<ScaffoldState> scaffoldKey, CameraException e) {
+  void _showCameraException(
+      GlobalKey<ScaffoldState> scaffoldKey, CameraException e) {
     logError(e.code, e.description);
     showInSnackBar(scaffoldKey, 'Error: ${e.code}\n${e.description}');
   }
 
   void logError(String code, String message) =>
       print('Error: $code\nError Message: $message');
-
 
   _pickPhoto(ImageSource source, int index) async {
     if (_pickInProgress) {
@@ -1783,86 +1868,202 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     _pickInProgress = true;
     Navigator.pop(context);
 
+    print(androidInfo.model);
+
+
+    int customCamera = await _incidentsModel.getCustomCamera();
+    bool currentRememberMe = _prefs.getBool('rememberMe');
 
 
 
-    if (source == ImageSource.camera && Platform.isAndroid && androidInfo.model == 'SM-T365') {
-
-      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    if ((source == ImageSource.camera && customCamera == 1 && Platform.isAndroid) || (source == ImageSource.camera &&
+        Platform.isAndroid &&
+        (androidInfo.model == 'Pixel 2 XL' ||
+            androidInfo.model == 'ONEPLUS A6013'))) {
+      await SystemChrome.setPreferredOrientations(
+          [DeviceOrientation.portraitUp]);
 
       List<CameraDescription> cameras = await availableCameras();
       print(cameras);
-      CameraController controller = CameraController(cameras[0], ResolutionPreset.high);
+      CameraController controller =
+          CameraController(cameras[0], ResolutionPreset.high);
       await controller.initialize();
-      setState(() {
+      setState(() {});
+      if (controller.value.isInitialized) {
+        final GlobalKey<ScaffoldState> _scaffoldKey =
+            GlobalKey<ScaffoldState>();
+        PhotoViewController zoomController = PhotoViewController();
+        double scale = 1.0;
+        double detailScale = 1.0;
+        double _previousScale;
+        Color buttonColor = Colors.white70;
 
-      });
-      if(controller.value.isInitialized){
-        final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
         print('its initialized');
-        Navigator.of(context, rootNavigator: true).push(
+        Navigator.of(context, rootNavigator: true)
+            .push(
           new MaterialPageRoute(
             fullscreenDialog: true,
             builder: (BuildContext context) {
-              return Scaffold(key: _scaffoldKey,
-                appBar: AppBar(
-                  backgroundColor: orangeDesign1,
-                  title: Text('Camera', style: TextStyle(color: Colors.black),),
-                ),
-                body: Column(
-                  children: <Widget>[
+              return StatefulBuilder(builder: (context, setState) {
+                return Scaffold(
+                  backgroundColor: Colors.black,
+                  key: _scaffoldKey,
+                  appBar: AppBar(
+                    iconTheme: IconThemeData(color: Colors.white),
+                    backgroundColor: Colors.black,
+                  ),
+                  body: Container(padding: EdgeInsets.only(bottom: 10.0), child: Stack(
+                    children: <Widget>[
+                      ClipRect(
+                        child: AspectRatio(
+                          aspectRatio: controller.value.aspectRatio,
+                          child: LayoutBuilder(builder: (BuildContext context,
+                              BoxConstraints constraints) {
+                            print('first height');
+                            print(constraints.maxHeight);
 
-                      Container(
-                        child: Padding(
-                          padding: const EdgeInsets.all(1.0),
-                          child: Center(
-                            child: AspectRatio(
-                              aspectRatio: controller.value.aspectRatio,
-                              child: CameraPreview(controller),
-                            ),
-                          ),
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          border: Border.all(
-                            color: Colors.grey,
-                            width: 3.0,
-                          ),
+                            return GestureDetector(
+                              onScaleStart: (ScaleStartDetails details) {
+                                print(details);
+                                // Does this need to go into setState, too?
+                                // We are only saving the scale from before the zooming started
+                                // for later - this does not affect the rendering...
+                                _previousScale = scale;
+                                print('this is the previous scale');
+                                print(_previousScale);
+                              },
+                              onScaleEnd: (ScaleEndDetails details) {
+                                print(details);
+                                print('this is the detail scale');
+                                print(detailScale);
+                                print('this is the previous scale');
+                                print(_previousScale);
+
+                                if (detailScale + _previousScale < 2.0) {
+                                  setState(() {
+                                    scale = 1.0;
+                                    //_previousScale = 1.0;
+                                  });
+                                } else if (detailScale + _previousScale > 4.0) {
+                                  setState(() {
+                                    scale = 3.0;
+                                    //_previousScale = 3.0;
+                                  });
+                                }
+
+                                // See comment above
+                                _previousScale = null;
+                              },
+                              onDoubleTap: () {
+                                if (_previousScale != null &&
+                                    _previousScale < 1.0) {
+                                  setState(() {
+                                    scale = 1.0;
+                                  });
+                                } else if (scale != null && scale < 2.0) {
+                                  setState(() {
+                                    scale = 2.0;
+                                  });
+                                } else if (scale != null && scale < 3.0) {
+                                  setState(() {
+                                    scale = 3.0;
+                                  });
+                                } else if (scale != null && scale >= 3.0) {
+                                  setState(() {
+                                    scale = 1.0;
+                                  });
+                                } else if (_previousScale == null) {
+                                  setState(() {
+                                    scale = 2.0;
+                                  });
+                                }
+                              },
+                              onScaleUpdate: (ScaleUpdateDetails details) {
+                                print(details);
+
+                                setState(() {
+                                  detailScale = details.scale;
+                                });
+
+                                setState(() =>
+                                scale = _previousScale * details.scale);
+                              },
+                              child: Transform(
+                                transform: Matrix4.diagonal3Values(
+                                    scale, scale, scale),
+                                alignment: FractionalOffset.center,
+                                child: CameraPreview(controller),
+                              ),
+                            );
+                          }),
                         ),
                       ),
 
-              Center(child: IconButton(
-              icon: const Icon(Icons.camera_alt, size: 40.0,),padding: EdgeInsets.all(20.0),
-              color: orangeDesign1,
-              onPressed: () => controller != null && controller.value.isInitialized ? onTakePictureButtonPressed(index, controller, _scaffoldKey) : null
-              )),
-                  ],
-                ),
-              );
+                      Align(alignment: Alignment.bottomCenter,
+                          child: GestureDetector(
+                            onTapDown: (_) => setState(() {
+                              buttonColor = Colors.blue;
+                            }),
+                            onTapCancel: () => setState(() {
+                              buttonColor = Colors.white70;
+                            }),
+                            onTap: () async {
+                              if (controller != null &&
+                                  controller.value.isInitialized) {
+                                print('this is the zoom scale');
+                                print(zoomController.scale);
+                                onTakePictureButtonPressed(
+                                    index, controller, _scaffoldKey, scale);
+                              } else {}
+                            },
+                            child: Container(padding: EdgeInsets.only(bottom: 10.0),
+                              height: MediaQuery.of(context).size.height * 0.1,
+                              width: MediaQuery.of(context).size.height * 0.1,
+                              decoration: BoxDecoration(
+                                border:
+                                Border.all(width: 3.0, color: Colors.white),
+                                shape: BoxShape.circle,
+                                color: buttonColor,
+                              ),
+                            ),
+                          ))
+                      ,
+                    ],
+                  ),),
+                );
+              });
             },
           ),
-        ).then((_){
+        )
+            .then((_) {
           controller.dispose();
           print(controller.value.isInitialized);
-
         });
+      }
+    } else {
 
+      if(source == ImageSource.camera){
+        await _incidentsModel.updateCustomCameraValue(1, 1);
+
+        if(currentRememberMe != null && currentRememberMe == false){
+          _prefs.setBool('rememberMe', true);
+        }
       }
 
 
-      
-      
-    } else {
       var image = await ImagePicker.pickImage(source: source, maxWidth: 800.0);
 
+      if(source == ImageSource.camera){
+        await _incidentsModel.updateCustomCameraValue(0, 0);
+        _prefs.setBool('rememberMe', currentRememberMe);
+      }
 
-      if(image != null){
+
+      if (image != null) {
         int pathCount = await _incidentsModel.checkImagePathCount();
-        if(pathCount != null && pathCount == 0){
-
-          if(image.path != null){
-
+        if (pathCount != null && pathCount == 0) {
+          if (image.path != null) {
             String path = image.path;
 
             int lastIndex = path.lastIndexOf('/');
@@ -1870,21 +2071,19 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             String picturesFolder = path.substring(0, lastIndex);
 
             await _incidentsModel.addImagePath(picturesFolder);
-
           }
         }
       }
 
       if (image != null) {
-        bool isAndroid = Theme
-            .of(context)
-            .platform == TargetPlatform.android;
+        bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
 
         if (isAndroid)
           image = await FlutterExifRotation.rotateImage(path: image.path);
 
         final Directory extDir = await getApplicationDocumentsDirectory();
-        final String dirPath = '${extDir.path}/images' + index.toString() +
+        final String dirPath = '${extDir.path}/images' +
+            index.toString() +
             _usersModel.authenticatedUser.userId.toString();
 
         if (Directory(dirPath).existsSync()) {
@@ -1906,7 +2105,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
         File changedImage = image.copySync(path);
 
         path = changedImage.path;
-
 
         if (images[index] != null) {
           setState(() {
@@ -1958,33 +2156,28 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       _disableScreen = false;
       _pickInProgress = false;
     });
-
   }
 
-
-  double _buildBottomSheetHeight(File image){
+  double _buildBottomSheetHeight(File image) {
     double _deviceHeight = MediaQuery.of(context).size.height;
 
     double height;
 
-    if(MediaQuery.of(context).orientation == Orientation.portrait){
-      height = image == null? _deviceHeight * 0.3 : _deviceHeight * 0.37;
-
+    if (MediaQuery.of(context).orientation == Orientation.portrait) {
+      height = image == null ? _deviceHeight * 0.3 : _deviceHeight * 0.37;
     } else {
-      height = image == null? _deviceHeight * 0.4 : _deviceHeight * 0.56;
+      height = image == null ? _deviceHeight * 0.4 : _deviceHeight * 0.56;
     }
 
     return height;
-
   }
 
   void _openImagePicker(BuildContext context, int index) {
-
     bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
 
-    if(isAndroid){
-
-      Permission.requestPermissions([PermissionName.Camera, PermissionName.Storage]);
+    if (isAndroid) {
+      Permission.requestPermissions(
+          [PermissionName.Camera, PermissionName.Storage]);
     } else {
       print('its ios');
     }
@@ -1992,7 +2185,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     _showBottomSheet(index);
   }
 
-  Future<Widget> _showBottomSheet(int index) async{
+  Future<Widget> _showBottomSheet(int index) async {
     return showModalBottomSheet(
         context: context,
         builder: (BuildContext context) {
@@ -2001,61 +2194,54 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             height: _buildBottomSheetHeight(images[index]),
             child: LayoutBuilder(
                 builder: (BuildContext context, BoxConstraints constraints) {
-                  double sheetHeight = constraints.maxHeight;
+              double sheetHeight = constraints.maxHeight;
 
-                  return Container(
-                    height: sheetHeight,
-                    child: Column(
-                      children: <Widget>[
-                        Container(
-                            height: sheetHeight * 0.15,
-                            child: Text(
-                              'Pick an Image',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            )),
-                        Container(
-                            height: images[index] == null
-                                ? sheetHeight * 0.425
-                                : sheetHeight * 0.283,
-                            child: FlatButton(
-                              textColor: Theme
-                                  .of(context)
-                                  .primaryColor,
-                              onPressed: () {
-                                setState(() {
-                                  _disableScreen = true;
-                                });
-                                _pickPhoto(ImageSource.camera, index);
-                              },
-                              child: Text('Use Camera'),
-                            )),
-                        Container(
-                            height: images[index] == null
-                                ? sheetHeight * 0.425
-                                : sheetHeight * 0.283,
-                            child: FlatButton(
-                              textColor: Theme
-                                  .of(context)
-                                  .primaryColor,
-                              onPressed: () {
-                                setState(() {
-                                  _disableScreen = true;
-                                });
-                                _pickPhoto(ImageSource.gallery, index);
-                              },
-                              child: Text('Use Gallery'),
-                            )),
-                        images[index] == null
-                            ? Container()
-                            : Container(
+              return Container(
+                height: sheetHeight,
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                        height: sheetHeight * 0.15,
+                        child: Text(
+                          'Pick an Image',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        )),
+                    Container(
+                        height: images[index] == null
+                            ? sheetHeight * 0.425
+                            : sheetHeight * 0.283,
+                        child: FlatButton(
+                          textColor: Theme.of(context).primaryColor,
+                          onPressed: () {
+                            setState(() {
+                              _disableScreen = true;
+                            });
+                            _pickPhoto(ImageSource.camera, index);
+                          },
+                          child: Text('Use Camera'),
+                        )),
+                    Container(
+                        height: images[index] == null
+                            ? sheetHeight * 0.425
+                            : sheetHeight * 0.283,
+                        child: FlatButton(
+                          textColor: Theme.of(context).primaryColor,
+                          onPressed: () {
+                            setState(() {
+                              _disableScreen = true;
+                            });
+                            _pickPhoto(ImageSource.gallery, index);
+                          },
+                          child: Text('Use Gallery'),
+                        )),
+                    images[index] == null
+                        ? Container()
+                        : Container(
                             height: sheetHeight * 0.283,
                             child: FlatButton(
-                              textColor: Theme
-                                  .of(context)
-                                  .primaryColor,
+                              textColor: Theme.of(context).primaryColor,
                               onPressed: () {
                                 setState(() {
-
                                   images[index] = null;
                                   _temporaryPaths[index] = null;
 
@@ -2064,13 +2250,13 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                   //if the last image in the list
                                   if (index == maxImageNo) {
                                     var encodedPaths =
-                                    jsonEncode(_temporaryPaths);
+                                        jsonEncode(_temporaryPaths);
                                     _incidentsModel
                                         .updateTemporaryIncidentField(
-                                        'images',
-                                        encodedPaths,
-                                        _usersModel
-                                            .authenticatedUser.userId);
+                                            'images',
+                                            encodedPaths,
+                                            _usersModel
+                                                .authenticatedUser.userId);
                                     Navigator.pop(context);
                                     return;
                                   }
@@ -2081,7 +2267,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                     images[index] = images[plusOne];
                                     images[plusOne] = null;
                                     _temporaryPaths[index] =
-                                    _temporaryPaths[plusOne];
+                                        _temporaryPaths[plusOne];
                                     _temporaryPaths[plusOne] = null;
                                   }
 
@@ -2089,13 +2275,13 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                   int plusTwo = index + 2;
                                   if (plusTwo > maxImageNo) {
                                     var encodedPaths =
-                                    jsonEncode(_temporaryPaths);
+                                        jsonEncode(_temporaryPaths);
                                     _incidentsModel
                                         .updateTemporaryIncidentField(
-                                        'images',
-                                        encodedPaths,
-                                        _usersModel
-                                            .authenticatedUser.userId);
+                                            'images',
+                                            encodedPaths,
+                                            _usersModel
+                                                .authenticatedUser.userId);
                                     Navigator.pop(context);
                                     return;
                                   }
@@ -2104,7 +2290,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                     images[plusOne] = images[plusTwo];
                                     images[plusTwo] = null;
                                     _temporaryPaths[plusOne] =
-                                    _temporaryPaths[plusTwo];
+                                        _temporaryPaths[plusTwo];
                                     _temporaryPaths[plusTwo] = null;
                                   }
 
@@ -2112,13 +2298,13 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                   int plusThree = index + 3;
                                   if (plusThree > maxImageNo) {
                                     var encodedPaths =
-                                    jsonEncode(_temporaryPaths);
+                                        jsonEncode(_temporaryPaths);
                                     _incidentsModel
                                         .updateTemporaryIncidentField(
-                                        'images',
-                                        encodedPaths,
-                                        _usersModel
-                                            .authenticatedUser.userId);
+                                            'images',
+                                            encodedPaths,
+                                            _usersModel
+                                                .authenticatedUser.userId);
                                     Navigator.pop(context);
                                     return;
                                   }
@@ -2126,7 +2312,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                     images[plusTwo] = images[plusThree];
                                     images[plusThree] = null;
                                     _temporaryPaths[plusTwo] =
-                                    _temporaryPaths[plusThree];
+                                        _temporaryPaths[plusThree];
                                     _temporaryPaths[plusThree] = null;
                                   }
 
@@ -2134,13 +2320,13 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                   int plusFour = index + 4;
                                   if (plusFour > maxImageNo) {
                                     var encodedPaths =
-                                    jsonEncode(_temporaryPaths);
+                                        jsonEncode(_temporaryPaths);
                                     _incidentsModel
                                         .updateTemporaryIncidentField(
-                                        'images',
-                                        encodedPaths,
-                                        _usersModel
-                                            .authenticatedUser.userId);
+                                            'images',
+                                            encodedPaths,
+                                            _usersModel
+                                                .authenticatedUser.userId);
                                     Navigator.pop(context);
                                     return;
                                   }
@@ -2149,12 +2335,12 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                     images[plusThree] = images[plusFour];
                                     images[plusFour] = null;
                                     _temporaryPaths[plusThree] =
-                                    _temporaryPaths[plusFour];
+                                        _temporaryPaths[plusFour];
                                     _temporaryPaths[plusFour] = null;
                                   }
 
                                   var encodedPaths =
-                                  jsonEncode(_temporaryPaths);
+                                      jsonEncode(_temporaryPaths);
                                   _incidentsModel.updateTemporaryIncidentField(
                                       'images',
                                       encodedPaths,
@@ -2164,52 +2350,70 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                               },
                               child: Text('Delete Image'),
                             )),
-                      ],
-                    ),
-                  );
-                }),
+                  ],
+                ),
+              );
+            }),
           );
         });
   }
 
-
-
-
   List<Widget> _buildGridTiles(BoxConstraints constraints, int numOfTiles) {
     List<Container> containers =
-    List<Container>.generate(numOfTiles, (int index) {
+        List<Container>.generate(numOfTiles, (int index) {
       return Container(
         padding: EdgeInsets.all(2.0),
         width: constraints.maxWidth / 5,
         height: constraints.maxWidth / 5,
-        child: GestureDetector(onLongPress: (){
-
-          if(images[index] != null){
-
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return Dialog(
+        child: GestureDetector(
+          onLongPress: () {
+            if (images[index] != null) {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return Dialog(
 //                    shape: RoundedRectangleBorder(
 //                        borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                    child: MediaQuery.of(context).orientation == Orientation.landscape ? Container(width: MediaQuery.of(context).size.width * 0.3,child: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min,children: <Widget>[
-                      Image.file(images[index]),
-                      FlatButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text('Close', style: TextStyle(color: orangeDesign1),),
-                      )
-                    ],),)) :SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min,children: <Widget>[
-                      Image.file(images[index]),
-                      FlatButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text('Close', style: TextStyle(color: orangeDesign1),),
-                      )
-                    ],),),
-                  );
-                });
-          }
-
-        },
+                      child: MediaQuery.of(context).orientation ==
+                              Orientation.landscape
+                          ? Container(
+                              width: MediaQuery.of(context).size.width * 0.3,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Image.file(images[index]),
+                                    FlatButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      child: Text(
+                                        'Close',
+                                        style: TextStyle(color: orangeDesign1),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ))
+                          : SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Image.file(images[index]),
+                                  FlatButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: Text(
+                                      'Close',
+                                      style: TextStyle(color: orangeDesign1),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                    );
+                  });
+            }
+          },
           onTap: () {
             int minusIndex = index - 1;
             if (index == 0) {
@@ -2264,13 +2468,13 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                 SizedBox(
                   height: 10.0,
                 ),
-                LayoutBuilder(
-                    builder: (BuildContext context, BoxConstraints constraints) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: _buildGridTiles(constraints, images.length),
-                      );
-                    }),
+                LayoutBuilder(builder:
+                    (BuildContext context, BoxConstraints constraints) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: _buildGridTiles(constraints, images.length),
+                  );
+                }),
                 SizedBox(
                   height: 10.0,
                 ),
@@ -2283,16 +2487,39 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     );
   }
 
-  void _submitForm(Function saveIncident,
-      UsersModel usersModel) {
+  void _submitForm(Function saveIncident, UsersModel usersModel) {
     //if the form fails the validation then return and dont execute anymore code
     //or is the image is null and we are not in edit mode
     if (!_formKey.currentState.validate()) {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
+              title: Text(
+                'Notice',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: Text(
+                  'Please ensure all required fields are completed (highlighted in red)'),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'OK',
+                    style: TextStyle(color: orangeDesign1),
+                  ),
+                ),
+              ],
+            );
+          });
+
       return;
     }
     _formKey.currentState.save();
 
-    if (_locationValue == 'Post Code'){
+    if (_locationValue == 'Post Code') {
       _formData['latitude'] = null;
       _formData['longitude'] = null;
     } else {
@@ -2303,45 +2530,37 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
     List<File> images = [];
 
-    _temporaryPaths.forEach((dynamic path){
-
-      if(path != null){
+    _temporaryPaths.forEach((dynamic path) {
+      if (path != null) {
         File image = File(path);
 
         images.add(image);
       }
-
-
     });
-
 
     List<Map<String, dynamic>> customFields = [];
 
-    if(_customLabel1.isNotEmpty || _customLabel1 != ''){
-
+    if (_customLabel1.isNotEmpty || _customLabel1 != '') {
       customFields.add({
         'label': _customLabel1,
         'placeholder': _customPlaceholder1,
         'value': _customField1Controller.text,
       });
 
-      if(_customLabel2.isNotEmpty || _customLabel2 != ''){
-
+      if (_customLabel2.isNotEmpty || _customLabel2 != '') {
         customFields.add({
           'label': _customLabel2,
           'placeholder': _customPlaceholder2,
           'value': _customField2Controller.text,
         });
 
-        if(_customLabel3.isNotEmpty || _customLabel3 != ''){
-
+        if (_customLabel3.isNotEmpty || _customLabel3 != '') {
           customFields.add({
             'label': _customLabel3,
             'placeholder': _customPlaceholder3,
             'value': _customField3Controller.text,
           });
         }
-
       }
     }
 
@@ -2350,9 +2569,10 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             authenticatedUser: usersModel.authenticatedUser,
             type: _incidentValue,
             incidentDate: _dateTimeController1.text,
-            latitude: _locationValue == 'Post Code' ? null: _latitude,
-            longitude: _locationValue == 'Post Code' ? null: _longitude,
-            postcode: _locationValue == 'Post Code' ? _postcodeController.text : null,
+            latitude: _locationValue == 'Post Code' ? null : _latitude,
+            longitude: _locationValue == 'Post Code' ? null : _longitude,
+            postcode:
+                _locationValue == 'Post Code' ? _postcodeController.text : null,
             projectName: _projectNameController.text,
             route: _routeValue,
             elr: _elrValue,
@@ -2360,26 +2580,29 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             summary: _summaryTextController.text,
             images: images,
             customFields: customFields.length == 0 ? null : customFields,
-            context: context
-    )
+            context: context)
         .then((Map<String, dynamic> response) {
       if (response['success']) {
+        _clearIncident();
         Navigator.pop(context);
         Fluttertoast.showToast(
             msg: 'Incident Saved Successfully',
             toastLength: Toast.LENGTH_SHORT,
-            timeInSecForIos: 3,
+            timeInSecForIos: 5,
             gravity: ToastGravity.CENTER,
             backgroundColor: orangeDesign1,
             textColor: Colors.black);
         //Navigator.pushReplacementNamed(context, '/raiseIncident');
 
       } else {
+        if (response['message'] ==
+            'No data connection, Incident has been stored locally')
+          _clearIncident();
         Navigator.pop(context);
         Fluttertoast.showToast(
             msg: response['message'],
             toastLength: Toast.LENGTH_SHORT,
-            timeInSecForIos: 3,
+            timeInSecForIos: 5,
             gravity: ToastGravity.CENTER,
             backgroundColor: orangeDesign1,
             textColor: Colors.black);
@@ -2387,71 +2610,82 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     });
   }
 
-  void _resetIncident(){
-
+  void _resetIncident() {
     showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(32.0))),
-            title: Text('Notice', style: TextStyle(fontWeight: FontWeight.bold),),
+            title: Text(
+              'Notice',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             content: Text('Are you sure you wish to reset this form?'),
             actions: <Widget>[
               FlatButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('No', style: TextStyle(color: orangeDesign1),),
+                child: Text(
+                  'No',
+                  style: TextStyle(color: orangeDesign1),
+                ),
               ),
               FlatButton(
                 onPressed: () {
-                  _incidentsModel.resetTemporaryIncident(_usersModel.authenticatedUser.userId);
-                  setState(() {
-                    _incidentValue = 'Incident';
-                    _isAnonymous = false;
-                    _dateTimeController1.text = '';
-                    _locationValue = 'Latitude/Longitude';
-                    _postcodeController.text = '';
-                    _projectNameController.text = '';
-                    _routeValue = 'Select a Route';
-                    _elrValue = 'Select an ELR';
-                    _mileageTextController.text = '';
-                    _summaryTextController.text = '';
-                    _latitude = null;
-                    _longitude = null;
-                    _staticMapLocation = null;
-                    _staticMapPostcode = null;
-                    _locationController.text = '';
-                    _temporaryPaths = [];
-                    images[0] = null;
-                    images[1] = null;
-                    images[2] = null;
-                    images[3] = null;
-                    images[4] = null;
-                    _customField1Controller.text = '';
-                    _customField2Controller.text = '';
-                    _customField3Controller.text = '';
-                    _customLabel1 = '';
-                    _customLabel2 = '';
-                    _customLabel3 = '';
-                    _customPlaceholder1 = '';
-                    _customPlaceholder2 = '';
-                    _customPlaceholder3 = '';
-                    _customFieldCount = 0;
-                    _currentMileage = '';
-                    _currentElr = null;
-                    _currentElrList = [];
-                    _elrDrop = ['Select an ELR'];
-                    _showElr = false;
-
-                  });
-
+                  _clearIncident();
                   Navigator.of(context).pop();
                 },
-                child: Text('Yes', style: TextStyle(color: orangeDesign1),),
+                child: Text(
+                  'Yes',
+                  style: TextStyle(color: orangeDesign1),
+                ),
               )
             ],
           );
         });
+  }
+
+  void _clearIncident() {
+    _incidentsModel
+        .resetTemporaryIncident(_usersModel.authenticatedUser.userId);
+    setState(() {
+      _incidentValue = 'Incident';
+      _isAnonymous = false;
+      _dateTimeController1.text = '';
+      _locationValue = 'Latitude/Longitude';
+      _postcodeController.text = '';
+      _projectNameController.text = '';
+      _routeValue = 'Select a Route';
+      _elrValue = 'Select an ELR';
+      _mileageTextController.text = '';
+      _summaryTextController.text = '';
+      _latitude = null;
+      _longitude = null;
+      _staticMapLocation = null;
+      _staticMapPostcode = null;
+      _locationController.text = '';
+      _temporaryPaths = [];
+      images[0] = null;
+      images[1] = null;
+      images[2] = null;
+      images[3] = null;
+      images[4] = null;
+      _customField1Controller.text = '';
+      _customField2Controller.text = '';
+      _customField3Controller.text = '';
+      _customLabel1 = '';
+      _customLabel2 = '';
+      _customLabel3 = '';
+      _customPlaceholder1 = '';
+      _customPlaceholder2 = '';
+      _customPlaceholder3 = '';
+      _customFieldCount = 0;
+      _currentMileage = '';
+      _currentElr = null;
+      _currentElrList = [];
+      _elrDrop = ['Select an ELR'];
+      _showElr = false;
+    });
   }
 
   @override
@@ -2465,13 +2699,22 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     return Scaffold(
       appBar: AppBar(
         backgroundColor: orangeDesign1,
-        title: Text('Raise Incident', style: TextStyle(color: Colors.black),),
-        actions: <Widget>[IconButton(icon: Icon(Icons.refresh), onPressed: _resetIncident)],
+        title: Text(
+          'Raise Incident',
+          style: TextStyle(color: Colors.black),
+        ),
+        actions: <Widget>[
+          IconButton(icon: Icon(Icons.refresh), onPressed: _resetIncident)
+        ],
       ),
       drawer: SideDrawer(),
-      body: _loadingTemporary ? Center(child: CircularProgressIndicator(
-        valueColor: new AlwaysStoppedAnimation<Color>(orangeDesign1),
-      ),) : _buildPageContent(context, _incidentsModel, _usersModel),
+      body: _loadingTemporary
+          ? Center(
+              child: CircularProgressIndicator(
+                valueColor: new AlwaysStoppedAnimation<Color>(orangeDesign1),
+              ),
+            )
+          : _buildPageContent(context, _incidentsModel, _usersModel),
     );
   }
 
@@ -2479,8 +2722,17 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   void afterFirstLayout(BuildContext context) {
     // Calling the same function "after layout" to resolve the issue.
 
-    if(_usersModel.authenticatedUser.darkMode != null){
-      if(_usersModel.authenticatedUser.darkMode) GlobalFunctions.setDarkMode(context);
+    if (_usersModel.authenticatedUser.darkMode != null) {
+      if (_usersModel.authenticatedUser.darkMode)
+        GlobalFunctions.setDarkMode(context);
     }
+
+    _incidentsModel.getCustomCameraToast().then((int value){
+
+      if(value == 1){
+        GlobalFunctions.showToast('Unable to take photo, please try again');
+        _incidentsModel.updateCustomCameraValue(1, 0);
+      }
+    });
   }
 }

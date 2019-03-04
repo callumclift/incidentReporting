@@ -55,6 +55,23 @@
                     }
                 },
                 {
+                    "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/ucrop-2.2.2.aar/a5b746e96d8176d302ba6493e56a8f23/res/values-de/values-de.xml",
+                    "from": {
+                        "startLines": "2,3,4",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,121,179",
+                        "endColumns": "65,57,55",
+                        "endOffsets": "116,174,230"
+                    },
+                    "to": {
+                        "startLines": "39,40,41",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "4875,4941,4999",
+                        "endColumns": "65,57,55",
+                        "endOffsets": "4936,4994,5050"
+                    }
+                },
+                {
                     "source": "/Users/callumclift/.gradle/caches/transforms-1/files-1.1/appcompat-v7-27.1.1.aar/5e043a3fa1a644365c65ea839743e6e4/res/values-de/values-de.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",

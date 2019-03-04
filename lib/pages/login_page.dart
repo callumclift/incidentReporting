@@ -120,34 +120,70 @@ class _LoginPageState extends State<LoginPage> with AfterLayoutMixin<LoginPage> 
   }
 
   void _submitForm(UsersModel model) async {
-    if (!_authFormKey.currentState.validate()) {
-      return;
-    }
-    _authFormKey.currentState.save();
-    //print(_authFormData);
+    if (!_authFormKey.currentState.validate() && testMode == false) {
 
-    Map<String, dynamic> successInformation =
-        await model.login(_authFormData['username'], _authFormData['password'], _rememberMe, context);
+        return;
+      }
 
-    if (successInformation['success']) {
-      Navigator.pushReplacementNamed(context, '/raiseIncident');
+
+    if(!testMode){
+
+      _authFormKey.currentState.save();
+      //print(_authFormData);
+
+      Map<String, dynamic> successInformation =
+      await model.login(_authFormData['username'], _authFormData['password'], _rememberMe, context);
+
+      if (successInformation['success']) {
+        Navigator.pushReplacementNamed(context, '/raiseIncident');
+      } else {
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                title: Text('An error occured'),
+                content: Text(successInformation['message']),
+                actions: <Widget>[
+                  FlatButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text('ok', style: TextStyle(color: orangeDesign1),),
+                  ),
+                ],
+              );
+            });
+      }
+
     } else {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(32.0))),
-              title: Text('An error occured'),
-              content: Text(successInformation['message']),
-              actions: <Widget>[
-                FlatButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text('ok', style: TextStyle(color: orangeDesign1),),
-                ),
-              ],
-            );
-          });
+
+      _authFormKey.currentState.save();
+      //print(_authFormData);
+
+        Map<String, dynamic> successInformation =
+        await model.loginTest(_rememberMe, context);
+
+        if (successInformation['success']) {
+          Navigator.pushReplacementNamed(context, '/raiseIncident');
+        } else {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                  title: Text('An error occured'),
+                  content: Text(successInformation['message']),
+                  actions: <Widget>[
+                    FlatButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text('ok', style: TextStyle(color: orangeDesign1),),
+                    ),
+                  ],
+                );
+              });
+        }
+
     }
+
   }
 
 

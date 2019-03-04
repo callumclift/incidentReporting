@@ -12,9 +12,12 @@
 #import <firebase_database/FirebaseDatabasePlugin.h>
 #import <flutter_exif_rotation/FlutterExifRotationPlugin.h>
 #import <flutter_image_compress/FlutterImageCompressPlugin.h>
+#import <flutter_native_image/FlutterNativeImagePlugin.h>
 #import <fluttertoast/FluttertoastPlugin.h>
 #import <google_maps_flutter/GoogleMapsPlugin.h>
 #import <google_sign_in/GoogleSignInPlugin.h>
+#import <image_crop/ImageCropPlugin.h>
+#import <image_cropper/ImageCropperPlugin.h>
 #import <image_picker/ImagePickerPlugin.h>
 #import <location/LocationPlugin.h>
 #import <map_view/MapViewPlugin.h>
@@ -36,9 +39,12 @@
   [FLTFirebaseDatabasePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseDatabasePlugin"]];
   [FlutterExifRotationPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterExifRotationPlugin"]];
   [FlutterImageCompressPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterImageCompressPlugin"]];
+  [FlutterNativeImagePlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterNativeImagePlugin"]];
   [FluttertoastPlugin registerWithRegistrar:[registry registrarForPlugin:@"FluttertoastPlugin"]];
   [FLTGoogleMapsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTGoogleMapsPlugin"]];
   [FLTGoogleSignInPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTGoogleSignInPlugin"]];
+  [ImageCropPlugin registerWithRegistrar:[registry registrarForPlugin:@"ImageCropPlugin"]];
+  [FLTImageCropperPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImageCropperPlugin"]];
   [FLTImagePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImagePickerPlugin"]];
   [LocationPlugin registerWithRegistrar:[registry registrarForPlugin:@"LocationPlugin"]];
   [MapViewPlugin registerWithRegistrar:[registry registrarForPlugin:@"MapViewPlugin"]];

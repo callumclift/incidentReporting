@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Incident Reporting</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,22 +24,20 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>io.flutter.embedded_views_preview</key>
-    <true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Allow Incident Reporting to use your camera?</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>User location is required to add an incident location</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>User location is required to add an incident location</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Allow incident reporting to use your mic?</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow Incident Reporting to access your photo library?</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-	<key>NSCameraUsageDescription</key>
-    <string>Allow Incident Reporting to use your camera?</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-        <string>Allow Incident Reporting to access your photo library?</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>Allow incident reporting to use your mic?</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>User location is required to add an incident location</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-    	<string>User location is required to add an incident location</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -53,5 +53,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
 </dict>
 </plist>

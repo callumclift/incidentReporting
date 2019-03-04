@@ -121,6 +121,15 @@ class DatabaseHelper {
   String imagePathTable = 'image_path_table';
   String imagePath = 'image_path';
 
+  //Cached Image Path Table
+  String cachedImagePathTable = 'cached_path_table';
+  String cachedImagePath = 'cached_path';
+
+  //Camera Table
+  String cameraTable = 'camera_table';
+  String customCamera = 'custom_camera';
+  String showToast = 'show_toast';
+
 
 
   //Named constructor to create instance of DatabaseHelper
@@ -189,6 +198,12 @@ class DatabaseHelper {
 
     await db.execute(
         'CREATE TABLE $imagePathTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $imagePath VARCHAR(255) default NULL)');
+
+    await db.execute(
+        'CREATE TABLE $cachedImagePathTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $cachedImagePath VARCHAR(255) default NULL)');
+
+    await db.execute(
+        'CREATE TABLE $cameraTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $customCamera TINYINT(1) default 0 NOT NULL, $showToast TINYINT(1) default 0 NOT NULL)');
     
     await db.rawInsert("INSERT INTO $routesTable ($routeName, $routeCode) VALUES "
         "('Anglia', 'QT'),"
@@ -202,6 +217,9 @@ class DatabaseHelper {
         "('Wessex', 'QW'),"
         "('Western (West)', 'QD'),"
         "('Western (Thames Valley)', 'QV')");
+
+    await db.insert(cameraTable, {'custom_camera' : 0, 'show_toast' : 0});
+
   }
 
   //Get all incidents from the database
@@ -582,6 +600,59 @@ class DatabaseHelper {
 
     return imagePath;
   }
+
+  Future<int> getCachedImagePathCount() async {
+    Database db = await this.database;
+    List<Map<String, dynamic>> x =
+    await db.rawQuery('SELECT COUNT (*) from $cachedImagePathTable');
+    int result = Sqflite.firstIntValue(x);
+    return result;
+  }
+
+  Future<int> addCachedImagePath(Map<String, dynamic> cachedImagePathData) async {
+    Database db = await this.database;
+
+    var result = await db.insert(cachedImagePathTable, cachedImagePathData);
+
+    return result;
+  }
+
+  Future<String> getCachedImagePath() async {
+    Database db = await this.database;
+    String cachedPath;
+
+    var result = await db
+        .rawQuery('SELECT * FROM $cachedImagePathTable');
+
+    if(result != null){
+      cachedPath = result[0]['cached_path'];
+    }
+
+    return cachedPath;
+  }
+
+  Future<Map<String, dynamic>> getCustomCamera() async {
+    Database db = await this.database;
+    Map<String, dynamic> customCameraVal;
+
+    var result = await db
+        .rawQuery('SELECT * FROM $cameraTable');
+
+    if(result != null){
+      customCameraVal = result[0];
+    }
+
+    return customCameraVal;
+  }
+
+  Future<int> updateCustomCamera(int customValue, int toastValue) async {
+    Database db = await this.database;
+
+    var result = await db.update(cameraTable, {'custom_camera' : customValue, 'show_toast' : toastValue});
+
+    return result;
+  }
+
 
 
 }

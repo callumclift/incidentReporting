@@ -10,6 +10,8 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as imagePackage;
+import 'package:device_info/device_info.dart';
+
 
 import '../models/authenticated_user.dart';
 import '../models/incident.dart';
@@ -1263,35 +1265,8 @@ class IncidentsModel extends Model {
               _pendingIncidents = false;
             }
 
-            //Delete the temporary images and replace images with compressed ones
-            int imagePathCount = await databaseHelper.getImagePathCount();
-
-            if (imagePathCount == 1) {
-              String imagePath = await databaseHelper.getImagePath();
-
-
-            if (imagePath != null) {
-              Directory dir = Directory(imagePath);
-              print('this is the dir');
-              print(dir);
-
-              if (dir.existsSync()) {
-                print('it exsits tjis directory');
-                List<FileSystemEntity> list = dir.listSync(recursive: false)
-                    .toList();
-                print('thisis the list of the files');
-                print(list);
-
-                for (FileSystemEntity file in list) {
-                  if (file.path.contains('.jpg')) file.deleteSync(
-                      recursive: false);
-                }
-              } else {
-                print('this does not exist');
-              }
-            }
-          }
-
+            await deleteTemporaryImages();
+            await deleteTemporaryCachedImages();
 
 
           } else {
@@ -1310,6 +1285,87 @@ class IncidentsModel extends Model {
     _isLoading = false;
     notifyListeners();
     return {'success': success, 'message': message};
+  }
+
+  Future<void> deleteTemporaryImages() async{
+
+    DatabaseHelper databaseHelper = DatabaseHelper();
+    //Delete the temporary images and replace images with compressed ones
+    int imagePathCount = await databaseHelper.getImagePathCount();
+
+    if (imagePathCount == 1) {
+      String imagePath = await databaseHelper.getImagePath();
+
+
+      if (imagePath != null) {
+        Directory dir = Directory(imagePath);
+        print('this is the dir');
+        print(dir);
+
+        if (dir.existsSync()) {
+          print('it exsits tjis directory');
+          List<FileSystemEntity> list = dir.listSync(recursive: false)
+              .toList();
+          print('thisis the list of the files');
+          print(list);
+
+          for (FileSystemEntity file in list) {
+            if (file.path.contains('.jpg') || file.path.contains('.png')) file.deleteSync(
+                recursive: false);
+          }
+        } else {
+          print('this does not exist');
+        }
+      }
+    }
+  }
+
+  Future<void> deleteTemporaryCachedImages() async{
+
+    print('ok its in delete cached images');
+
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    int customCameraValue = await getCustomCamera();
+
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+
+    if(customCameraValue == 1 || androidInfo.model == 'Pixel 2 XL'){
+
+      //Delete the cached images from the temp folder
+      int cachedImagePathCount = await databaseHelper.getCachedImagePathCount();
+
+      if (cachedImagePathCount == 1) {
+        String cachedImagePath = await databaseHelper.getCachedImagePath();
+
+
+        if (cachedImagePath != null) {
+          Directory dir = Directory(cachedImagePath);
+          print('this is the dir');
+          print(dir);
+
+          if (dir.existsSync()) {
+            print('it exsits tjis directory');
+            List<FileSystemEntity> list = dir.listSync(recursive: false)
+                .toList();
+            print('this is the list of the files');
+            print(list);
+
+            for (FileSystemEntity file in list) {
+              if (file.path.contains('.jpg') || file.path.contains('.png')) file.deleteSync(
+                  recursive: false);
+            }
+          } else {
+            print('this does not exist');
+          }
+        }
+      }
+
+
+    }
+
   }
 
 //  Future<Map<String, dynamic>> addIncidentLocally({@required bool anonymous,
@@ -1706,6 +1762,10 @@ class IncidentsModel extends Model {
                 print('ok this check has worked no more pending');
                 _pendingIncidents = false;
               }
+
+              await deleteTemporaryImages();
+              await deleteTemporaryCachedImages();
+
             } else {
               message = 'no valid session found';
             }
@@ -2058,5 +2118,56 @@ class IncidentsModel extends Model {
     String imagePath = await databaseHelper.getImagePath();
 
     return imagePath;
+  }
+
+  Future<int> addCachedImagePath(String path) async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    Map<String,dynamic> cachedImagePathData = {'cached_path' : path};
+
+    int addCheck =
+    await databaseHelper.addCachedImagePath(cachedImagePathData);
+    return addCheck;
+  }
+
+  Future<int> checkCachedImagePathCount() async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    int count = await databaseHelper.getCachedImagePathCount();
+
+    return count;
+  }
+
+  Future <String> getCachedImagePath() async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+
+    String cachedPath = await databaseHelper.getCachedImagePath();
+
+    return cachedPath;
+  }
+
+  Future <int> updateCustomCameraValue(int customValue, int showValue) async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+    int updateCheck = await databaseHelper.updateCustomCamera(customValue, showValue);
+
+    return updateCheck;
+  }
+
+  Future <int> getCustomCamera() async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+    Map <String, dynamic> customCameraMap  = await databaseHelper.getCustomCamera();
+
+    int customValue = customCameraMap['custom_camera'];
+
+    return customValue;
+  }
+
+  Future <int> getCustomCameraToast() async {
+    DatabaseHelper databaseHelper = DatabaseHelper();
+    Map <String, dynamic> customCameraMap  = await databaseHelper.getCustomCamera();
+
+    int toastValue = customCameraMap['show_toast'];
+
+    return toastValue;
   }
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/android.iml" filepath="$PROJECT_DIR$/android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/camera-0.2.9+1/android/camera.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/camera-0.2.9+1/android/camera.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/cloud_functions-0.0.5/android/cloud_functions.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/cloud_functions-0.0.5/android/cloud_functions.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/connectivity-0.3.2/android/connectivity.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/connectivity-0.3.2/android/connectivity.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/device_info-0.3.0/android/device_info.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/device_info-0.3.0/android/device_info.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-0.6.6/android/firebase_auth.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-0.6.6/android/firebase_auth.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-0.2.5+1/android/firebase_core.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-0.2.5+1/android/firebase_core.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_database-1.0.5/android/firebase_database.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/firebase_database-1.0.5/android/firebase_database.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_exif_rotation-0.1.2/android/flutter_exif_rotation.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_exif_rotation-0.1.2/android/flutter_exif_rotation.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_image_compress-0.2.4/android/flutter_image_compress.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_image_compress-0.2.4/android/flutter_image_compress.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/fluttertoast-2.2.6/android/fluttertoast.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/fluttertoast-2.2.6/android/fluttertoast.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/google_maps_flutter-0.2.0+2/android/google_maps_flutter.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/google_maps_flutter-0.2.0+2/android/google_maps_flutter.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in-3.2.4/android/google_sign_in.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in-3.2.4/android/google_sign_in.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker-0.4.12+1/android/image_picker.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/image_picker-0.4.12+1/android/image_picker.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/location-1.4.1/android/location.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/location-1.4.1/android/location.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/map_view-0.0.14/android/map_view.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/map_view-0.0.14/android/map_view.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider-0.4.1/android/path_provider.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider-0.4.1/android/path_provider.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/permission-0.1.1/android/permission.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/permission-0.1.1/android/permission.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences-0.4.3/android/shared_preferences.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences-0.4.3/android/shared_preferences.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/sqflite-0.13.0+1/android/sqflite.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/sqflite-0.13.0+1/android/sqflite.iml" />
+      <module fileurl="file://$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher-3.0.3/android/url_launcher.iml" filepath="$USER_HOME$/appDevelopment/flutter/.pub-cache/hosted/pub.dartlang.org/url_launcher-3.0.3/android/url_launcher.iml" />
+    </modules>
+  </component>
+</project>
