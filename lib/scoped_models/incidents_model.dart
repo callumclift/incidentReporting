@@ -6,7 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
-import 'package:scoped_model/scoped_model.dart';
+import 'package:provider/provider.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as imagePackage;
@@ -21,8 +21,12 @@ import '../shared/global_config.dart';
 import '../shared/global_functions.dart';
 import '../scoped_models/users_model.dart';
 
-class IncidentsModel extends Model {
-  final UsersModel _usersModel = UsersModel();
+class IncidentsModel extends ChangeNotifier {
+
+  UsersModel _usersModel = UsersModel();
+
+  IncidentsModel(this._usersModel);
+
   List<Incident> _incidents = [];
   List<Incident> _myIncidents = [];
   List<IncidentType> _incidentTypes = [];
@@ -149,7 +153,7 @@ class IncidentsModel extends Model {
 
   Future<Map<String, dynamic>> getCustomIncidents(AuthenticatedUser authenticatedUser) async {
     _isLoading = true;
-    notifyListeners();
+    //notifyListeners();
 
     bool success = false;
     String message = 'Something went wrong';
@@ -389,13 +393,13 @@ class IncidentsModel extends Model {
     }
 
     _isLoading = false;
-    notifyListeners();
+    //notifyListeners();
     return {'success': success, 'message': message};
   }
 
   Future<Map<String, dynamic>> getIncidents(AuthenticatedUser authenticatedUser) async {
     _isLoading = true;
-    notifyListeners();
+    //notifyListeners();
 
     bool success = false;
     String message = 'Something went wrong';
@@ -897,7 +901,7 @@ class IncidentsModel extends Model {
 
   Future<Map<String, dynamic>> getIncidentImages(AuthenticatedUser authenticatedUser) async {
     _isLoading = true;
-    notifyListeners();
+    //notifyListeners();
 
     bool success = false;
     String message = 'Something went wrong';
@@ -1266,7 +1270,7 @@ class IncidentsModel extends Model {
             }
 
             await deleteTemporaryImages();
-            await deleteTemporaryCachedImages();
+            if(Platform.isAndroid) await deleteTemporaryCachedImages();
 
 
           } else {
@@ -1764,7 +1768,9 @@ class IncidentsModel extends Model {
               }
 
               await deleteTemporaryImages();
-              await deleteTemporaryCachedImages();
+
+              if(Platform.isAndroid) await deleteTemporaryCachedImages();
+
 
             } else {
               message = 'no valid session found';

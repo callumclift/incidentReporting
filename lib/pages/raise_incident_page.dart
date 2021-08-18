@@ -9,21 +9,17 @@ import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-import 'package:scoped_model/scoped_model.dart';
+import 'package:provider/provider.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:map_view/map_view.dart';
 import 'package:image/image.dart' as imagePackage;
 import 'package:path/path.dart' as path;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_crop/image_crop.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:flutter/rendering.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
@@ -38,7 +34,6 @@ import '../widgets/form_inputs/locate_user.dart';
 import '../widgets/helpers/app_side_drawer.dart';
 import '../widgets/ui_elements/dropdown_formfield.dart';
 import '../widgets/ui_elements/dropdown_formfield_expanded.dart';
-import '../widgets/ui_elements/fix_dropdown.dart';
 import '../widgets/helpers/add_images.dart';
 import '../shared/global_functions.dart';
 import '../shared/global_config.dart';
@@ -56,7 +51,7 @@ class RaiseIncidentPage extends StatefulWidget {
 
 class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     with AfterLayoutMixin<RaiseIncidentPage> {
-  GoogleMapController _mapController;
+  //GoogleMapController _mapController;
   bool _disableScreen = false;
   IncidentsModel _incidentsModel;
   UsersModel _usersModel;
@@ -202,8 +197,8 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   @override
   void initState() {
     _loadingTemporary = true;
-    _incidentsModel = ScopedModel.of<IncidentsModel>(context);
-    _usersModel = ScopedModel.of<UsersModel>(context);
+    _incidentsModel = Provider.of<IncidentsModel>(context, listen: false);
+    _usersModel = Provider.of<UsersModel>(context, listen: false);
 
 //    if (_incidentsModel.allIncidentTypes != null) {
 //      _incidentTypes = _incidentsModel.allIncidentTypes;
@@ -1499,225 +1494,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     }
   }
 
-  void onTakePictureButtonPressed(int index, CameraController controller,
-      GlobalKey<ScaffoldState> scaffoldKey, double scale) async {
-    String filePath = await takePicture(scaffoldKey, controller);
-
-    if (filePath != null) {
-      int pathCount = await _incidentsModel.checkImagePathCount();
-      if (pathCount == 0) {
-        String path = filePath;
-
-        int lastIndex = path.lastIndexOf('/');
-
-        String picturesFolder = path.substring(0, lastIndex);
-
-        await _incidentsModel.addImagePath(picturesFolder);
-      }
-    }
-
-    if (mounted) {
-      setState(() {
-        //imagePath = filePath;
-      });
-      if (filePath != null) {
-        File image = File(filePath);
-
-        if (image != null) {
-          bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
-
-          if (isAndroid)
-            image = await FlutterExifRotation.rotateImage(path: image.path);
-
-          //logic for the zoomed image
-          if (scale != null && scale != 1.0) {
-            print('ok its in the scale conditions');
-
-            ImageProperties properties =
-                await FlutterNativeImage.getImageProperties(filePath);
-
-            int width = properties.width;
-            print(width);
-            int height = properties.height;
-            print(height);
-
-            double newWidth = (width / scale);
-            print('this is the newWidth ' + newWidth.toString());
-            double newHeight = (height / scale);
-            print('this is the newHeight ' + newHeight.toString());
-
-            double middleWidth = (width / 2);
-            print('this is the middleWidth ' + middleWidth.toString());
-            double middleHeight = (height / 2);
-            print('this is the middleHeight ' + middleHeight.toString());
-
-            double startingX = middleWidth - (newWidth / 2);
-            print('this is the startingX ' + startingX.toString());
-
-            double startingY = middleHeight - (newHeight / 2);
-            print('this is the startingY ' + startingY.toString());
-
-            print(properties.width);
-            print(properties.height);
-
-            File croppedFile = await FlutterNativeImage.cropImage(
-                filePath,
-                startingX.round(),
-                startingY.round(),
-                newWidth.round(),
-                newHeight.round());
-            print('here is the cropped file path');
-            print(croppedFile.path);
-            image = File(croppedFile.path);
-
-
-            ImageProperties croppedProperties = await FlutterNativeImage.getImageProperties(croppedFile.path);
-
-
-            File compressedFile = await FlutterNativeImage.compressImage(croppedFile.path, quality: 100,
-                targetWidth: 800,
-                targetHeight: (croppedProperties.height * 800 / croppedProperties.width).round());
-
-            print('here is the cropped file path');
-            print(compressedFile.path);
-
-            image = File(compressedFile.path);
-
-
-            //add the temporary path of the cropped image so that it can be deleted late after the incident has been submitted
-            if (croppedFile.path != null) {
-              int cachedPathCount = await _incidentsModel.checkCachedImagePathCount();
-              if (cachedPathCount == 0) {
-                String path = croppedFile.path;
-
-                int lastIndex = path.lastIndexOf('/');
-
-                String cachedPicturesFolder = path.substring(0, lastIndex);
-
-                print('this is the cache folder path');
-                print(cachedPicturesFolder);
-
-                await _incidentsModel.addCachedImagePath(cachedPicturesFolder);
-              }
-            }
-          } else if(scale == null || scale == 1.0) {
-            print('it is in here');
-
-            ImageProperties properties = await FlutterNativeImage.getImageProperties(filePath);
-
-            File compressedFile = await FlutterNativeImage.compressImage(filePath, quality: 100,
-                targetWidth: 800,
-                targetHeight: (properties.height * 800 / properties.width).round());
-
-            image = File(compressedFile.path);
-
-            //add the temporary path of the cached image so that it can be deleted late after the incident has been submitted
-            if (compressedFile.path != null) {
-              int cachedPathCount = await _incidentsModel.checkCachedImagePathCount();
-              if (cachedPathCount == 0) {
-                String path = compressedFile.path;
-
-                int lastIndex = path.lastIndexOf('/');
-
-                String cachedPicturesFolder = path.substring(0, lastIndex);
-
-                print('this is the cache folder path');
-                print(cachedPicturesFolder);
-
-                await _incidentsModel.addCachedImagePath(cachedPicturesFolder);
-              }
-            }
-          }
-
-          final Directory extDir = await getApplicationDocumentsDirectory();
-          final String dirPath = '${extDir.path}/images' +
-              index.toString() +
-              _usersModel.authenticatedUser.userId.toString();
-
-          if (Directory(dirPath).existsSync()) {
-            print('it exists');
-            if (scale == null || scale == 1.0) imageCache.clear();
-            var dir = new Directory(dirPath);
-            dir.deleteSync(recursive: true);
-            if (Directory(dirPath).existsSync()) {
-              print('still exists');
-            } else {
-              print('doesnt exist');
-            }
-          }
-
-          new Directory(dirPath).createSync(recursive: true);
-          String path =
-              '$dirPath/temporaryIncidentImage' + index.toString() + '.jpg';
-
-          File changedImage = image.copySync(path);
-
-          path = changedImage.path;
-
-          if (images[index] != null) {
-            setState(() {
-              //this is setting the image locally here
-              images[index] = image;
-              if (_temporaryPaths.length == 0) {
-                _temporaryPaths.add(path);
-              } else if (_temporaryPaths.length < index + 1) {
-                _temporaryPaths.add(path);
-              } else {
-                _temporaryPaths[index] = path;
-              }
-            });
-          } else {
-            setState(() {
-              images[index] = changedImage;
-              if (_temporaryPaths.length == 0) {
-                _temporaryPaths.add(path);
-              } else if (index == 0 && _temporaryPaths.length >= 1) {
-                _temporaryPaths[index] = path;
-              } else if (index == 1 && _temporaryPaths.length < 2) {
-                _temporaryPaths.add(path);
-              } else if (index == 1 && _temporaryPaths.length >= 2) {
-                _temporaryPaths[index] = path;
-              } else if (index == 2 && _temporaryPaths.length < 3) {
-                _temporaryPaths.add(path);
-              } else if (index == 2 && _temporaryPaths.length >= 3) {
-                _temporaryPaths[index] = path;
-              } else if (index == 3 && _temporaryPaths.length < 4) {
-                _temporaryPaths.add(path);
-              } else if (index == 3 && _temporaryPaths.length >= 4) {
-                _temporaryPaths[index] = path;
-              } else if (index == 4 && _temporaryPaths.length < 5) {
-                _temporaryPaths.add(path);
-              } else if (index == 4 && _temporaryPaths.length >= 5) {
-                _temporaryPaths[index] = path;
-              }
-            });
-          }
-          _formData['images'] = images;
-
-          var encodedPaths = jsonEncode(_temporaryPaths);
-
-          _incidentsModel.updateTemporaryIncidentField(
-              'images', encodedPaths, _usersModel.authenticatedUser.userId);
-        }
-
-        setState(() {
-          print('its in here where it should be');
-          setState(() {
-            images[index] = image;
-            _disableScreen = false;
-            _pickInProgress = false;
-          });
-          Navigator.pop(context);
-          SystemChrome.setPreferredOrientations([
-            DeviceOrientation.portraitUp,
-            DeviceOrientation.portraitDown,
-            DeviceOrientation.landscapeLeft,
-            DeviceOrientation.landscapeRight
-          ]);
-        });
-      }
-    }
-  }
 
   void showInSnackBar(GlobalKey<ScaffoldState> scaffoldKey, String message) {
     scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(message)));
@@ -1742,7 +1518,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     }
 
     try {
-      await controller.takePicture(filePath, FlashMode.auto);
+      await controller.takePicture(filePath);
     } on CameraException catch (e) {
       _showCameraException(scaffoldKey, e);
       return null;
@@ -1868,8 +1644,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     _pickInProgress = true;
     Navigator.pop(context);
 
-    print(androidInfo.model);
-
 
     int customCamera = await _incidentsModel.getCustomCamera();
     bool currentRememberMe = _prefs.getBool('rememberMe');
@@ -1878,7 +1652,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
     if ((source == ImageSource.camera && customCamera == 1 && Platform.isAndroid) || (source == ImageSource.camera &&
         Platform.isAndroid &&
-        (androidInfo.model == 'Pixel 2 XL' ||
+        (androidInfo.model == 'SM-T365' ||
             androidInfo.model == 'ONEPLUS A6013'))) {
       await SystemChrome.setPreferredOrientations(
           [DeviceOrientation.portraitUp]);
@@ -2013,8 +1787,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                   controller.value.isInitialized) {
                                 print('this is the zoom scale');
                                 print(zoomController.scale);
-                                onTakePictureButtonPressed(
-                                    index, controller, _scaffoldKey, scale);
+
                               } else {}
                             },
                             child: Container(padding: EdgeInsets.only(bottom: 10.0),
@@ -2691,10 +2464,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   @override
   Widget build(BuildContext context) {
     print('[Raise Incident Page] - build page');
-    final _usersModel =
-        ScopedModel.of<UsersModel>(context, rebuildOnChange: true);
-    final IncidentsModel _incidentsModel =
-        ScopedModel.of<IncidentsModel>(context, rebuildOnChange: true);
 
     return Scaffold(
       appBar: AppBar(

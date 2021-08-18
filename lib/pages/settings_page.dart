@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scoped_model/scoped_model.dart';
-import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -25,7 +24,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   Widget _buildPageContent() {
-    final _model = ScopedModel.of<UsersModel>(context, rebuildOnChange: true);
+    final _model = Provider.of<UsersModel>(context, listen: false);
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 800.0 ? 500.0 : deviceWidth * 0.95;
     final double targetPadding = deviceWidth - targetWidth;

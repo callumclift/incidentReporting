@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'fix_dropdown.dart' as fix;
 
 class DropdownFormFieldExpanded extends StatefulWidget {
   final String hint;
@@ -45,8 +44,8 @@ class _DropdownFormFieldExpanded extends State<DropdownFormFieldExpanded> {
             errorText: state.hasError ? state.errorText : null,
           ),
           isEmpty: widget.value == '' || widget.value == null,
-          child: fix.DropdownButtonHideUnderline(
-            child: fix.FixDropDown(
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton(
               value: widget.value,
               isDense: widget.expanded ? false : true,
               onChanged: (dynamic newValue) {
@@ -54,7 +53,7 @@ class _DropdownFormFieldExpanded extends State<DropdownFormFieldExpanded> {
                 widget.onChanged(newValue);
               },
               items: widget.items.map((dynamic value) {
-                return fix.FixDropdownMenuItem(
+                return DropdownMenuItem(
                   value: value,
                   child: Text(value),
                 );

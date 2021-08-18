@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:scoped_model/scoped_model.dart';
+import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -14,9 +14,6 @@ import '../scoped_models/users_model.dart';
 import '../shared/global_config.dart';
 
 class MyIncidentsListPage extends StatefulWidget {
-  final IncidentsModel model;
-
-  MyIncidentsListPage(this.model);
 
   @override
   State<StatefulWidget> createState() {
@@ -28,18 +25,20 @@ class MyIncidentsListPage extends StatefulWidget {
 class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
 
   AuthenticatedUser _authenticatedUser;
+  IncidentsModel _incidentsModel;
 
   @override
   initState() {
 
-    _authenticatedUser = ScopedModel.of<UsersModel>(context).authenticatedUser;
+    _authenticatedUser = Provider.of<UsersModel>(context, listen: false).authenticatedUser;
+    _incidentsModel = Provider.of<IncidentsModel>(context, listen: false);
     getIncidents();
     //widget.model.fetchMyIncidents();
     super.initState();
   }
 
   getIncidents() async {
-    widget.model.getIncidents(_authenticatedUser).then((Map<String, dynamic> success) {
+    _incidentsModel.getIncidents(_authenticatedUser).then((Map<String, dynamic> success) {
       if (success['success'] != true ) {
         Fluttertoast.showToast(
             msg: success['message'],
@@ -190,8 +189,8 @@ class _MyIncidentsListPageState extends State<MyIncidentsListPage> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return ScopedModelDescendant<IncidentsModel>(
-      builder: (BuildContext context, Widget child, IncidentsModel model) {
+    return Consumer<IncidentsModel>(
+      builder: (context, model, child) {
         List<Incident> incidents = model.allMyIncidents;
         return Scaffold(
             appBar: AppBar(

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:map_view/map_view.dart';
+//import 'package:map_view/map_view.dart';
 import 'package:location/location.dart' as geoloc;
 import 'package:http/http.dart' as http;
 import 'dart:io' show Platform;
@@ -76,21 +76,21 @@ class _LocateUserState extends State<LocateUser> {
     //prevent memory leaks
     if (mounted) {
 
-      final StaticMapProvider staticMapViewProvider =
-          StaticMapProvider(browserApi);
-      final Uri staticMapUri = staticMapViewProvider.getStaticUriWithMarkers([
-        Marker('position', 'Position', _locationData.latitude,
-            _locationData.longitude)
-      ],
-          center: Location(_locationData.latitude, _locationData.longitude),
-          width: 500,
-          height: 300,
-          maptype: StaticMapViewType.roadmap);
-      widget.setLocation(_locationData);
-      setState(() {
-        //_locationInputController.text = _locationData.latitude.toString() + " " + _locationData.longitude.toString();
-        _staticMapUri = staticMapUri;
-      });
+      // final StaticMapProvider staticMapViewProvider =
+      //     StaticMapProvider(browserApi);
+      // final Uri staticMapUri = staticMapViewProvider.getStaticUriWithMarkers([
+      //   Marker('position', 'Position', _locationData.latitude,
+      //       _locationData.longitude)
+      // ],
+      //     center: Location(_locationData.latitude, _locationData.longitude),
+      //     width: 500,
+      //     height: 300,
+      //     maptype: StaticMapViewType.roadmap);
+      // widget.setLocation(_locationData);
+      // setState(() {
+      //   //_locationInputController.text = _locationData.latitude.toString() + " " + _locationData.longitude.toString();
+      //   _staticMapUri = staticMapUri;
+      // });
     }
   }
 

@@ -4,11 +4,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import 'package:scoped_model/scoped_model.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:location/location.dart' as geoLocation;
-import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:random_string/random_string.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,10 +14,9 @@ import 'package:rxdart/subjects.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image/image.dart' as imagePackage;
 import 'package:encrypt/encrypt.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 import '../shared/global_config.dart';
-import '../widgets/helpers/static_map_provider.dart';
+//import '../widgets/helpers/static_map_provider.dart';
 
 class GlobalFunctions {
   static Future<Map<String, dynamic>> apiRequest(
@@ -87,54 +84,54 @@ class GlobalFunctions {
   }
 
   static void toggleDarkMode(BuildContext context) {
-    DynamicTheme.of(context).setThemeData(new ThemeData(
-      brightness: Theme.of(context).brightness == Brightness.dark
-          ? Brightness.light
-          : Brightness.dark,
-      primaryColor: Theme.of(context).primaryColor == Colors.grey
-          ? Colors.deepOrange
-          : Colors.grey,
-      buttonColor: Theme.of(context).buttonColor == Colors.grey
-          ? Colors.deepOrange
-          : Colors.grey,
-      accentColor: Theme.of(context).buttonColor == Colors.grey
-          ? Colors.grey
-          : Colors.grey,
-    ));
+    // DynamicTheme.of(context).setThemeData(new ThemeData(
+    //   brightness: Theme.of(context).brightness == Brightness.dark
+    //       ? Brightness.light
+    //       : Brightness.dark,
+    //   primaryColor: Theme.of(context).primaryColor == Colors.grey
+    //       ? Colors.deepOrange
+    //       : Colors.grey,
+    //   buttonColor: Theme.of(context).buttonColor == Colors.grey
+    //       ? Colors.deepOrange
+    //       : Colors.grey,
+    //   accentColor: Theme.of(context).buttonColor == Colors.grey
+    //       ? Colors.grey
+    //       : Colors.grey,
+    // ));
   }
 
   static void setLightMode(BuildContext context) {
-    DynamicTheme.of(context).setThemeData(
-      new ThemeData(fontFamily: 'OpenSans',
-          inputDecorationTheme: InputDecorationTheme(
-              focusedBorder: UnderlineInputBorder(
-                  borderSide:
-                  BorderSide(width: 2.0, color: Color.fromARGB(255, 255, 147, 94))),
-              labelStyle: TextStyle(color: Colors.grey)),
-          //fontFamily: 'Oswald',
-          primaryColor: Color.fromARGB(255, 254, 147, 94),
-          //primarySwatch: Colors.deepOrange,
-          accentColor: Colors.grey,
-          buttonColor: Color.fromARGB(255, 254, 147, 94),
-          brightness: Brightness.light),
-    );
+    // DynamicTheme.of(context).setThemeData(
+    //   new ThemeData(fontFamily: 'OpenSans',
+    //       inputDecorationTheme: InputDecorationTheme(
+    //           focusedBorder: UnderlineInputBorder(
+    //               borderSide:
+    //               BorderSide(width: 2.0, color: Color.fromARGB(255, 255, 147, 94))),
+    //           labelStyle: TextStyle(color: Colors.grey)),
+    //       //fontFamily: 'Oswald',
+    //       primaryColor: Color.fromARGB(255, 254, 147, 94),
+    //       //primarySwatch: Colors.deepOrange,
+    //       accentColor: Colors.grey,
+    //       buttonColor: Color.fromARGB(255, 254, 147, 94),
+    //       brightness: Brightness.light),
+    // );
   }
 
   static void setDarkMode(BuildContext context) {
-    DynamicTheme.of(context).setThemeData(
-      new ThemeData(fontFamily: 'OpenSans',
-          inputDecorationTheme: InputDecorationTheme(
-              focusedBorder: UnderlineInputBorder(
-                  borderSide:
-                  BorderSide(width: 2.0, color: Color.fromARGB(255, 255, 147, 94))),
-              labelStyle: TextStyle(color: Colors.grey)),
-          //fontFamily: 'Oswald',
-          primaryColor: Color.fromARGB(255, 254, 147, 94),
-          //primarySwatch: Colors.deepOrange,
-          accentColor: Colors.grey,
-          buttonColor: Color.fromARGB(255, 254, 147, 94),
-          brightness: Brightness.dark),
-    );
+    // DynamicTheme.of(context).setThemeData(
+    //   new ThemeData(fontFamily: 'OpenSans',
+    //       inputDecorationTheme: InputDecorationTheme(
+    //           focusedBorder: UnderlineInputBorder(
+    //               borderSide:
+    //               BorderSide(width: 2.0, color: Color.fromARGB(255, 255, 147, 94))),
+    //           labelStyle: TextStyle(color: Colors.grey)),
+    //       //fontFamily: 'Oswald',
+    //       primaryColor: Color.fromARGB(255, 254, 147, 94),
+    //       //primarySwatch: Colors.deepOrange,
+    //       accentColor: Colors.grey,
+    //       buttonColor: Color.fromARGB(255, 254, 147, 94),
+    //       brightness: Brightness.dark),
+    // );
   }
 
   static List<int> compressImageAndroid(File image) {
@@ -146,21 +143,21 @@ class GlobalFunctions {
   }
 
   static Future<List<int>> compressImageIos(File image) async{
-    print('about to try the compression ios');
-
-    List<int> compressedImage = await FlutterImageCompress.compressWithFile(image.absolute.path, quality: 50);
-
-    return compressedImage;
+    // print('about to try the compression ios');
+    //
+    // List<int> compressedImage = await FlutterImageCompress.compressWithFile(image.absolute.path, quality: 50);
+    //
+    // return compressedImage;
   }
 
   static Future <Map<String, dynamic>> compressImage(File image, String path) async{
 
 
-    List<int> compressedImage = await FlutterImageCompress.compressWithFile(image.absolute.path, quality: 50);
-
-    File compressedFile = await FlutterImageCompress.compressAndGetFile(image.absolute.path, path, quality: 50);
-
-    return {'image_bytes' : compressedImage, 'compressed_file': compressedFile};
+    // List<int> compressedImage = await FlutterImageCompress.compressWithFile(image.absolute.path, quality: 50);
+    //
+    // File compressedFile = await FlutterImageCompress.compressAndGetFile(image.absolute.path, path, quality: 50);
+    //
+    // return {'image_bytes' : compressedImage, 'compressed_file': compressedFile};
   }
 
   static String getBase64Image(List<int> imageBytes) {
@@ -277,13 +274,13 @@ class GlobalFunctions {
         longitude = coordinates['lng'];
       }
 
-      final StaticMapProvider staticMapViewProvider = StaticMapProvider(browserApi);
-      staticMapUri = staticMapViewProvider.getStaticUriWithMarkers(
-          latitude: latitude,
-          longitude: longitude,
-          width: 500,
-          height: 300,
-          );
+      // final StaticMapProvider staticMapViewProvider = StaticMapProvider(browserApi);
+      // staticMapUri = staticMapViewProvider.getStaticUriWithMarkers(
+      //     latitude: latitude,
+      //     longitude: longitude,
+      //     width: 500,
+      //     height: 300,
+      //     );
       success = true;
     } catch (error) {
       print(error);

@@ -2,11 +2,11 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:scoped_model/scoped_model.dart';
 import 'package:image/image.dart' as imagePackage;
 
 import 'package:path/path.dart' as path;
@@ -51,8 +51,8 @@ class AddImagesState extends State<AddImages> {
   @override
   void initState() {
     print('inside initState of images');
-    _incidentsModel = ScopedModel.of<IncidentsModel>(context);
-    _usersModel = ScopedModel.of<UsersModel>(context);
+    _incidentsModel = Provider.of<IncidentsModel>(context, listen: false);
+    _usersModel = Provider.of<UsersModel>(context, listen: false);
 
     _populateImageFiles();
 

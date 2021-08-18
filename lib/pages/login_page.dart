@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:scoped_model/scoped_model.dart';
+import 'package:provider/provider.dart';
 import 'package:rxdart/subjects.dart';
 import '../scoped_models/users_model.dart';
 import '../widgets/ui_elements/adaptive_progress_indicator.dart';
 import '../models/auth.dart';
 import '../models/authenticated_user.dart';
-import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../shared/global_functions.dart';
 import '../shared/global_config.dart';
@@ -104,8 +103,8 @@ class _LoginPageState extends State<LoginPage> with AfterLayoutMixin<LoginPage> 
             labelText: 'Password', fillColor: Colors.white, filled: true),
         obscureText: true,
         validator: (String value) {
-          if (value.isEmpty && value.trim().length <= 0 || value.length < 8) {
-            return 'Password must be at least 8 characters long';
+          if (value.isEmpty && value.trim().length <= 0 || value.length < 4) {
+            return 'Password must be at least 4 characters long';
           }
           _authFormData['password'] = value;
         });
@@ -287,10 +286,8 @@ class _LoginPageState extends State<LoginPage> with AfterLayoutMixin<LoginPage> 
                             ),
                             _buildPasswordTextField(),
                             _buildRememberMeListTile(),
-                            ScopedModelDescendant<UsersModel>(builder: (
-                              BuildContext context,
-                              Widget child,
-                              UsersModel model,
+                            Consumer<UsersModel>(builder: (
+                              context, model, child
                             ) {
                               return _buildLoadingLogin(model);
                             }),

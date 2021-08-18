@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:scoped_model/scoped_model.dart';
-import 'package:map_view/map_view.dart' as map;
+import 'package:provider/provider.dart';
+//import 'package:map_view/map_view.dart' as map;
 import 'package:fluttertoast/fluttertoast.dart';
 //import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:connectivity/connectivity.dart';
@@ -42,7 +42,7 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
 
   @override
   void initState() {
-    _authenticatedUser = ScopedModel.of<UsersModel>(context).authenticatedUser;
+    _authenticatedUser = Provider.of<UsersModel>(context, listen: false).authenticatedUser;
 
     if (widget.model.selectedMyIncident.images == null) {
       _getIncidentImages();
@@ -210,7 +210,7 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
                         .then((ConnectivityResult result) {
                       if (result != ConnectivityResult.none) {
 
-                        _showMap(model);
+                        //_showMap(model);
 
                       } else {
                         GlobalFunctions.showToast(
@@ -260,30 +260,30 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
         ));
   }
 
-  void _showMap(IncidentsModel model) {
-    final List<map.Marker> markers = <map.Marker>[
-      map.Marker('position', model.selectedMyIncident.type + ' ' + '(' + model.selectedMyIncident.incidentDate + ')',  _latitude,
-          _longitude)
-    ];
-    final map.CameraPosition cameraPosition = map.CameraPosition(
-        map.Location(_latitude, _longitude), 14.0);
-    final map.MapView mapView = map.MapView();
-    mapView.show(
-      map.MapOptions(showCompassButton: true,
-          title: 'Map of Incident',
-          mapViewType: map.MapViewType.normal,
-          initialCameraPosition: cameraPosition),
-      toolbarActions: [map.ToolbarAction('Close', 1)],
-    );
-    mapView.onToolbarAction.listen((int id) {
-      if (id == 1) {
-        mapView.dismiss();
-      }
-    });
-    mapView.onMapReady.listen((_) {
-      mapView.setMarkers(markers);
-    });
-  }
+  // void _showMap(IncidentsModel model) {
+  //   final List<map.Marker> markers = <map.Marker>[
+  //     map.Marker('position', model.selectedMyIncident.type + ' ' + '(' + model.selectedMyIncident.incidentDate + ')',  _latitude,
+  //         _longitude)
+  //   ];
+  //   final map.CameraPosition cameraPosition = map.CameraPosition(
+  //       map.Location(_latitude, _longitude), 14.0);
+  //   final map.MapView mapView = map.MapView();
+  //   mapView.show(
+  //     map.MapOptions(showCompassButton: true,
+  //         title: 'Map of Incident',
+  //         mapViewType: map.MapViewType.normal,
+  //         initialCameraPosition: cameraPosition),
+  //     toolbarActions: [map.ToolbarAction('Close', 1)],
+  //   );
+  //   mapView.onToolbarAction.listen((int id) {
+  //     if (id == 1) {
+  //       mapView.dismiss();
+  //     }
+  //   });
+  //   mapView.onMapReady.listen((_) {
+  //     mapView.setMarkers(markers);
+  //   });
+  // }
 
   Widget _buildCustomFields() {
     Widget customFields;
@@ -417,7 +417,7 @@ class _ViewMyIncidentPageState extends State<ViewMyIncidentPage> {
     // TODO: implement build
 
     final IncidentsModel _incidentsModel =
-        ScopedModel.of<IncidentsModel>(context, rebuildOnChange: true);
+        Provider.of<IncidentsModel>(context, listen: false);
 
     print('here is the selected incident');
     print(_incidentsModel.selectedMyIncident);

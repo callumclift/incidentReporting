@@ -1,1 +1,0 @@
-../../../../.symlinks/plugins/flutter_exif_rotation/ios/Classes/FlutterExifRotationPlugin.h

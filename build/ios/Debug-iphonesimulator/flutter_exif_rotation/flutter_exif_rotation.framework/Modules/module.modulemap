@@ -1,0 +1,6 @@
+framework module flutter_exif_rotation {
+  umbrella header "flutter_exif_rotation-umbrella.h"
+
+  export *
+  module * { export * }
+}

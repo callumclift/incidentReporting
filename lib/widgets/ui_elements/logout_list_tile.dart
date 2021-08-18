@@ -1,18 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-import 'package:scoped_model/scoped_model.dart';
+import 'package:provider/provider.dart';
 import '../../scoped_models/users_model.dart';
 import '../../shared/global_functions.dart';
-import 'package:dynamic_theme/dynamic_theme.dart';
 
 
 class LogoutListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return ScopedModelDescendant<UsersModel>(
-      builder: (BuildContext context, Widget child, UsersModel model) {
+    return Consumer<UsersModel>(
+      builder: (context, model, child) {
         return ListTile(
           leading: Icon(Icons.exit_to_app),
           title: Text('Logout'),

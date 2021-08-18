@@ -16,119 +16,151 @@ class DatabaseHelper {
   static Database _database;
 
   //Incidents Table
-  String incidentsTable = 'incident_table';
-  String id = 'id';
-  String incidentId = 'incident_id';
-  String incidentUserId = 'user_id';
-  String incidentType = 'type';
-  String incidentFullName = 'fullname';
-  String incidentUsername = 'username';
-  String incidentEmail = 'email';
-  String incidentDate = 'incident_date';
-  String incidentCreated = 'created';
-  String incidentLatitude = 'latitude';
-  String incidentLongitude = 'longitude';
-  String incidentPostCode = 'postcode';
-  String incidentProjectName = 'project_name';
-  String incidentRoute = 'route';
-  String incidentElr = 'elr';
-  String incidentMileage = 'mileage';
-  String incidentSummary = 'summary';
-  String incidentImages = 'images';
-  String incidentOrganisationId = 'organisation_id';
-  String incidentOrganisationName = 'organisation_name';
-  String incidentCustomFields = 'custom_fields';
-  String incidentAnonymous = 'anonymous';
-  String incidentServerUploaded = 'server_uploaded';
+  static String incidentsTable = 'incident_table';
+  static String id = 'id';
+  static String incidentId = 'incident_id';
+  static String incidentUserId = 'user_id';
+  static String incidentType = 'type';
+  static String incidentFullName = 'fullname';
+  static String incidentUsername = 'username';
+  static String incidentEmail = 'email';
+  static String incidentDate = 'incident_date';
+  static String incidentCreated = 'created';
+  static String incidentLatitude = 'latitude';
+  static String incidentLongitude = 'longitude';
+  static String incidentPostCode = 'postcode';
+  static String incidentProjectName = 'project_name';
+  static String incidentRoute = 'route';
+  static String incidentElr = 'elr';
+  static String incidentMileage = 'mileage';
+  static String incidentSummary = 'summary';
+  static String incidentImages = 'images';
+  static String incidentOrganisationId = 'organisation_id';
+  static String incidentOrganisationName = 'organisation_name';
+  static String incidentCustomFields = 'custom_fields';
+  static String incidentAnonymous = 'anonymous';
+  static String incidentServerUploaded = 'server_uploaded';
 
   //Temporary Incident Table
-  String temporaryIncidentsTable = 'temporary_incidents_table';
-  String temporaryUserId = 'user_id';
-  String temporaryIncidentType = 'type';
-  String temporaryFullName = 'fullname';
-  String temporaryUsername = 'username';
-  String temporaryEmail = 'email';
-  String temporaryDate = 'incident_date';
-  String temporaryLocationDropValue = 'location_drop';
-  String temporaryLatitude = 'latitude';
-  String temporaryLongitude = 'longitude';
-  String temporaryPostCode = 'postcode';
-  String temporaryLocationMap = 'location_map';
-  String temporaryPostcodeMap = 'postcode_map';
-  String temporaryProjectName = 'project_name';
-  String temporaryRoute = 'route';
-  String temporaryElr = 'elr';
-  String temporaryMileageTip = 'mileage_tip';
-  String temporaryMileage = 'mileage';
-  String temporarySummary = 'summary';
-  String temporaryImages = 'images';
-  String temporaryOrganisationId = 'organisation_id';
-  String temporaryOrganisationName = 'organisation_name';
-  String temporaryCustomFields = 'custom_fields';
-  String temporaryCustomFieldValue1 = 'custom_value1';
-  String temporaryCustomFieldValue2 = 'custom_value2';
-  String temporaryCustomFieldValue3 = 'custom_value3';
-  String temporaryAnonymous = 'anonymous';
+  static String temporaryIncidentsTable = 'temporary_incidents_table';
+  static String temporaryUserId = 'user_id';
+  static String temporaryIncidentType = 'type';
+  static String temporaryFullName = 'fullname';
+  static String temporaryUsername = 'username';
+  static String temporaryEmail = 'email';
+  static String temporaryDate = 'incident_date';
+  static String temporaryLocationDropValue = 'location_drop';
+  static String temporaryLatitude = 'latitude';
+  static String temporaryLongitude = 'longitude';
+  static String temporaryPostCode = 'postcode';
+  static String temporaryLocationMap = 'location_map';
+  static String temporaryPostcodeMap = 'postcode_map';
+  static String temporaryProjectName = 'project_name';
+  static String temporaryRoute = 'route';
+  static String temporaryElr = 'elr';
+  static String temporaryMileageTip = 'mileage_tip';
+  static String temporaryMileage = 'mileage';
+  static String temporarySummary = 'summary';
+  static String temporaryImages = 'images';
+  static String temporaryOrganisationId = 'organisation_id';
+  static String temporaryOrganisationName = 'organisation_name';
+  static String temporaryCustomFields = 'custom_fields';
+  static String temporaryCustomFieldValue1 = 'custom_value1';
+  static String temporaryCustomFieldValue2 = 'custom_value2';
+  static String temporaryCustomFieldValue3 = 'custom_value3';
+  static String temporaryAnonymous = 'anonymous';
 
   //Users Table
-  String usersTable = 'users_table';
-  String userId = 'user_id';
-  String userFirstName = 'first_name';
-  String userLastName = 'last_name';
-  String userUsername = 'username';
-  String userPassword = 'password';
-  String userSuspended = 'suspended';
-  String userOrganisationId = 'organisation_id';
-  String userOrganisationName = 'organisation_name';
-  String userSession = 'session';
-  String userDeleted = 'deleted';
-  String userIsClientAdmin = 'is_client_admin';
-  String userIsSuperAdmin = 'is_super_admin';
-  String userTermsAccepted = 'terms_accepted';
-  String userForcePasswordReset = 'force_password_reset';
-  String userDarkMode = 'dark_mode';
+  static String usersTable = 'users_table';
+  static String userId = 'user_id';
+  static String userFirstName = 'first_name';
+  static String userLastName = 'last_name';
+  static String userUsername = 'username';
+  static String userPassword = 'password';
+  static String userSuspended = 'suspended';
+  static String userOrganisationId = 'organisation_id';
+  static String userOrganisationName = 'organisation_name';
+  static String userSession = 'session';
+  static String userDeleted = 'deleted';
+  static String userIsClientAdmin = 'is_client_admin';
+  static String userIsSuperAdmin = 'is_super_admin';
+  static String userTermsAccepted = 'terms_accepted';
+  static String userForcePasswordReset = 'force_password_reset';
+  static String userDarkMode = 'dark_mode';
 
   //Incident Type Table
-  String incidentTypesTable = 'incident_type_table';
-  String incidentTypeId = 'incident_type_id';
-  String incidentTypeUserId = 'user_id';
-  String incidentTypeUsername = 'username';
-  String incidentTypeOrganisationId = 'organisation_id';
-  String incidentTypeOrganisationName = 'organisation_name';
-  String incidentTypeName = 'name';
-  String incidentTypeCustomLabel1 = 'custom_label1';
-  String incidentTypeCustomLabel2 = 'custom_label2';
-  String incidentTypeCustomLabel3 = 'custom_label3';
-  String incidentTypeCustomPlaceholder1 = 'custom_placeholder1';
-  String incidentTypeCustomPlaceholder2 = 'custom_placeholder2';
-  String incidentTypeCustomPlaceholder3 = 'custom_placeholder3';
-  String incidentTypeServerUploaded = 'server_uploaded';
+  static String incidentTypesTable = 'incident_type_table';
+  static String incidentTypeId = 'incident_type_id';
+  static String incidentTypeUserId = 'user_id';
+  static String incidentTypeUsername = 'username';
+  static String incidentTypeOrganisationId = 'organisation_id';
+  static String incidentTypeOrganisationName = 'organisation_name';
+  static String incidentTypeName = 'name';
+  static String incidentTypeCustomLabel1 = 'custom_label1';
+  static String incidentTypeCustomLabel2 = 'custom_label2';
+  static String incidentTypeCustomLabel3 = 'custom_label3';
+  static String incidentTypeCustomPlaceholder1 = 'custom_placeholder1';
+  static String incidentTypeCustomPlaceholder2 = 'custom_placeholder2';
+  static String incidentTypeCustomPlaceholder3 = 'custom_placeholder3';
+  static String incidentTypeServerUploaded = 'server_uploaded';
 
   //Route Table
-  String routesTable = 'routes_table';
-  String routeName = 'route_name';
-  String routeCode = 'route_code';
+  static String routesTable = 'routes_table';
+  static String routeName = 'route_name';
+  static String routeCode = 'route_code';
 
   //ELRs Table
-  String elrsTable = 'elrs_table';
-  String regionCode = 'region_code';
-  String elr = 'elr';
-  String elrDescription = 'description';
-  String elrStartMiles = 'start_miles';
-  String elrEndMiles = 'end_miles';
+  static String elrsTable = 'elrs_table';
+  static String regionCode = 'region_code';
+  static String elr = 'elr';
+  static String elrDescription = 'description';
+  static String elrStartMiles = 'start_miles';
+  static String elrEndMiles = 'end_miles';
 
   //Image Path Table
-  String imagePathTable = 'image_path_table';
-  String imagePath = 'image_path';
+  static String imagePathTable = 'image_path_table';
+  static String imagePath = 'image_path';
 
   //Cached Image Path Table
-  String cachedImagePathTable = 'cached_path_table';
-  String cachedImagePath = 'cached_path';
+  static String cachedImagePathTable = 'cached_path_table';
+  static String cachedImagePath = 'cached_path';
 
   //Camera Table
-  String cameraTable = 'camera_table';
-  String customCamera = 'custom_camera';
-  String showToast = 'show_toast';
+  static String cameraTable = 'camera_table';
+  static String customCamera = 'custom_camera';
+  static String showToast = 'show_toast';
+
+  static String createUsersTableSql = 'CREATE TABLE IF NOT EXISTS $usersTable ($userId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $userFirstName VARCHAR(255), $userLastName VARCHAR(255), '
+      '$userUsername VARCHAR(255), $userPassword VARCHAR(255), $userSuspended TINYINT(1), $userOrganisationId INT(11), $userOrganisationName VARCHAR(255), $userSession VARCHAR(255), '
+      '$userDeleted TINYINT(1), $userIsClientAdmin TINYINT(1), $userIsSuperAdmin TINYINT(1), $userTermsAccepted VARCHAR(255), $userForcePasswordReset TINYINT(1), $userDarkMode TINYINT(1))';
+
+  static String createIncidentsTableSql = 'CREATE TABLE IF NOT EXISTS $incidentsTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $incidentId INT(11) default NULL, $userId INT(11) default NULL, $incidentType VARCHAR(255), $incidentFullName VARCHAR(255) default NULL, '
+      '$incidentUsername VARCHAR(255) default NULL, $incidentEmail VARCHAR(255) default NULL, $incidentDate VARCHAR(255), $incidentCreated VARCHAR(255), $incidentLatitude VARCHAR(255) default NULL, $incidentLongitude VARCHAR(255) default NULL, '
+      '$incidentPostCode VARCHAR(255) default NULL, $incidentProjectName VARCHAR(255) default NULL, $incidentRoute VARCHAR(255) default NULL, $incidentElr VARCHAR(255) default NULL, $incidentMileage VARCHAR(255) default NULL, $incidentSummary TEXT, $incidentImages JSON default NULL, '
+      '$incidentOrganisationId INT(11), $incidentOrganisationName VARCHAR(255), $incidentCustomFields JSON default NULL, $incidentAnonymous TINYINT(1) default NULL, $incidentServerUploaded TINYINT(1) default NULL)';
+
+  static String createTemporaryIncidentsTableSql = 'CREATE TABLE IF NOT EXISTS $temporaryIncidentsTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $temporaryUserId INT(11), $temporaryIncidentType VARCHAR(255) default NULL, $temporaryFullName VARCHAR(255) default NULL, '
+      '$temporaryUsername VARCHAR(255) default NULL, $temporaryEmail VARCHAR(255) default NULL, $temporaryDate VARCHAR(255) default NULL, $temporaryLocationDropValue VARCHAR(255) default NULL, $temporaryLatitude VARCHAR(255) default NULL, $temporaryLongitude VARCHAR(255) default NULL, '
+      '$temporaryPostCode VARCHAR(255) default NULL, $temporaryPostcodeMap TEXT default NULL, $temporaryLocationMap TEXT default NULL, $temporaryProjectName VARCHAR(255) default NULL, $temporaryRoute VARCHAR(255) default NULL, $temporaryElr VARCHAR(255) default NULL, $temporaryMileage VARCHAR(255) default NULL, $temporaryMileageTip VARCHAR(255) default NULL, $temporarySummary TEXT default NULL, $temporaryImages JSON default NULL, '
+      '$temporaryOrganisationId INT(11), $temporaryOrganisationName VARCHAR(255), $temporaryCustomFields JSON default NULL, $temporaryCustomFieldValue1 VARCHAR(255) default NULL, $temporaryCustomFieldValue2 VARCHAR(255) default NULL, $temporaryCustomFieldValue3 VARCHAR(255) default NULL, $temporaryAnonymous TINYINT(1) default NULL)';
+
+  static String createIncidentTypesTableSql = 'CREATE TABLE IF NOT EXISTS $incidentTypesTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $incidentTypeId INT(11) default NULL, $incidentTypeUserId INT(11), $incidentTypeUsername VARCHAR(255), $incidentTypeName VARCHAR(255), $incidentTypeCustomLabel1 VARCHAR(255) default NULL, $incidentTypeCustomLabel2 VARCHAR(255) default NULL, '
+      '$incidentTypeCustomLabel3 VARCHAR(255) default NULL, $incidentTypeOrganisationId INT(11), $incidentTypeOrganisationName VARCHAR(255),'
+      '$incidentTypeCustomPlaceholder1 VARCHAR(255) default NULL, $incidentTypeCustomPlaceholder2 VARCHAR(255) default NULL, $incidentTypeCustomPlaceholder3 VARCHAR(255) default NULL, $incidentTypeServerUploaded TINYINT(1) default NULL)';
+
+  static String createRoutesTableSql = 'CREATE TABLE IF NOT EXISTS $routesTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $routeName VARCHAR(255) default NULL, $routeCode VARCHAR(20) default NULL)';
+
+  static String createElrsTableSql = 'CREATE TABLE IF NOT EXISTS $elrsTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $regionCode VARCHAR(20) default NULL, $elr VARCHAR(20) default NULL, $elrDescription VARCHAR(255) default NULL, $elrStartMiles VARCHAR(20) default NULL, $elrEndMiles VARCHAR(20) default NULL)';
+
+  static String createImagePathTableSql = 'CREATE TABLE IF NOT EXISTS $imagePathTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $imagePath VARCHAR(255) default NULL)';
+
+  static String createCachedImagePathTable = 'CREATE TABLE IF NOT EXISTS $cachedImagePathTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $cachedImagePath VARCHAR(255) default NULL)';
+
+  static String createCameraTableSql = 'CREATE TABLE IF NOT EXISTS $cameraTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $customCamera TINYINT(1) default 0 NOT NULL, $showToast TINYINT(1) default 0 NOT NULL)';
+
+  List<String> createAllTables = [createUsersTableSql, createIncidentsTableSql, createTemporaryIncidentsTableSql, createIncidentTypesTableSql, createRoutesTableSql, createElrsTableSql, createImagePathTableSql, createCachedImagePathTable, createCameraTableSql];
+
+
 
 
 
@@ -162,48 +194,17 @@ class DatabaseHelper {
 
     //open/create the database at this given path
     var incidentReportingDatabase =
-        await openDatabase(path, version: 1, onCreate: _createDb);
+        await openDatabase(path, version: 1, onCreate: _createDb, onUpgrade: _onUpgrade);
     return incidentReportingDatabase;
   }
 
   //create a function to help us to execute a statement to create our database
   void _createDb(Database db, int newVersion) async {
-    await db.execute(
-        'CREATE TABLE $usersTable ($userId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $userFirstName VARCHAR(255), $userLastName VARCHAR(255), '
-        '$userUsername VARCHAR(255), $userPassword VARCHAR(255), $userSuspended TINYINT(1), $userOrganisationId INT(11), $userOrganisationName VARCHAR(255), $userSession VARCHAR(255), '
-        '$userDeleted TINYINT(1), $userIsClientAdmin TINYINT(1), $userIsSuperAdmin TINYINT(1), $userTermsAccepted VARCHAR(255), $userForcePasswordReset TINYINT(1), $userDarkMode TINYINT(1))');
 
-    await db.execute(
-        'CREATE TABLE $incidentsTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $incidentId INT(11) default NULL, $userId INT(11) default NULL, $incidentType VARCHAR(255), $incidentFullName VARCHAR(255) default NULL, '
-        '$incidentUsername VARCHAR(255) default NULL, $incidentEmail VARCHAR(255) default NULL, $incidentDate VARCHAR(255), $incidentCreated VARCHAR(255), $incidentLatitude VARCHAR(255) default NULL, $incidentLongitude VARCHAR(255) default NULL, '
-            '$incidentPostCode VARCHAR(255) default NULL, $incidentProjectName VARCHAR(255) default NULL, $incidentRoute VARCHAR(255) default NULL, $incidentElr VARCHAR(255) default NULL, $incidentMileage VARCHAR(255) default NULL, $incidentSummary TEXT, $incidentImages JSON default NULL, '
-            '$incidentOrganisationId INT(11), $incidentOrganisationName VARCHAR(255), $incidentCustomFields JSON default NULL, $incidentAnonymous TINYINT(1) default NULL, $incidentServerUploaded TINYINT(1) default NULL)');
+    for(String table in createAllTables){
+      db.execute(table);
+    }
 
-    await db.execute(
-        'CREATE TABLE $temporaryIncidentsTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $temporaryUserId INT(11), $temporaryIncidentType VARCHAR(255) default NULL, $temporaryFullName VARCHAR(255) default NULL, '
-            '$temporaryUsername VARCHAR(255) default NULL, $temporaryEmail VARCHAR(255) default NULL, $temporaryDate VARCHAR(255) default NULL, $temporaryLocationDropValue VARCHAR(255) default NULL, $temporaryLatitude VARCHAR(255) default NULL, $temporaryLongitude VARCHAR(255) default NULL, '
-            '$temporaryPostCode VARCHAR(255) default NULL, $temporaryPostcodeMap TEXT default NULL, $temporaryLocationMap TEXT default NULL, $temporaryProjectName VARCHAR(255) default NULL, $temporaryRoute VARCHAR(255) default NULL, $temporaryElr VARCHAR(255) default NULL, $temporaryMileage VARCHAR(255) default NULL, $temporaryMileageTip VARCHAR(255) default NULL, $temporarySummary TEXT default NULL, $temporaryImages JSON default NULL, '
-            '$temporaryOrganisationId INT(11), $temporaryOrganisationName VARCHAR(255), $temporaryCustomFields JSON default NULL, $temporaryCustomFieldValue1 VARCHAR(255) default NULL, $temporaryCustomFieldValue2 VARCHAR(255) default NULL, $temporaryCustomFieldValue3 VARCHAR(255) default NULL, $temporaryAnonymous TINYINT(1) default NULL)');
-
-    await db.execute(
-        'CREATE TABLE $incidentTypesTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $incidentTypeId INT(11) default NULL, $incidentTypeUserId INT(11), $incidentTypeUsername VARCHAR(255), $incidentTypeName VARCHAR(255), $incidentTypeCustomLabel1 VARCHAR(255) default NULL, $incidentTypeCustomLabel2 VARCHAR(255) default NULL, '
-            '$incidentTypeCustomLabel3 VARCHAR(255) default NULL, $incidentTypeOrganisationId INT(11), $incidentTypeOrganisationName VARCHAR(255),'
-            '$incidentTypeCustomPlaceholder1 VARCHAR(255) default NULL, $incidentTypeCustomPlaceholder2 VARCHAR(255) default NULL, $incidentTypeCustomPlaceholder3 VARCHAR(255) default NULL, $incidentTypeServerUploaded TINYINT(1) default NULL)');
-
-    await db.execute(
-        'CREATE TABLE $routesTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $routeName VARCHAR(255) default NULL, $routeCode VARCHAR(20) default NULL)');
-
-    await db.execute(
-        'CREATE TABLE $elrsTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $regionCode VARCHAR(20) default NULL, $elr VARCHAR(20) default NULL, $elrDescription VARCHAR(255) default NULL, $elrStartMiles VARCHAR(20) default NULL, $elrEndMiles VARCHAR(20) default NULL)');
-
-    await db.execute(
-        'CREATE TABLE $imagePathTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $imagePath VARCHAR(255) default NULL)');
-
-    await db.execute(
-        'CREATE TABLE $cachedImagePathTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $cachedImagePath VARCHAR(255) default NULL)');
-
-    await db.execute(
-        'CREATE TABLE $cameraTable($id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, $customCamera TINYINT(1) default 0 NOT NULL, $showToast TINYINT(1) default 0 NOT NULL)');
     
     await db.rawInsert("INSERT INTO $routesTable ($routeName, $routeCode) VALUES "
         "('Anglia', 'QT'),"
@@ -219,6 +220,14 @@ class DatabaseHelper {
         "('Western (Thames Valley)', 'QV')");
 
     await db.insert(cameraTable, {'custom_camera' : 0, 'show_toast' : 0});
+
+  }
+
+  void _onUpgrade(Database db, int oldVersion, int newVersion) async {
+
+    for(String table in createAllTables){
+      db.execute(table);
+    }
 
   }
 
@@ -376,10 +385,10 @@ class DatabaseHelper {
     return result;
   }
 
-  Future<int> updateElr(Map<String, dynamic> elrData) async {
+  Future<int> updateElr(Map<String, dynamic> elrData, String inputElr, String inputRegion) async {
     Database db = await this.database;
 
-    var result = await db.update(elrsTable, elrData);
+    var result = await db.update(elrsTable, elrData, where: '$elr = ? AND $regionCode = ?', whereArgs: [inputElr, inputRegion]);
 
     return result;
   }
@@ -451,7 +460,7 @@ class DatabaseHelper {
   Future<int> checkElrExists(String inputElr, String inputRegion) async {
     Database db = await this.database;
     List<Map<String, dynamic>> x = await db.rawQuery(
-        "SELECT EXISTS(SELECT 1 FROM $elrsTable WHERE $elr = '$inputElr' AND $regionCode = '$inputRegion')");
+        "SELECT EXISTS(SELECT 1 FROM $elrsTable WHERE $elr = ? AND $regionCode = ?)", [inputElr, inputRegion]);
     int result = Sqflite.firstIntValue(x);
     return result;
   }

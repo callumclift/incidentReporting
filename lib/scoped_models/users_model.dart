@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:scoped_model/scoped_model.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server/hotmail.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:connectivity/connectivity.dart';
@@ -18,7 +16,8 @@ import '../utils/database_helper.dart';
 
 
 
-class UsersModel extends Model {
+class UsersModel extends ChangeNotifier {
+
   List<User> _users = [];
   AuthenticatedUser _authenticatedUser;
   int _selUserKey;
@@ -102,6 +101,8 @@ class UsersModel extends Model {
         if (prefs.get('username') == null && prefs.get('password') == null) {
           message = 'No data connection, please try again later';
         } else {
+
+          print(prefs.setBool('rememberMe', rememberMe));
 
 
         if (username == GlobalFunctions.decryptString(prefs.get('username')) &&
@@ -339,13 +340,9 @@ class UsersModel extends Model {
 
             }
 
-
-            final IncidentsModel _incidentsModel =
-            ScopedModel.of<IncidentsModel>(context);
-
-            final Map<String, dynamic> incidentTypes = await _incidentsModel.getCustomIncidents(_authenticatedUser);
-
-            if(incidentTypes['success']) success = true;
+            // final Map<String, dynamic> incidentTypes = await incidentsModel.getCustomIncidents(_authenticatedUser);
+            //
+            // if(incidentTypes['success']) success = true;
 
             //Add the ELRs to the Database if the table count is 0
             int elrCount = await databaseHelper.checkElrCount();
@@ -653,13 +650,9 @@ class UsersModel extends Model {
 
             }
 
-
-            final IncidentsModel _incidentsModel =
-            ScopedModel.of<IncidentsModel>(context);
-
-            final Map<String, dynamic> incidentTypes = await _incidentsModel.getCustomIncidents(_authenticatedUser);
-
-            if(incidentTypes['success']) success = true;
+            // final Map<String, dynamic> incidentTypes = await incidentsModel.getCustomIncidents(_authenticatedUser);
+            //
+            // if(incidentTypes['success']) success = true;
 
             //Add the ELRs to the Database if the table count is 0
             int elrCount = await databaseHelper.checkElrCount();
@@ -872,7 +865,7 @@ class UsersModel extends Model {
                 }
               } else {
 
-                int result = await databaseHelper.updateElr(databaseData);
+                int result = await databaseHelper.updateElr(databaseData, elrData['HdElrLookup']['elr'], elrData['HdElrLookup']['region']);
 
                 if (result != 0) {
                   message = 'Elr not updated';

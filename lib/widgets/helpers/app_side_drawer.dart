@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:scoped_model/scoped_model.dart';
+import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../ui_elements/logout_list_tile.dart';
@@ -21,13 +21,17 @@ class _SideDrawerState extends State<SideDrawer> {
   bool _extraDivider = false;
   bool _pendingItems = false;
 
+  IncidentsModel _incidentsModel;
+
+
+
   @override
   void initState() {
 
     final AuthenticatedUser _authenticatedUser =
-    ScopedModel.of<UsersModel>(context).authenticatedUser;
+    Provider.of<UsersModel>(context, listen: false).authenticatedUser;
 
-    IncidentsModel _incidentsModel = IncidentsModel();
+    _incidentsModel = Provider.of<IncidentsModel>(context, listen: false);
     _checkPendingIncidents(_incidentsModel, _authenticatedUser);
 
 
@@ -131,29 +135,22 @@ class _SideDrawerState extends State<SideDrawer> {
   @override
   Widget build(BuildContext context) {
     final IncidentsModel _incidentsModel =
-        ScopedModel.of<IncidentsModel>(context, rebuildOnChange: true);
+        Provider.of<IncidentsModel>(context, listen: false);
 
     // TODO: implement build
-    return ScopedModelDescendant<UsersModel>(
-        builder: (BuildContext context, Widget child, UsersModel model) {
+    return Consumer<UsersModel>(
+        builder: (context, model, child) {
       return Drawer(
         child: Column(
           children: <Widget>[
-            AppBar(backgroundColor: orangeDesign1,
-                automaticallyImplyLeading: false,
-                title: LayoutBuilder(builder:
-                    (BuildContext context, BoxConstraints constraints) {
-                  double drawerWidth = constraints.maxWidth;
-                  double drawerHeight = constraints.maxHeight * 0.9;
-
-                  return Image.asset(
-                    'assets/ontrac.png',
-                    color: Colors.black,
-                    height: drawerHeight,
-                    width: drawerWidth,
-                  );
-                })),
             Expanded(child: ListView(padding: EdgeInsets.symmetric(vertical: 0.0), children: <Widget>[
+              SizedBox(height: MediaQuery.of(context).size.height * 0.15, child: DrawerHeader(child: Image.asset(
+                'assets/ontrac.png',
+                color: Colors.black,
+              ), decoration: BoxDecoration(
+                  color: orangeDesign1
+                //colors: [purpleDesign, purpleDesign])
+              ),),),
               ListTile(
                 leading: Icon(Icons.create),
                 title: Text('Raise Incident'),
