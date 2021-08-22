@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'location_data.dart';
 
 class Incident {
   int id;
@@ -50,30 +49,4 @@ class Incident {
     this.customFields,
     this.anonymous,
   });
-
-//  Map<String, dynamic> toMap(){
-//
-//    Map<String, dynamic> incidentMap = {
-//      'id' : id,
-//      'incidentType' : incidentType,
-//      'reporterFirstName' : reporterFirstName,
-//      'reporterLastName' : reporterLastName,
-//      'dateTime' : dateTime,
-//      'location' : location,
-//      'projectName' : projectName,
-//      'route' : route,
-//      'elr' : elr,
-//      'mileage' : mileage,
-//      'summary' : summary,
-//      'organisation' : organisation,
-//      'reporterEmail' : reporterEmail,
-//      'voided' : voided,
-//    };
-//
-////    if(id != null){
-////      incidentMap['id'] = id;
-////    }
-//
-//    return incidentMap;
-//  }
 }

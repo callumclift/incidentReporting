@@ -8,13 +8,17 @@
 		<data>
 		LEE+XogJZFv/xGbANEcBrJCl4jU=
 		</data>
+		<key>Headers/FLTConnectivityPlugin.h</key>
+		<data>
+		HW2Vab6OIwo9HtOSpWGqbV1IsMs=
+		</data>
 		<key>Headers/connectivity-umbrella.h</key>
 		<data>
-		K+XWi/O/6J7VStG3krZh53d4oLM=
+		IWL7sLEeSzJt5vlF3JDVrDFRxxw=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		CpPeFv87bF5m15nMjmOgjYvqxAQ=
+		vHHb8xpnOCDSccj8GNReGRMrTNw=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -34,15 +38,26 @@
 			j9oedWKPuiwiObQru/G4UzzrHi4yOKExyg3Hrj7V7eg=
 			</data>
 		</dict>
+		<key>Headers/FLTConnectivityPlugin.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			HW2Vab6OIwo9HtOSpWGqbV1IsMs=
+			</data>
+			<key>hash2</key>
+			<data>
+			NZR7S1pCh+q2QGmWROTikfCp6E882G/dXGJDZjLvjqg=
+			</data>
+		</dict>
 		<key>Headers/connectivity-umbrella.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			K+XWi/O/6J7VStG3krZh53d4oLM=
+			IWL7sLEeSzJt5vlF3JDVrDFRxxw=
 			</data>
 			<key>hash2</key>
 			<data>
-			qIpJrJ20vePOpQswXqOEhCkCFodHZGEGkXQVT45TIYs=
+			Mp4yM1+C938PxGaR0PyEoVhRzJRx27PtYwyFE03yGJw=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

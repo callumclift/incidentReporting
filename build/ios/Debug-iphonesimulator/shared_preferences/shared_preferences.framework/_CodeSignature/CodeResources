@@ -6,7 +6,7 @@
 	<dict>
 		<key>Headers/FLTSharedPreferencesPlugin.h</key>
 		<data>
-		1/45fSS3Eip3PKEN/rpJaPppWiU=
+		pAxFZL6xT4Xsp/qlxTdbpBUHE7E=
 		</data>
 		<key>Headers/shared_preferences-umbrella.h</key>
 		<data>
@@ -14,7 +14,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		VBaLBdQa4OlCMcpL0vZajOrNTis=
+		HaEFeP0tWNaT1HpaUqjHVJ8yD2c=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -27,11 +27,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			1/45fSS3Eip3PKEN/rpJaPppWiU=
+			pAxFZL6xT4Xsp/qlxTdbpBUHE7E=
 			</data>
 			<key>hash2</key>
 			<data>
-			YvjNpiSoHQf+wSEq6JVypQ+Vmccwij+2hXC6KzmCuDM=
+			+VEridcwqcNkt6aNXNQVOunNmgXcBA0ereU1u46adPc=
 			</data>
 		</dict>
 		<key>Headers/shared_preferences-umbrella.h</key>

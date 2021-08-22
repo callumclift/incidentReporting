@@ -2,39 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:io';
 import 'dart:io' show Platform;
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:ontrac_incident_reporting/widgets/app_bar_gradient.dart';
+import 'package:ontrac_incident_reporting/widgets/helpers/navigation_bar.dart';
 import 'package:provider/provider.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:after_layout/after_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image/image.dart' as imagePackage;
-import 'package:path/path.dart' as path;
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_crop/image_crop.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/rendering.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:camera/camera.dart';
-import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission/permission.dart';
-import 'package:device_info/device_info.dart';
-
-import '../models/location_data.dart';
 import '../models/incident_type.dart';
-import '../widgets/form_inputs/locate_user.dart';
-import '../widgets/helpers/app_side_drawer.dart';
 import '../widgets/ui_elements/dropdown_formfield.dart';
 import '../widgets/ui_elements/dropdown_formfield_expanded.dart';
-import '../widgets/helpers/add_images.dart';
 import '../shared/global_functions.dart';
 import '../shared/global_config.dart';
 import '../scoped_models/incidents_model.dart';
@@ -116,9 +100,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
   final dateFormat = DateFormat("dd/MM/yyyy HH:mm");
   DateTime date;
-
-  DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  AndroidDeviceInfo androidInfo;
 
   TextEditingController _reporterTextController = TextEditingController();
   final TextEditingController _summaryTextController = TextEditingController();
@@ -207,16 +188,15 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 //
 //      }
 //    }
-    _getDeviceInfo();
-    _getSharedPrefs();
-    _getRoutes();
 
-    _getIncidentTypes();
-    //_getTemporaryIncident();
-
-    _setupTextListeners(_incidentsModel, _usersModel);
-
-    _populateImageFiles();
+    //_getRoutes();
+    //
+    // _getIncidentTypes();
+    // //_getTemporaryIncident();
+    //
+    // _setupTextListeners(_incidentsModel, _usersModel);
+    //
+    // _populateImageFiles();
 
     super.initState();
     _setupFocusNodes();
@@ -225,218 +205,216 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   _getRoutes() {
     _incidentsModel.getRoutes().then((List<Map<String, dynamic>> routes) {
       _routes = routes;
+    });
+  }
 
-//      _routes.forEach((Map<String, dynamic> route){
-//        _routeDrop.add(route['route_name']);
+
+//   _populateImageFiles() {
+//     _incidentsModel
+//         .getTemporaryIncident(user.userId)
+//         .then((Map<String, dynamic> incident) {
+//       if (incident['images'] != null) {
+//         _temporaryPaths = jsonDecode(incident['images']);
 //
-//      });
-    });
-  }
+//         if (_temporaryPaths != null) {
+//           int index = 0;
+//           _temporaryPaths.forEach((dynamic path) {
+//             if (path != null) {
+//               setState(() {
+//                 images[index] = File(path);
+//               });
+//             }
+//
+//             index++;
+//           });
+//         }
+//       }
+//     });
+//   }
+//
 
-  _getDeviceInfo() async {
-    if (Platform.isAndroid) {
-      androidInfo = await deviceInfo.androidInfo;
-      print(androidInfo.model);
-    }
-  }
+  _getTemporaryIncidentReport() async {
 
-  _getSharedPrefs() async {
+    //Sembast
+    if (mounted) {
 
-    _prefs = await SharedPreferences.getInstance();
+      await _incidentsModel.setupTemporaryRecord();
 
-  }
+      bool hasRecord = await _incidentsModel.checkRecordExists();
 
-  _populateImageFiles() {
-    _incidentsModel
-        .getTemporaryIncident(_usersModel.authenticatedUser.userId)
-        .then((Map<String, dynamic> incident) {
-      if (incident['images'] != null) {
-        _temporaryPaths = jsonDecode(incident['images']);
+      if(hasRecord){
+        Map<String, dynamic> incident = await _incidentsModel.getTemporaryRecord();
 
-        if (_temporaryPaths != null) {
-          int index = 0;
-          _temporaryPaths.forEach((dynamic path) {
-            if (path != null) {
-              setState(() {
-                images[index] = File(path);
-              });
-            }
+        if (incident['type'] != null) {
+          //check to see if that incident type still exists as maybe it has been changed on the server
 
-            index++;
-          });
-        }
-      }
-    });
-  }
+          bool exists = _incidentDrop.contains(incident['type']);
 
-  _getTemporaryIncident() {
-    _incidentsModel
-        .checkTemporaryIncidentExists(_usersModel.authenticatedUser)
-        .then((int result) {
-      if (result != 0) {
-        _incidentsModel
-            .getTemporaryIncident(_usersModel.authenticatedUser.userId)
-            .then((Map<String, dynamic> incident) {
-//      if(incident['type'] == null && incident['anonymous'] != 1 && incident['incident_date'] == null && incident['location_drop']){}
-
-          if (incident['type'] != null) {
-            //check to see if that incident type still exists as maybe it has been changed on the server
-
-            bool exists = _incidentDrop.contains(incident['type']);
-
-            if (exists) {
-              setState(() {
-                _incidentValue = incident['type'];
-              });
-            } else {
-              _incidentValue = 'Incident';
-            }
-          }
-
-          if (incident['anonymous'] != null && incident['anonymous'] == 1 ||
-              incident['anonymous'] == 'true') {
+          if (exists) {
             setState(() {
-              _isAnonymous = true;
+              _incidentValue = incident['type'];
             });
           } else {
-            _isAnonymous = false;
+            _incidentValue = 'Incident';
           }
-          if (incident['incident_date'] != null) {
-            _dateTimeController1.text = incident['incident_date'];
-          }
-          if (incident['location_drop'] != null) {
-            _locationValue = incident['location_drop'];
-          }
-          if (incident['latitude'] != null && incident['longitude'] != null) {
-            _locationController.text =
-                incident['latitude'] + ' ' + incident['longitude'];
-            _latitude = double.parse(incident['latitude']);
-            _longitude = double.parse(incident['longitude']);
-          }
-          if (incident['postcode'] != null) {
-            _postcodeController.text = incident['postcode'];
-          }
-          if (incident['location_map'] != null) {
-            _staticMapLocation = incident['location_map'];
-          }
-          if (incident['postcode_map'] != null) {
-            _staticMapPostcode = incident['postcode_map'];
-          }
-          if (incident['project_name'] != null) {
-            _projectNameController.text = incident['project_name'];
-          }
-          if (incident['route'] != null) {
-            _routeValue = incident['route'];
-            _showElr = false;
-            if (incident['route'] != 'Select a Route') {
-              Map<String, dynamic> currentRoute = _routes.firstWhere(
-                  (route) => route['route_name'] == incident['route']);
+        }
 
-              _incidentsModel
-                  .getElrsFromRegion(currentRoute['route_code'])
-                  .then((List<Map<String, dynamic>> elrs) {
-                for (Map<String, dynamic> elr in elrs) {
-                  _elrDrop.add(elr['elr'] + ': ' + elr['description']);
-                }
-                setState(() {
-                  _showElr = true;
-                  _currentElrList = elrs;
-                  _incidentValue = _incidentValue;
-                });
+        if (incident['anonymous'] != null && incident['anonymous'] == 1 ||
+            incident['anonymous'] == 'true') {
+          setState(() {
+            _isAnonymous = true;
+          });
+        } else {
+          _isAnonymous = false;
+        }
+        if (incident['incident_date'] != null) {
+          _dateTimeController1.text = incident['incident_date'];
+        }
+        if (incident['location_drop'] != null) {
+          _locationValue = incident['location_drop'];
+        }
+        if (incident['latitude'] != null && incident['longitude'] != null) {
+          _locationController.text =
+              incident['latitude'] + ' ' + incident['longitude'];
+          _latitude = double.parse(incident['latitude']);
+          _longitude = double.parse(incident['longitude']);
+        }
+        if (incident['postcode'] != null) {
+          _postcodeController.text = incident['postcode'];
+        }
+        if (incident['location_map'] != null) {
+          _staticMapLocation = incident['location_map'];
+        }
+        if (incident['postcode_map'] != null) {
+          _staticMapPostcode = incident['postcode_map'];
+        }
+        if (incident['project_name'] != null) {
+          _projectNameController.text = incident['project_name'];
+        }
+        if (incident['route'] != null) {
+          _routeValue = incident['route'];
+          _showElr = false;
+          if (incident['route'] != 'Select a Route') {
+            Map<String, dynamic> currentRoute = _routes.firstWhere(
+                    (route) => route['route_name'] == incident['route']);
 
-                //_elrDrop = _elrDrop;
-
-                if (incident['elr'] != null) {
-                  _elrValue = incident['elr'];
-
-                  if (incident['elr'] == 'Select an ELR' ||
-                      incident['elr'] == null ||
-                      incident['elr'] == 'null') {
-                    _currentElr = null;
-                    _currentMileage = '';
-                  } else {
-                    List<String> parts = incident['elr'].split(':');
-                    _currentElr = _currentElrList
-                        .firstWhere((elr) => elr['elr'] == parts[0]);
-                    _currentMileage = _currentElr['start_miles'] +
-                        ' miles to ' +
-                        _currentElr['end_miles'] +
-                        ' miles';
-                  }
-                }
+            _incidentsModel
+                .getElrsFromRegion(currentRoute['route_code'])
+                .then((List<Map<String, dynamic>> elrs) {
+              for (Map<String, dynamic> elr in elrs) {
+                _elrDrop.add(elr['elr'] + ': ' + elr['description']);
+              }
+              setState(() {
+                _showElr = true;
+                _currentElrList = elrs;
+                _incidentValue = _incidentValue;
               });
+
+              //_elrDrop = _elrDrop;
+
+              if (incident['elr'] != null) {
+                _elrValue = incident['elr'];
+
+                if (incident['elr'] == 'Select an ELR' ||
+                    incident['elr'] == null ||
+                    incident['elr'] == 'null') {
+                  _currentElr = null;
+                  _currentMileage = '';
+                } else {
+                  List<String> parts = incident['elr'].split(':');
+                  _currentElr = _currentElrList
+                      .firstWhere((elr) => elr['elr'] == parts[0]);
+                  _currentMileage = _currentElr['start_miles'] +
+                      ' miles to ' +
+                      _currentElr['end_miles'] +
+                      ' miles';
+                }
+              }
+            });
+          }
+        }
+        if (incident['mileage'] != null) {
+          _mileageTextController.text = incident['mileage'];
+        }
+        if (incident['summary'] != null) {
+          _summaryTextController.text = incident['summary'];
+        }
+        if (incident['images'] != null) {
+          _temporaryPaths = jsonDecode(incident['images']);
+        }
+        if (incident['custom_fields'] != null) {
+          List<dynamic> customFields = jsonDecode(incident['custom_fields']);
+
+          if (_incidentValue != 'Incident') {
+            _customFieldCount = customFields.length;
+
+            if (_customFieldCount >= 1) {
+              _customLabel1 = customFields[0]['label'];
+              _customPlaceholder1 = customFields[0]['placeholder'];
+              _customField1Controller.text =
+              incident['custom_value1'] == null ||
+                  incident['custom_value1'] == 'null'
+                  ? ''
+                  : incident['custom_value1'];
             }
-          }
-          if (incident['mileage'] != null) {
-            _mileageTextController.text = incident['mileage'];
-          }
-          if (incident['summary'] != null) {
-            _summaryTextController.text = incident['summary'];
-          }
-          if (incident['images'] != null) {
-            _temporaryPaths = jsonDecode(incident['images']);
-          }
-          if (incident['custom_fields'] != null) {
-            List<dynamic> customFields = jsonDecode(incident['custom_fields']);
-
-            if (_incidentValue != 'Incident') {
-              _customFieldCount = customFields.length;
-
-              if (_customFieldCount >= 1) {
-                _customLabel1 = customFields[0]['label'];
-                _customPlaceholder1 = customFields[0]['placeholder'];
-                _customField1Controller.text =
-                    incident['custom_value1'] == null ||
-                            incident['custom_value1'] == 'null'
-                        ? ''
-                        : incident['custom_value1'];
-              }
-              if (_customFieldCount >= 2) {
-                _customLabel2 = customFields[1]['label'];
-                _customPlaceholder2 = customFields[1]['placeholder'];
-                _customField2Controller.text =
-                    incident['custom_value2'] == null ||
-                            incident['custom_value2'] == 'null'
-                        ? ''
-                        : incident['custom_value2'];
-              }
-              if (_customFieldCount >= 3) {
-                _customLabel3 = customFields[2]['label'];
-                _customPlaceholder3 = customFields[2]['placeholder'];
-                _customField3Controller.text =
-                    incident['custom_value3'] == null ||
-                            incident['custom_value3'] == 'null'
-                        ? ''
-                        : incident['custom_value3'];
-              }
-            } else {
-              _customFieldCount = 0;
-              _incidentsModel.updateTemporaryIncidentField(
-                  'custom_fields', null, _usersModel.authenticatedUser.userId);
-              _incidentsModel.updateTemporaryIncidentField(
-                  'custom_value1', null, _usersModel.authenticatedUser.userId);
-              _incidentsModel.updateTemporaryIncidentField(
-                  'custom_value2', null, _usersModel.authenticatedUser.userId);
-              _incidentsModel.updateTemporaryIncidentField(
-                  'custom_value3', null, _usersModel.authenticatedUser.userId);
+            if (_customFieldCount >= 2) {
+              _customLabel2 = customFields[1]['label'];
+              _customPlaceholder2 = customFields[1]['placeholder'];
+              _customField2Controller.text =
+              incident['custom_value2'] == null ||
+                  incident['custom_value2'] == 'null'
+                  ? ''
+                  : incident['custom_value2'];
             }
+            if (_customFieldCount >= 3) {
+              _customLabel3 = customFields[2]['label'];
+              _customPlaceholder3 = customFields[2]['placeholder'];
+              _customField3Controller.text =
+              incident['custom_value3'] == null ||
+                  incident['custom_value3'] == 'null'
+                  ? ''
+                  : incident['custom_value3'];
+            }
+          } else {
+            _customFieldCount = 0;
+            _incidentsModel.updateTemporaryIncidentField(
+                'custom_fields', null, user.userId);
+            _incidentsModel.updateTemporaryIncidentField(
+                'custom_value1', null, user.userId);
+            _incidentsModel.updateTemporaryIncidentField(
+                'custom_value2', null, user.userId);
+            _incidentsModel.updateTemporaryIncidentField(
+                'custom_value3', null, user.userId);
           }
+        }
 
+
+
+
+
+        if (mounted) {
           setState(() {
             _loadingTemporary = false;
           });
-        });
+        }
+
+
+
+
       } else {
-        setState(() {
-          _loadingTemporary = false;
-        });
+        if (mounted) {
+          setState(() {
+            _loadingTemporary = false;
+          });
+        }
       }
-    });
+
+    }
   }
 
+
   _getIncidentTypes() {
-    _incidentsModel
-        .getCustomIncidents(_usersModel.authenticatedUser)
+    _incidentsModel.getCustomIncidents()
         .then((Map<String, dynamic> result) {
       if (_incidentsModel.allIncidentTypes != null) {
         _incidentTypes = _incidentsModel.allIncidentTypes;
@@ -454,41 +432,41 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       _getTemporaryIncident();
     });
   }
-
-  _setupTextListeners(IncidentsModel incidentsModel, UsersModel usersModel) {
-    _projectNameController.addListener(() {
-      incidentsModel.updateTemporaryIncidentField('project_name',
-          _projectNameController.text, usersModel.authenticatedUser.userId);
-    });
-    _postcodeController.addListener(() {
-      incidentsModel.updateTemporaryIncidentField('postcode',
-          _postcodeController.text, usersModel.authenticatedUser.userId);
-    });
-    _summaryTextController.addListener(() {
-      incidentsModel.updateTemporaryIncidentField('summary',
-          _summaryTextController.text, usersModel.authenticatedUser.userId);
-    });
-    _mileageTextController.addListener(() {
-      incidentsModel.updateTemporaryIncidentField('mileage',
-          _mileageTextController.text, usersModel.authenticatedUser.userId);
-    });
-    _dateTimeController1.addListener(() {
-      incidentsModel.updateTemporaryIncidentField('incident_date',
-          _dateTimeController1.text, usersModel.authenticatedUser.userId);
-    });
-    _customField1Controller.addListener(() {
-      incidentsModel.updateTemporaryIncidentField('custom_value1',
-          _customField1Controller.text, usersModel.authenticatedUser.userId);
-    });
-    _customField2Controller.addListener(() {
-      incidentsModel.updateTemporaryIncidentField('custom_value2',
-          _customField2Controller.text, usersModel.authenticatedUser.userId);
-    });
-    _customField3Controller.addListener(() {
-      incidentsModel.updateTemporaryIncidentField('custom_value3',
-          _customField3Controller.text, usersModel.authenticatedUser.userId);
-    });
-  }
+//
+//   _setupTextListeners(IncidentsModel incidentsModel, UsersModel usersModel) {
+//     _projectNameController.addListener(() {
+//       incidentsModel.updateTemporaryIncidentField('project_name',
+//           _projectNameController.text, user.userId);
+//     });
+//     _postcodeController.addListener(() {
+//       incidentsModel.updateTemporaryIncidentField('postcode',
+//           _postcodeController.text, user.userId);
+//     });
+//     _summaryTextController.addListener(() {
+//       incidentsModel.updateTemporaryIncidentField('summary',
+//           _summaryTextController.text, user.userId);
+//     });
+//     _mileageTextController.addListener(() {
+//       incidentsModel.updateTemporaryIncidentField('mileage',
+//           _mileageTextController.text, user.userId);
+//     });
+//     _dateTimeController1.addListener(() {
+//       incidentsModel.updateTemporaryIncidentField('incident_date',
+//           _dateTimeController1.text, user.userId);
+//     });
+//     _customField1Controller.addListener(() {
+//       incidentsModel.updateTemporaryIncidentField('custom_value1',
+//           _customField1Controller.text, user.userId);
+//     });
+//     _customField2Controller.addListener(() {
+//       incidentsModel.updateTemporaryIncidentField('custom_value2',
+//           _customField2Controller.text, user.userId);
+//     });
+//     _customField3Controller.addListener(() {
+//       incidentsModel.updateTemporaryIncidentField('custom_value3',
+//           _customField3Controller.text, user.userId);
+//     });
+//   }
 
   _setupFocusNodes() {
     _projectNameFocusNode.addListener(() {
@@ -574,227 +552,227 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       }
     });
   }
-
-  Widget _buildIncidentDrop() {
-    return DropdownFormField(
-      expanded: true,
-      hint: 'Incident Type',
-      value: _incidentValue,
-      items: _incidentDrop.toList(),
-      onChanged: (val) => setState(() {
-            _incidentValue = val;
-            _formData['incidentType'] = _incidentValue;
-            _customField1Controller.text = '';
-            _customField2Controller.text = '';
-            _customField3Controller.text = '';
-            _incidentsModel.updateTemporaryIncidentField(
-                'type', val, _usersModel.authenticatedUser.userId);
-            _incidentsModel.updateTemporaryIncidentField(
-                'custom_value1', null, _usersModel.authenticatedUser.userId);
-            _incidentsModel.updateTemporaryIncidentField(
-                'custom_value2', null, _usersModel.authenticatedUser.userId);
-            _incidentsModel.updateTemporaryIncidentField(
-                'custom_value3', null, _usersModel.authenticatedUser.userId);
-
-            if (_incidentTypes.length > 0) {
-              List<String> names = [];
-
-              for (IncidentType types in _incidentTypes) {
-                names.add(types.name);
-              }
-
-              bool exists = names.contains(val);
-
-              if (exists) {
-                IncidentType incidentType = _incidentTypes
-                    .firstWhere((incidentType) => incidentType.name == val);
-
-                List<Map<String, dynamic>> _temporaryCustomFields = [];
-
-                if (incidentType.customLabel3 != null) {
-                  setState(() {
-                    _customLabel1 = incidentType.customLabel1;
-                    _customLabel2 = incidentType.customLabel2;
-                    _customLabel3 = incidentType.customLabel3;
-                    _customPlaceholder1 = incidentType.customPlaceholder1;
-                    _customPlaceholder2 = incidentType.customPlaceholder2;
-                    _customPlaceholder3 = incidentType.customPlaceholder3;
-                    _customFieldCount = 3;
-
-                    _temporaryCustomFields.add({
-                      'label': incidentType.customLabel1,
-                      'placeholder': incidentType.customPlaceholder1
-                    });
-                    _temporaryCustomFields.add({
-                      'label': incidentType.customLabel2,
-                      'placeholder': incidentType.customPlaceholder2
-                    });
-                    _temporaryCustomFields.add({
-                      'label': incidentType.customLabel3,
-                      'placeholder': incidentType.customPlaceholder3
-                    });
-
-                    _incidentsModel.updateTemporaryIncidentField(
-                        'custom_fields',
-                        jsonEncode(_temporaryCustomFields),
-                        _usersModel.authenticatedUser.userId);
-                  });
-                } else if (incidentType.customLabel2 != null) {
-                  setState(() {
-                    _customLabel1 = incidentType.customLabel1;
-                    _customLabel2 = incidentType.customLabel2;
-                    _customPlaceholder1 = incidentType.customPlaceholder1;
-                    _customPlaceholder2 = incidentType.customPlaceholder2;
-                    _customFieldCount = 2;
-
-                    _temporaryCustomFields.add({
-                      'label': incidentType.customLabel1,
-                      'placeholder': incidentType.customPlaceholder1
-                    });
-                    _temporaryCustomFields.add({
-                      'label': incidentType.customLabel2,
-                      'placeholder': incidentType.customPlaceholder2
-                    });
-                    _incidentsModel.updateTemporaryIncidentField(
-                        'custom_fields',
-                        jsonEncode(_temporaryCustomFields),
-                        _usersModel.authenticatedUser.userId);
-                  });
-                } else if (incidentType.customLabel1 != null) {
-                  setState(() {
-                    _customLabel1 = incidentType.customLabel1;
-                    _customPlaceholder1 = incidentType.customPlaceholder1;
-                    _customFieldCount = 1;
-                    _temporaryCustomFields.add({
-                      'label': incidentType.customLabel1,
-                      'placeholder': incidentType.customPlaceholder1
-                    });
-                    _incidentsModel.updateTemporaryIncidentField(
-                        'custom_fields',
-                        jsonEncode(_temporaryCustomFields),
-                        _usersModel.authenticatedUser.userId);
-                  });
-                }
-              } else {
-                setState(() {
-                  _customFieldCount = 0;
-                  _incidentsModel.updateTemporaryIncidentField('custom_fields',
-                      null, _usersModel.authenticatedUser.userId);
-                });
-              }
-            }
-          }),
-      validator: (val) => (val == null || val.isEmpty)
-          ? 'Please choose an Incident Type'
-          : null,
-      initialValue: _incidentDrop[0],
-      onSaved: (val) => setState(() {
-            _incidentValue = val;
-            _formData['incidentType'] = _incidentValue;
-          }),
-    );
-  }
-
-  Widget _buildRouteDrop() {
-    return DropdownFormField(
-      expanded: true,
-      hint: 'Route',
-      value: _routeValue,
-      items: _routeDrop.toList(),
-      onChanged: (val) => setState(() {
-            _showElr = false;
-            _currentElrList = [];
-            _routeValue = val;
-            _formData['route'] = _routeValue;
-            _incidentsModel.updateTemporaryIncidentField(
-                'route', val, _usersModel.authenticatedUser.userId);
-            _incidentsModel.updateTemporaryIncidentField(
-                'elr', null, _usersModel.authenticatedUser.userId);
-            _elrDrop = ['Select an ELR'];
-            _elrValue = 'Select an ELR';
-            _currentMileage = '';
-
-            if (val != 'Select a Route') {
-              Map<String, dynamic> currentRoute =
-                  _routes.firstWhere((route) => route['route_name'] == val);
-
-              _incidentsModel
-                  .getElrsFromRegion(currentRoute['route_code'])
-                  .then((List<Map<String, dynamic>> elrs) {
-                for (Map<String, dynamic> elr in elrs) {
-                  _elrDrop.add(elr['elr'] + ': ' + elr['description']);
-                }
-                setState(() {
-                  _showElr = true;
-                  _currentElrList = elrs;
-                });
-
-                //_elrDrop = _elrDrop;
-              });
-            } else {
-              _showElr = false;
-              _elrDrop = ['Select an ELR'];
-            }
-          }),
-      validator: (String message) {
-        if (_routeValue == 'Select a Route') return 'Please select a Route';
-      },
-      initialValue: _routeDrop[0],
-      onSaved: (val) => setState(() {
-            _routeValue = val;
-            _formData['route'] = _routeValue;
-          }),
-    );
-  }
-
-  Widget _buildElrDrop() {
-    return DropdownFormFieldExpanded(
-      expanded: true,
-      hint: 'ELR',
-      value: _elrValue,
-      items: _elrDrop.toList(),
-      onChanged: (val) => setState(() {
-            _elrValue = val;
-            _formData['elr'] = _elrValue;
-            _incidentsModel.updateTemporaryIncidentField(
-                'elr', val, _usersModel.authenticatedUser.userId);
-            if (val == 'Select an ELR') {
-              _currentElr = null;
-              _currentMileage = '';
-              _incidentsModel.updateTemporaryIncidentField(
-                  'elr', null, _usersModel.authenticatedUser.userId);
-            } else {
-              List<String> parts = val.toString().split(':');
-              _currentElr =
-                  _currentElrList.firstWhere((elr) => elr['elr'] == parts[0]);
-              _currentMileage = _currentElr['start_miles'] +
-                  ' miles to ' +
-                  _currentElr['end_miles'] +
-                  ' miles';
-            }
-            _incidentsModel.updateTemporaryIncidentField('mileage_tip',
-                _currentMileage, _usersModel.authenticatedUser.userId);
-          }),
-      validator: (String message) {
-        if (_elrValue == 'Select an ELR') return 'Please select an ELR';
-      },
-      initialValue: _elrDrop[0],
-      onSaved: (val) => setState(() {
-            _elrValue = val;
-            _formData['elr'] = _elrValue;
-          }),
-    );
-  }
+  //
+  // Widget _buildIncidentDrop() {
+  //   return DropdownFormField(
+  //     expanded: true,
+  //     hint: 'Incident Type',
+  //     value: _incidentValue,
+  //     items: _incidentDrop.toList(),
+  //     onChanged: (val) => setState(() {
+  //           _incidentValue = val;
+  //           _formData['incidentType'] = _incidentValue;
+  //           _customField1Controller.text = '';
+  //           _customField2Controller.text = '';
+  //           _customField3Controller.text = '';
+  //           _incidentsModel.updateTemporaryIncidentField(
+  //               'type', val, user.userId);
+  //           _incidentsModel.updateTemporaryIncidentField(
+  //               'custom_value1', null, user.userId);
+  //           _incidentsModel.updateTemporaryIncidentField(
+  //               'custom_value2', null, user.userId);
+  //           _incidentsModel.updateTemporaryIncidentField(
+  //               'custom_value3', null, user.userId);
+  //
+  //           if (_incidentTypes.length > 0) {
+  //             List<String> names = [];
+  //
+  //             for (IncidentType types in _incidentTypes) {
+  //               names.add(types.name);
+  //             }
+  //
+  //             bool exists = names.contains(val);
+  //
+  //             if (exists) {
+  //               IncidentType incidentType = _incidentTypes
+  //                   .firstWhere((incidentType) => incidentType.name == val);
+  //
+  //               List<Map<String, dynamic>> _temporaryCustomFields = [];
+  //
+  //               if (incidentType.customLabel3 != null) {
+  //                 setState(() {
+  //                   _customLabel1 = incidentType.customLabel1;
+  //                   _customLabel2 = incidentType.customLabel2;
+  //                   _customLabel3 = incidentType.customLabel3;
+  //                   _customPlaceholder1 = incidentType.customPlaceholder1;
+  //                   _customPlaceholder2 = incidentType.customPlaceholder2;
+  //                   _customPlaceholder3 = incidentType.customPlaceholder3;
+  //                   _customFieldCount = 3;
+  //
+  //                   _temporaryCustomFields.add({
+  //                     'label': incidentType.customLabel1,
+  //                     'placeholder': incidentType.customPlaceholder1
+  //                   });
+  //                   _temporaryCustomFields.add({
+  //                     'label': incidentType.customLabel2,
+  //                     'placeholder': incidentType.customPlaceholder2
+  //                   });
+  //                   _temporaryCustomFields.add({
+  //                     'label': incidentType.customLabel3,
+  //                     'placeholder': incidentType.customPlaceholder3
+  //                   });
+  //
+  //                   _incidentsModel.updateTemporaryIncidentField(
+  //                       'custom_fields',
+  //                       jsonEncode(_temporaryCustomFields),
+  //                       user.userId);
+  //                 });
+  //               } else if (incidentType.customLabel2 != null) {
+  //                 setState(() {
+  //                   _customLabel1 = incidentType.customLabel1;
+  //                   _customLabel2 = incidentType.customLabel2;
+  //                   _customPlaceholder1 = incidentType.customPlaceholder1;
+  //                   _customPlaceholder2 = incidentType.customPlaceholder2;
+  //                   _customFieldCount = 2;
+  //
+  //                   _temporaryCustomFields.add({
+  //                     'label': incidentType.customLabel1,
+  //                     'placeholder': incidentType.customPlaceholder1
+  //                   });
+  //                   _temporaryCustomFields.add({
+  //                     'label': incidentType.customLabel2,
+  //                     'placeholder': incidentType.customPlaceholder2
+  //                   });
+  //                   _incidentsModel.updateTemporaryIncidentField(
+  //                       'custom_fields',
+  //                       jsonEncode(_temporaryCustomFields),
+  //                       user.userId);
+  //                 });
+  //               } else if (incidentType.customLabel1 != null) {
+  //                 setState(() {
+  //                   _customLabel1 = incidentType.customLabel1;
+  //                   _customPlaceholder1 = incidentType.customPlaceholder1;
+  //                   _customFieldCount = 1;
+  //                   _temporaryCustomFields.add({
+  //                     'label': incidentType.customLabel1,
+  //                     'placeholder': incidentType.customPlaceholder1
+  //                   });
+  //                   _incidentsModel.updateTemporaryIncidentField(
+  //                       'custom_fields',
+  //                       jsonEncode(_temporaryCustomFields),
+  //                       user.userId);
+  //                 });
+  //               }
+  //             } else {
+  //               setState(() {
+  //                 _customFieldCount = 0;
+  //                 _incidentsModel.updateTemporaryIncidentField('custom_fields',
+  //                     null, user.userId);
+  //               });
+  //             }
+  //           }
+  //         }),
+  //     validator: (val) => (val == null || val.isEmpty)
+  //         ? 'Please choose an Incident Type'
+  //         : null,
+  //     initialValue: _incidentDrop[0],
+  //     onSaved: (val) => setState(() {
+  //           _incidentValue = val;
+  //           _formData['incidentType'] = _incidentValue;
+  //         }),
+  //   );
+  // }
+  //
+  // Widget _buildRouteDrop() {
+  //   return DropdownFormField(
+  //     expanded: true,
+  //     hint: 'Route',
+  //     value: _routeValue,
+  //     items: _routeDrop.toList(),
+  //     onChanged: (val) => setState(() {
+  //           _showElr = false;
+  //           _currentElrList = [];
+  //           _routeValue = val;
+  //           _formData['route'] = _routeValue;
+  //           _incidentsModel.updateTemporaryIncidentField(
+  //               'route', val, user.userId);
+  //           _incidentsModel.updateTemporaryIncidentField(
+  //               'elr', null, user.userId);
+  //           _elrDrop = ['Select an ELR'];
+  //           _elrValue = 'Select an ELR';
+  //           _currentMileage = '';
+  //
+  //           if (val != 'Select a Route') {
+  //             Map<String, dynamic> currentRoute =
+  //                 _routes.firstWhere((route) => route['route_name'] == val);
+  //
+  //             _incidentsModel
+  //                 .getElrsFromRegion(currentRoute['route_code'])
+  //                 .then((List<Map<String, dynamic>> elrs) {
+  //               for (Map<String, dynamic> elr in elrs) {
+  //                 _elrDrop.add(elr['elr'] + ': ' + elr['description']);
+  //               }
+  //               setState(() {
+  //                 _showElr = true;
+  //                 _currentElrList = elrs;
+  //               });
+  //
+  //               //_elrDrop = _elrDrop;
+  //             });
+  //           } else {
+  //             _showElr = false;
+  //             _elrDrop = ['Select an ELR'];
+  //           }
+  //         }),
+  //     validator: (String message) {
+  //       if (_routeValue == 'Select a Route') return 'Please select a Route';
+  //     },
+  //     initialValue: _routeDrop[0],
+  //     onSaved: (val) => setState(() {
+  //           _routeValue = val;
+  //           _formData['route'] = _routeValue;
+  //         }),
+  //   );
+  // }
+  //
+  // Widget _buildElrDrop() {
+  //   return DropdownFormFieldExpanded(
+  //     expanded: true,
+  //     hint: 'ELR',
+  //     value: _elrValue,
+  //     items: _elrDrop.toList(),
+  //     onChanged: (val) => setState(() {
+  //           _elrValue = val;
+  //           _formData['elr'] = _elrValue;
+  //           _incidentsModel.updateTemporaryIncidentField(
+  //               'elr', val, user.userId);
+  //           if (val == 'Select an ELR') {
+  //             _currentElr = null;
+  //             _currentMileage = '';
+  //             _incidentsModel.updateTemporaryIncidentField(
+  //                 'elr', null, user.userId);
+  //           } else {
+  //             List<String> parts = val.toString().split(':');
+  //             _currentElr =
+  //                 _currentElrList.firstWhere((elr) => elr['elr'] == parts[0]);
+  //             _currentMileage = _currentElr['start_miles'] +
+  //                 ' miles to ' +
+  //                 _currentElr['end_miles'] +
+  //                 ' miles';
+  //           }
+  //           _incidentsModel.updateTemporaryIncidentField('mileage_tip',
+  //               _currentMileage, user.userId);
+  //         }),
+  //     validator: (String message) {
+  //       if (_elrValue == 'Select an ELR') return 'Please select an ELR';
+  //     },
+  //     initialValue: _elrDrop[0],
+  //     onSaved: (val) => setState(() {
+  //           _elrValue = val;
+  //           _formData['elr'] = _elrValue;
+  //         }),
+  //   );
+  // }
 
   Widget _buildReporterField(UsersModel model) {
-    if (model.authenticatedUser == null) {
+    if (user == null) {
       _reporterTextController.text = '';
     } else if (_isAnonymous) {
       _reporterTextController.text = 'Anonymous';
     } else {
-      _reporterTextController.text = model.authenticatedUser.firstName +
+      _reporterTextController.text = user.firstName +
           ' ' +
-          model.authenticatedUser.lastName;
+          user.lastName;
     }
 
     return TextFormField(
@@ -816,15 +794,15 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
   }
 
   Widget _reportAnonymous(UsersModel model) {
-    return CheckboxListTile(
-        activeColor: orangeDesign1,
-        title: Text('Report Anonymously'),
-        value: _isAnonymous,
-        onChanged: (bool value) => setState(() {
-              _isAnonymous = value;
-              _incidentsModel.updateTemporaryIncidentField(
-                  'anonymous', value, _usersModel.authenticatedUser.userId);
-            }));
+    // return CheckboxListTile(
+    //     activeColor: orangeDesign1,
+    //     title: Text('Report Anonymously'),
+    //     value: _isAnonymous,
+    //     onChanged: (bool value) => setState(() {
+    //           _isAnonymous = value;
+    //           _incidentsModel.updateTemporaryIncidentField(
+    //               'anonymous', value, user.userId);
+    //         }));
   }
 
   Widget _dateTimeField() {
@@ -877,7 +855,8 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                               context: context, initialTime: TimeOfDay.now())
                           .then((TimeOfDay time) {
                         if (time != null) {
-                          newDate = startOfDay(newDate);
+                          DateTime today = new DateTime.now();
+                          DateTime newDate = new DateTime(today.year, today.month, today.day);
                           newDate = newDate.add(
                               Duration(hours: time.hour, minutes: time.minute));
                           String dateTime = dateFormat.format(newDate);
@@ -903,9 +882,9 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       value: _locationValue,
       items: _locationDrop.toList(),
       onChanged: (val) => setState(() {
-            _locationValue = val;
-            _incidentsModel.updateTemporaryIncidentField(
-                'location_drop', val, _usersModel.authenticatedUser.userId);
+            // _locationValue = val;
+            // _incidentsModel.updateTemporaryIncidentField(
+            //     'location_drop', val, user.userId);
           }),
       validator: (val) =>
           (val == null || val.isEmpty) ? 'Please choose a Location Type' : null,
@@ -932,18 +911,18 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                       : IconButton(
                           icon: Icon(Icons.clear),
                           onPressed: () {
-                            setState(() {
-                              _postcodeController.clear();
-                              _staticMapPostcode = null;
-                              _incidentsModel.updateTemporaryIncidentField(
-                                  'postcode',
-                                  null,
-                                  _usersModel.authenticatedUser.userId);
-                              _incidentsModel.updateTemporaryIncidentField(
-                                  'postcode_map',
-                                  null,
-                                  _usersModel.authenticatedUser.userId);
-                            });
+                            // setState(() {
+                            //   _postcodeController.clear();
+                            //   _staticMapPostcode = null;
+                            //   _incidentsModel.updateTemporaryIncidentField(
+                            //       'postcode',
+                            //       null,
+                            //       user.userId);
+                            //   _incidentsModel.updateTemporaryIncidentField(
+                            //       'postcode_map',
+                            //       null,
+                            //       user.userId);
+                            // });
                           })),
               controller: _postcodeController,
               validator: (String value) {
@@ -989,11 +968,11 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                                 'Unable to fetch map on device');
                           } else {
                             setState(() {
-                              _staticMapPostcode = result['map'];
-                              _incidentsModel.updateTemporaryIncidentField(
-                                  'postcode_map',
-                                  _staticMapPostcode,
-                                  _usersModel.authenticatedUser.userId);
+                              // _staticMapPostcode = result['map'];
+                              // _incidentsModel.updateTemporaryIncidentField(
+                              //     'postcode_map',
+                              //     _staticMapPostcode,
+                              //     user.userId);
                             });
                           }
                         });
@@ -1038,25 +1017,25 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                     color: Colors.grey,
                     icon: Icon(Icons.clear),
                     onPressed: () {
-                      setState(() {
-                        _locationController.text = '';
-                        _staticMapLocation = null;
-                        _latitude = null;
-                        _longitude = null;
-                        _formData['latitude'] = null;
-                        _formData['longitude'] = null;
-
-                        _incidentsModel.updateTemporaryIncidentField('latitude',
-                            null, _usersModel.authenticatedUser.userId);
-                        _incidentsModel.updateTemporaryIncidentField(
-                            'longitude',
-                            null,
-                            _usersModel.authenticatedUser.userId);
-                        _incidentsModel.updateTemporaryIncidentField(
-                            'location_map',
-                            null,
-                            _usersModel.authenticatedUser.userId);
-                      });
+                      // setState(() {
+                      //   _locationController.text = '';
+                      //   _staticMapLocation = null;
+                      //   _latitude = null;
+                      //   _longitude = null;
+                      //   _formData['latitude'] = null;
+                      //   _formData['longitude'] = null;
+                      //
+                      //   _incidentsModel.updateTemporaryIncidentField('latitude',
+                      //       null, user.userId);
+                      //   _incidentsModel.updateTemporaryIncidentField(
+                      //       'longitude',
+                      //       null,
+                      //       user.userId);
+                      //   _incidentsModel.updateTemporaryIncidentField(
+                      //       'location_map',
+                      //       null,
+                      //       user.userId);
+                      // });
                     }),
             IconButton(
                 icon: Icon(
@@ -1064,56 +1043,56 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                   color: orangeDesign1,
                 ),
                 onPressed: () {
-                  GlobalFunctions.getUserLocation()
-                      .then((Map<String, dynamic> result) {
-                    if (!result['success']) {
-                      GlobalFunctions.showToast(
-                          'Unable to fetch user Location, please use Post Code option');
-                    } else {
-                      _locationController.text = result['latitude'].toString() +
-                          ' ' +
-                          result['longitude'].toString();
-
-                      _latitude = result['latitude'];
-                      _longitude = result['longitude'];
-
-                      _incidentsModel.updateTemporaryIncidentField('latitude',
-                          _latitude, _usersModel.authenticatedUser.userId);
-                      _incidentsModel.updateTemporaryIncidentField('longitude',
-                          _longitude, _usersModel.authenticatedUser.userId);
-
-                      _formData['latitude'] = result['latitude'];
-                      _formData['longitude'] = result['longitude'];
-
-                      Connectivity()
-                          .checkConnectivity()
-                          .then((ConnectivityResult connectivityResult) {
-                        if (connectivityResult == ConnectivityResult.none) {
-                          GlobalFunctions.showToast(
-                              'No data connection to fetch map');
-                        } else {
-                          GlobalFunctions.getStaticMap(context,
-                                  lat: result['latitude'],
-                                  lng: result['longitude'],
-                                  geocode: false)
-                              .then((Map<String, dynamic> result) {
-                            if (!result['success']) {
-                              GlobalFunctions.showToast(
-                                  'Unable to fetch map on device');
-                            } else {
-                              setState(() {
-                                _staticMapLocation = result['map'];
-                                _incidentsModel.updateTemporaryIncidentField(
-                                    'location_map',
-                                    _staticMapLocation,
-                                    _usersModel.authenticatedUser.userId);
-                              });
-                            }
-                          });
-                        }
-                      });
-                    }
-                  });
+                  // GlobalFunctions.getUserLocation()
+                  //     .then((Map<String, dynamic> result) {
+                  //   if (!result['success']) {
+                  //     GlobalFunctions.showToast(
+                  //         'Unable to fetch user Location, please use Post Code option');
+                  //   } else {
+                  //     _locationController.text = result['latitude'].toString() +
+                  //         ' ' +
+                  //         result['longitude'].toString();
+                  //
+                  //     _latitude = result['latitude'];
+                  //     _longitude = result['longitude'];
+                  //
+                  //     _incidentsModel.updateTemporaryIncidentField('latitude',
+                  //         _latitude, user.userId);
+                  //     _incidentsModel.updateTemporaryIncidentField('longitude',
+                  //         _longitude, user.userId);
+                  //
+                  //     _formData['latitude'] = result['latitude'];
+                  //     _formData['longitude'] = result['longitude'];
+                  //
+                  //     Connectivity()
+                  //         .checkConnectivity()
+                  //         .then((ConnectivityResult connectivityResult) {
+                  //       if (connectivityResult == ConnectivityResult.none) {
+                  //         GlobalFunctions.showToast(
+                  //             'No data connection to fetch map');
+                  //       } else {
+                  //         GlobalFunctions.getStaticMap(context,
+                  //                 lat: result['latitude'],
+                  //                 lng: result['longitude'],
+                  //                 geocode: false)
+                  //             .then((Map<String, dynamic> result) {
+                  //           if (!result['success']) {
+                  //             GlobalFunctions.showToast(
+                  //                 'Unable to fetch map on device');
+                  //           } else {
+                  //             setState(() {
+                  //               _staticMapLocation = result['map'];
+                  //               _incidentsModel.updateTemporaryIncidentField(
+                  //                   'location_map',
+                  //                   _staticMapLocation,
+                  //                   user.userId);
+                  //             });
+                  //           }
+                  //         });
+                  //       }
+                  //     });
+                  //   }
+                  // });
                 })
           ],
         ),
@@ -1410,17 +1389,17 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
               child: Text('Save'),
               onPressed: () => _disableScreen == true
                   ? null
-                  : _submitForm(incidentsModel.saveIncident, usersModel),
+                  : null,
             )));
   }
 
   Color photoColor() {
     Color returnedColor;
 
-    if (_usersModel.authenticatedUser == null) {
+    if (user == null) {
       returnedColor = Colors.black;
     } else {
-      if (_usersModel.authenticatedUser.darkMode) {
+      if (user.darkMode) {
         returnedColor = orangeDesign1;
       } else {
         returnedColor = Colors.black;
@@ -1499,437 +1478,8 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<String> takePicture(
-      GlobalKey<ScaffoldState> scaffoldKey, CameraController controller) async {
-    String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
-
-    if (!controller.value.isInitialized) {
-      showInSnackBar(scaffoldKey, 'Error: select a camera first.');
-      return null;
-    }
-    final Directory extDir = await getApplicationDocumentsDirectory();
-    final String dirPath = '${extDir.path}/Pictures/flutter_test';
-    await Directory(dirPath).create(recursive: true);
-    final String filePath = '$dirPath/${timestamp()}.jpg';
-
-    if (controller.value.isTakingPicture) {
-      // A capture is already pending, do nothing.
-      return null;
-    }
-
-    try {
-      await controller.takePicture(filePath);
-    } on CameraException catch (e) {
-      _showCameraException(scaffoldKey, e);
-      return null;
-    }
-    return filePath;
-  }
-
-  /// Returns a suitable camera icon for [direction].
-  IconData getCameraLensIcon(CameraLensDirection direction) {
-    switch (direction) {
-      case CameraLensDirection.back:
-        return Icons.camera_rear;
-      case CameraLensDirection.front:
-        return Icons.camera_front;
-      case CameraLensDirection.external:
-        return Icons.camera;
-    }
-    throw ArgumentError('Unknown lens direction');
-  }
-
-  void onNewCameraSelected(CameraDescription cameraDescription,
-      CameraController controller, GlobalKey<ScaffoldState> scaffoldKey) async {
-    print('here is the cam desc');
-    print(cameraDescription);
-    if (controller != null) {
-      print('its disposing');
-      await controller.dispose();
-    }
-    controller = CameraController(cameraDescription, ResolutionPreset.medium);
-
-    // If the controller is updated then update the UI.
-    controller.addListener(() {
-      if (mounted) setState(() {});
-      if (controller.value.hasError) {
-        showInSnackBar(
-            scaffoldKey, 'Camera error ${controller.value.errorDescription}');
-      }
-    });
-
-    try {
-      await controller.initialize();
-      setState(() {});
-    } on CameraException catch (e) {
-      _showCameraException(scaffoldKey, e);
-    }
-
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  /// Display the thumbnail of the captured image or video.
-//  Widget _thumbnailWidget() {
-//    return Expanded(
-//      child: Align(
-//        alignment: Alignment.centerRight,
-//        child: videoController == null && imagePath == null
-//            ? null
-//            : SizedBox(
-//          child: (videoController == null)
-//              ? Image.file(File(imagePath))
-//              : Container(
-//            child: Center(
-//              child: AspectRatio(
-//                  aspectRatio: videoController.value.size != null
-//                      ? videoController.value.aspectRatio
-//                      : 1.0,
-//                  child: VideoPlayer(videoController)),
-//            ),
-//            decoration: BoxDecoration(
-//                border: Border.all(color: Colors.pink)),
-//          ),
-//          width: 64.0,
-//          height: 64.0,
-//        ),
-//      ),
-//    );
-//  }
-
-  Widget _cameraTogglesRowWidget(CameraController controller,
-      List<CameraDescription> cameras, GlobalKey<ScaffoldState> scaffoldKey) {
-    final List<Widget> toggles = <Widget>[];
-
-    if (cameras.isEmpty) {
-      return const Text('No camera found');
-    } else {
-      for (CameraDescription cameraDescription in cameras) {
-        toggles.add(
-          SizedBox(
-            width: 90.0,
-            child: RadioListTile<CameraDescription>(
-                title: Icon(getCameraLensIcon(cameraDescription.lensDirection)),
-                groupValue: controller?.description,
-                value: cameraDescription,
-                onChanged: (CameraDescription cameraDescription) {
-                  print('on changed');
-                  print(cameraDescription);
-
-                  onNewCameraSelected(
-                      cameraDescription, controller, scaffoldKey);
-                }),
-          ),
-        );
-      }
-    }
-
-    return Row(children: toggles);
-  }
-
-  void _showCameraException(
-      GlobalKey<ScaffoldState> scaffoldKey, CameraException e) {
-    logError(e.code, e.description);
-    showInSnackBar(scaffoldKey, 'Error: ${e.code}\n${e.description}');
-  }
-
-  void logError(String code, String message) =>
-      print('Error: $code\nError Message: $message');
-
-  _pickPhoto(ImageSource source, int index) async {
-    if (_pickInProgress) {
-      return;
-    }
-    _pickInProgress = true;
-    Navigator.pop(context);
 
 
-    int customCamera = await _incidentsModel.getCustomCamera();
-    bool currentRememberMe = _prefs.getBool('rememberMe');
-
-
-
-    if ((source == ImageSource.camera && customCamera == 1 && Platform.isAndroid) || (source == ImageSource.camera &&
-        Platform.isAndroid &&
-        (androidInfo.model == 'SM-T365' ||
-            androidInfo.model == 'ONEPLUS A6013'))) {
-      await SystemChrome.setPreferredOrientations(
-          [DeviceOrientation.portraitUp]);
-
-      List<CameraDescription> cameras = await availableCameras();
-      print(cameras);
-      CameraController controller =
-          CameraController(cameras[0], ResolutionPreset.high);
-      await controller.initialize();
-      setState(() {});
-      if (controller.value.isInitialized) {
-        final GlobalKey<ScaffoldState> _scaffoldKey =
-            GlobalKey<ScaffoldState>();
-        PhotoViewController zoomController = PhotoViewController();
-        double scale = 1.0;
-        double detailScale = 1.0;
-        double _previousScale;
-        Color buttonColor = Colors.white70;
-
-
-        print('its initialized');
-        Navigator.of(context, rootNavigator: true)
-            .push(
-          new MaterialPageRoute(
-            fullscreenDialog: true,
-            builder: (BuildContext context) {
-              return StatefulBuilder(builder: (context, setState) {
-                return Scaffold(
-                  backgroundColor: Colors.black,
-                  key: _scaffoldKey,
-                  appBar: AppBar(
-                    iconTheme: IconThemeData(color: Colors.white),
-                    backgroundColor: Colors.black,
-                  ),
-                  body: Container(padding: EdgeInsets.only(bottom: 10.0), child: Stack(
-                    children: <Widget>[
-                      ClipRect(
-                        child: AspectRatio(
-                          aspectRatio: controller.value.aspectRatio,
-                          child: LayoutBuilder(builder: (BuildContext context,
-                              BoxConstraints constraints) {
-                            print('first height');
-                            print(constraints.maxHeight);
-
-                            return GestureDetector(
-                              onScaleStart: (ScaleStartDetails details) {
-                                print(details);
-                                // Does this need to go into setState, too?
-                                // We are only saving the scale from before the zooming started
-                                // for later - this does not affect the rendering...
-                                _previousScale = scale;
-                                print('this is the previous scale');
-                                print(_previousScale);
-                              },
-                              onScaleEnd: (ScaleEndDetails details) {
-                                print(details);
-                                print('this is the detail scale');
-                                print(detailScale);
-                                print('this is the previous scale');
-                                print(_previousScale);
-
-                                if (detailScale + _previousScale < 2.0) {
-                                  setState(() {
-                                    scale = 1.0;
-                                    //_previousScale = 1.0;
-                                  });
-                                } else if (detailScale + _previousScale > 4.0) {
-                                  setState(() {
-                                    scale = 3.0;
-                                    //_previousScale = 3.0;
-                                  });
-                                }
-
-                                // See comment above
-                                _previousScale = null;
-                              },
-                              onDoubleTap: () {
-                                if (_previousScale != null &&
-                                    _previousScale < 1.0) {
-                                  setState(() {
-                                    scale = 1.0;
-                                  });
-                                } else if (scale != null && scale < 2.0) {
-                                  setState(() {
-                                    scale = 2.0;
-                                  });
-                                } else if (scale != null && scale < 3.0) {
-                                  setState(() {
-                                    scale = 3.0;
-                                  });
-                                } else if (scale != null && scale >= 3.0) {
-                                  setState(() {
-                                    scale = 1.0;
-                                  });
-                                } else if (_previousScale == null) {
-                                  setState(() {
-                                    scale = 2.0;
-                                  });
-                                }
-                              },
-                              onScaleUpdate: (ScaleUpdateDetails details) {
-                                print(details);
-
-                                setState(() {
-                                  detailScale = details.scale;
-                                });
-
-                                setState(() =>
-                                scale = _previousScale * details.scale);
-                              },
-                              child: Transform(
-                                transform: Matrix4.diagonal3Values(
-                                    scale, scale, scale),
-                                alignment: FractionalOffset.center,
-                                child: CameraPreview(controller),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-
-                      Align(alignment: Alignment.bottomCenter,
-                          child: GestureDetector(
-                            onTapDown: (_) => setState(() {
-                              buttonColor = Colors.blue;
-                            }),
-                            onTapCancel: () => setState(() {
-                              buttonColor = Colors.white70;
-                            }),
-                            onTap: () async {
-                              if (controller != null &&
-                                  controller.value.isInitialized) {
-                                print('this is the zoom scale');
-                                print(zoomController.scale);
-
-                              } else {}
-                            },
-                            child: Container(padding: EdgeInsets.only(bottom: 10.0),
-                              height: MediaQuery.of(context).size.height * 0.1,
-                              width: MediaQuery.of(context).size.height * 0.1,
-                              decoration: BoxDecoration(
-                                border:
-                                Border.all(width: 3.0, color: Colors.white),
-                                shape: BoxShape.circle,
-                                color: buttonColor,
-                              ),
-                            ),
-                          ))
-                      ,
-                    ],
-                  ),),
-                );
-              });
-            },
-          ),
-        )
-            .then((_) {
-          controller.dispose();
-          print(controller.value.isInitialized);
-        });
-      }
-    } else {
-
-      if(source == ImageSource.camera){
-        await _incidentsModel.updateCustomCameraValue(1, 1);
-
-        if(currentRememberMe != null && currentRememberMe == false){
-          _prefs.setBool('rememberMe', true);
-        }
-      }
-
-
-      var image = await ImagePicker.pickImage(source: source, maxWidth: 800.0);
-
-      if(source == ImageSource.camera){
-        await _incidentsModel.updateCustomCameraValue(0, 0);
-        _prefs.setBool('rememberMe', currentRememberMe);
-      }
-
-
-      if (image != null) {
-        int pathCount = await _incidentsModel.checkImagePathCount();
-        if (pathCount != null && pathCount == 0) {
-          if (image.path != null) {
-            String path = image.path;
-
-            int lastIndex = path.lastIndexOf('/');
-
-            String picturesFolder = path.substring(0, lastIndex);
-
-            await _incidentsModel.addImagePath(picturesFolder);
-          }
-        }
-      }
-
-      if (image != null) {
-        bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
-
-        if (isAndroid)
-          image = await FlutterExifRotation.rotateImage(path: image.path);
-
-        final Directory extDir = await getApplicationDocumentsDirectory();
-        final String dirPath = '${extDir.path}/images' +
-            index.toString() +
-            _usersModel.authenticatedUser.userId.toString();
-
-        if (Directory(dirPath).existsSync()) {
-          print('it exists');
-          imageCache.clear();
-          var dir = new Directory(dirPath);
-          dir.deleteSync(recursive: true);
-          if (Directory(dirPath).existsSync()) {
-            print('still exists');
-          } else {
-            print('doesnt exist');
-          }
-        }
-
-        new Directory(dirPath).createSync(recursive: true);
-        String path =
-            '$dirPath/temporaryIncidentImage' + index.toString() + '.jpg';
-
-        File changedImage = image.copySync(path);
-
-        path = changedImage.path;
-
-        if (images[index] != null) {
-          setState(() {
-            //this is setting the image locally here
-            images[index] = image;
-            if (_temporaryPaths.length == 0) {
-              _temporaryPaths.add(path);
-            } else if (_temporaryPaths.length < index + 1) {
-              _temporaryPaths.add(path);
-            } else {
-              _temporaryPaths[index] = path;
-            }
-          });
-        } else {
-          setState(() {
-            images[index] = changedImage;
-            if (_temporaryPaths.length == 0) {
-              _temporaryPaths.add(path);
-            } else if (index == 0 && _temporaryPaths.length >= 1) {
-              _temporaryPaths[index] = path;
-            } else if (index == 1 && _temporaryPaths.length < 2) {
-              _temporaryPaths.add(path);
-            } else if (index == 1 && _temporaryPaths.length >= 2) {
-              _temporaryPaths[index] = path;
-            } else if (index == 2 && _temporaryPaths.length < 3) {
-              _temporaryPaths.add(path);
-            } else if (index == 2 && _temporaryPaths.length >= 3) {
-              _temporaryPaths[index] = path;
-            } else if (index == 3 && _temporaryPaths.length < 4) {
-              _temporaryPaths.add(path);
-            } else if (index == 3 && _temporaryPaths.length >= 4) {
-              _temporaryPaths[index] = path;
-            } else if (index == 4 && _temporaryPaths.length < 5) {
-              _temporaryPaths.add(path);
-            } else if (index == 4 && _temporaryPaths.length >= 5) {
-              _temporaryPaths[index] = path;
-            }
-          });
-        }
-        _formData['images'] = images;
-
-        var encodedPaths = jsonEncode(_temporaryPaths);
-
-        _incidentsModel.updateTemporaryIncidentField(
-            'images', encodedPaths, _usersModel.authenticatedUser.userId);
-      }
-    }
-    setState(() {
-      _disableScreen = false;
-      _pickInProgress = false;
-    });
-  }
 
   double _buildBottomSheetHeight(File image) {
     double _deviceHeight = MediaQuery.of(context).size.height;
@@ -1945,264 +1495,6 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
     return height;
   }
 
-  void _openImagePicker(BuildContext context, int index) {
-    bool isAndroid = Theme.of(context).platform == TargetPlatform.android;
-
-    if (isAndroid) {
-      Permission.requestPermissions(
-          [PermissionName.Camera, PermissionName.Storage]);
-    } else {
-      print('its ios');
-    }
-
-    _showBottomSheet(index);
-  }
-
-  Future<Widget> _showBottomSheet(int index) async {
-    return showModalBottomSheet(
-        context: context,
-        builder: (BuildContext context) {
-          return Container(
-            padding: EdgeInsets.all(10.0),
-            height: _buildBottomSheetHeight(images[index]),
-            child: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-              double sheetHeight = constraints.maxHeight;
-
-              return Container(
-                height: sheetHeight,
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                        height: sheetHeight * 0.15,
-                        child: Text(
-                          'Pick an Image',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        )),
-                    Container(
-                        height: images[index] == null
-                            ? sheetHeight * 0.425
-                            : sheetHeight * 0.283,
-                        child: FlatButton(
-                          textColor: Theme.of(context).primaryColor,
-                          onPressed: () {
-                            setState(() {
-                              _disableScreen = true;
-                            });
-                            _pickPhoto(ImageSource.camera, index);
-                          },
-                          child: Text('Use Camera'),
-                        )),
-                    Container(
-                        height: images[index] == null
-                            ? sheetHeight * 0.425
-                            : sheetHeight * 0.283,
-                        child: FlatButton(
-                          textColor: Theme.of(context).primaryColor,
-                          onPressed: () {
-                            setState(() {
-                              _disableScreen = true;
-                            });
-                            _pickPhoto(ImageSource.gallery, index);
-                          },
-                          child: Text('Use Gallery'),
-                        )),
-                    images[index] == null
-                        ? Container()
-                        : Container(
-                            height: sheetHeight * 0.283,
-                            child: FlatButton(
-                              textColor: Theme.of(context).primaryColor,
-                              onPressed: () {
-                                setState(() {
-                                  images[index] = null;
-                                  _temporaryPaths[index] = null;
-
-                                  int maxImageNo = images.length - 1;
-
-                                  //if the last image in the list
-                                  if (index == maxImageNo) {
-                                    var encodedPaths =
-                                        jsonEncode(_temporaryPaths);
-                                    _incidentsModel
-                                        .updateTemporaryIncidentField(
-                                            'images',
-                                            encodedPaths,
-                                            _usersModel
-                                                .authenticatedUser.userId);
-                                    Navigator.pop(context);
-                                    return;
-                                  }
-
-                                  //if the image one in front is not null then replace this index with it
-                                  int plusOne = index + 1;
-                                  if (images[plusOne] != null) {
-                                    images[index] = images[plusOne];
-                                    images[plusOne] = null;
-                                    _temporaryPaths[index] =
-                                        _temporaryPaths[plusOne];
-                                    _temporaryPaths[plusOne] = null;
-                                  }
-
-                                  //if the image two in front is not null then replace this index with it
-                                  int plusTwo = index + 2;
-                                  if (plusTwo > maxImageNo) {
-                                    var encodedPaths =
-                                        jsonEncode(_temporaryPaths);
-                                    _incidentsModel
-                                        .updateTemporaryIncidentField(
-                                            'images',
-                                            encodedPaths,
-                                            _usersModel
-                                                .authenticatedUser.userId);
-                                    Navigator.pop(context);
-                                    return;
-                                  }
-
-                                  if (images[plusTwo] != null) {
-                                    images[plusOne] = images[plusTwo];
-                                    images[plusTwo] = null;
-                                    _temporaryPaths[plusOne] =
-                                        _temporaryPaths[plusTwo];
-                                    _temporaryPaths[plusTwo] = null;
-                                  }
-
-                                  //if the image three in front is not null then replace this index with it
-                                  int plusThree = index + 3;
-                                  if (plusThree > maxImageNo) {
-                                    var encodedPaths =
-                                        jsonEncode(_temporaryPaths);
-                                    _incidentsModel
-                                        .updateTemporaryIncidentField(
-                                            'images',
-                                            encodedPaths,
-                                            _usersModel
-                                                .authenticatedUser.userId);
-                                    Navigator.pop(context);
-                                    return;
-                                  }
-                                  if (images[plusThree] != null) {
-                                    images[plusTwo] = images[plusThree];
-                                    images[plusThree] = null;
-                                    _temporaryPaths[plusTwo] =
-                                        _temporaryPaths[plusThree];
-                                    _temporaryPaths[plusThree] = null;
-                                  }
-
-                                  //if the image four in front is not null then replace this index with it
-                                  int plusFour = index + 4;
-                                  if (plusFour > maxImageNo) {
-                                    var encodedPaths =
-                                        jsonEncode(_temporaryPaths);
-                                    _incidentsModel
-                                        .updateTemporaryIncidentField(
-                                            'images',
-                                            encodedPaths,
-                                            _usersModel
-                                                .authenticatedUser.userId);
-                                    Navigator.pop(context);
-                                    return;
-                                  }
-
-                                  if (images[plusFour] != null) {
-                                    images[plusThree] = images[plusFour];
-                                    images[plusFour] = null;
-                                    _temporaryPaths[plusThree] =
-                                        _temporaryPaths[plusFour];
-                                    _temporaryPaths[plusFour] = null;
-                                  }
-
-                                  var encodedPaths =
-                                      jsonEncode(_temporaryPaths);
-                                  _incidentsModel.updateTemporaryIncidentField(
-                                      'images',
-                                      encodedPaths,
-                                      _usersModel.authenticatedUser.userId);
-                                  Navigator.pop(context);
-                                });
-                              },
-                              child: Text('Delete Image'),
-                            )),
-                  ],
-                ),
-              );
-            }),
-          );
-        });
-  }
-
-  List<Widget> _buildGridTiles(BoxConstraints constraints, int numOfTiles) {
-    List<Container> containers =
-        List<Container>.generate(numOfTiles, (int index) {
-      return Container(
-        padding: EdgeInsets.all(2.0),
-        width: constraints.maxWidth / 5,
-        height: constraints.maxWidth / 5,
-        child: GestureDetector(
-          onLongPress: () {
-            if (images[index] != null) {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return Dialog(
-//                    shape: RoundedRectangleBorder(
-//                        borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                      child: MediaQuery.of(context).orientation ==
-                              Orientation.landscape
-                          ? Container(
-                              width: MediaQuery.of(context).size.width * 0.3,
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    Image.file(images[index]),
-                                    FlatButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      child: Text(
-                                        'Close',
-                                        style: TextStyle(color: orangeDesign1),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ))
-                          : SingleChildScrollView(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  Image.file(images[index]),
-                                  FlatButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                    child: Text(
-                                      'Close',
-                                      style: TextStyle(color: orangeDesign1),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                    );
-                  });
-            }
-          },
-          onTap: () {
-            int minusIndex = index - 1;
-            if (index == 0) {
-              _openImagePicker(context, index);
-            } else if (index > 0 && images[minusIndex] == null) {
-              return;
-            } else {
-              _openImagePicker(context, index);
-            }
-          },
-          child: gridColor(context, index),
-        ),
-      );
-    });
-    return containers;
-  }
 
   Widget _buildPageContent(BuildContext context, IncidentsModel incidentsModel,
       UsersModel usersModel) {
@@ -2222,7 +1514,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             padding: EdgeInsets.symmetric(horizontal: targetPadding / 2),
             child: Column(
               children: <Widget>[
-                _buildIncidentDrop(),
+                //_buildIncidentDrop(),
                 _buildReporterField(usersModel),
                 _reportAnonymous(usersModel),
                 _dateTimeField(),
@@ -2233,21 +1525,12 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
                     : _buildPostcodeField(),
                 _buildStaticMap(),
                 _buildProjectNameText(),
-                _buildRouteDrop(),
-                _showElr == true ? _buildElrDrop() : Container(),
+                //_buildRouteDrop(),
+                //_showElr == true ? _buildElrDrop() : Container(),
                 _buildMileageText(),
                 _customFieldCount > 0 ? _buildCustomFields() : Container(),
                 _buildSummaryText(),
-                SizedBox(
-                  height: 10.0,
-                ),
-                LayoutBuilder(builder:
-                    (BuildContext context, BoxConstraints constraints) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: _buildGridTiles(constraints, images.length),
-                  );
-                }),
+
                 SizedBox(
                   height: 10.0,
                 ),
@@ -2299,7 +1582,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
       _formData['postcode'] = null;
     }
 
-    GlobalFunctions.showLoadingDialog(context, 'Saving');
+    GlobalFunctions.showLoadingDialog('Saving');
 
     List<File> images = [];
 
@@ -2339,7 +1622,7 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
 
     saveIncident(
             anonymous: _isAnonymous,
-            authenticatedUser: usersModel.authenticatedUser,
+            authenticatedUser: user,
             type: _incidentValue,
             incidentDate: _dateTimeController1.text,
             latitude: _locationValue == 'Post Code' ? null : _latitude,
@@ -2356,152 +1639,114 @@ class _RaiseIncidentPageState extends State<RaiseIncidentPage>
             context: context)
         .then((Map<String, dynamic> response) {
       if (response['success']) {
-        _clearIncident();
+        //_clearIncident();
         Navigator.pop(context);
-        Fluttertoast.showToast(
-            msg: 'Incident Saved Successfully',
-            toastLength: Toast.LENGTH_SHORT,
-            timeInSecForIos: 5,
-            gravity: ToastGravity.CENTER,
-            backgroundColor: orangeDesign1,
-            textColor: Colors.black);
-        //Navigator.pushReplacementNamed(context, '/raiseIncident');
+
 
       } else {
         if (response['message'] ==
             'No data connection, Incident has been stored locally')
-          _clearIncident();
+          //_clearIncident();
         Navigator.pop(context);
-        Fluttertoast.showToast(
-            msg: response['message'],
-            toastLength: Toast.LENGTH_SHORT,
-            timeInSecForIos: 5,
-            gravity: ToastGravity.CENTER,
-            backgroundColor: orangeDesign1,
-            textColor: Colors.black);
       }
     });
   }
 
-  void _resetIncident() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(32.0))),
-            title: Text(
-              'Notice',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            content: Text('Are you sure you wish to reset this form?'),
-            actions: <Widget>[
-              FlatButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(
-                  'No',
-                  style: TextStyle(color: orangeDesign1),
-                ),
-              ),
-              FlatButton(
-                onPressed: () {
-                  _clearIncident();
-                  Navigator.of(context).pop();
-                },
-                child: Text(
-                  'Yes',
-                  style: TextStyle(color: orangeDesign1),
-                ),
-              )
-            ],
-          );
-        });
-  }
-
-  void _clearIncident() {
-    _incidentsModel
-        .resetTemporaryIncident(_usersModel.authenticatedUser.userId);
-    setState(() {
-      _incidentValue = 'Incident';
-      _isAnonymous = false;
-      _dateTimeController1.text = '';
-      _locationValue = 'Latitude/Longitude';
-      _postcodeController.text = '';
-      _projectNameController.text = '';
-      _routeValue = 'Select a Route';
-      _elrValue = 'Select an ELR';
-      _mileageTextController.text = '';
-      _summaryTextController.text = '';
-      _latitude = null;
-      _longitude = null;
-      _staticMapLocation = null;
-      _staticMapPostcode = null;
-      _locationController.text = '';
-      _temporaryPaths = [];
-      images[0] = null;
-      images[1] = null;
-      images[2] = null;
-      images[3] = null;
-      images[4] = null;
-      _customField1Controller.text = '';
-      _customField2Controller.text = '';
-      _customField3Controller.text = '';
-      _customLabel1 = '';
-      _customLabel2 = '';
-      _customLabel3 = '';
-      _customPlaceholder1 = '';
-      _customPlaceholder2 = '';
-      _customPlaceholder3 = '';
-      _customFieldCount = 0;
-      _currentMileage = '';
-      _currentElr = null;
-      _currentElrList = [];
-      _elrDrop = ['Select an ELR'];
-      _showElr = false;
-    });
-  }
+  // void _resetIncident() {
+  //   showDialog(
+  //       context: context,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.all(Radius.circular(32.0))),
+  //           title: Text(
+  //             'Notice',
+  //             style: TextStyle(fontWeight: FontWeight.bold),
+  //           ),
+  //           content: Text('Are you sure you wish to reset this form?'),
+  //           actions: <Widget>[
+  //             FlatButton(
+  //               onPressed: () => Navigator.of(context).pop(),
+  //               child: Text(
+  //                 'No',
+  //                 style: TextStyle(color: orangeDesign1),
+  //               ),
+  //             ),
+  //             FlatButton(
+  //               onPressed: () {
+  //                 _clearIncident();
+  //                 Navigator.of(context).pop();
+  //               },
+  //               child: Text(
+  //                 'Yes',
+  //                 style: TextStyle(color: orangeDesign1),
+  //               ),
+  //             )
+  //           ],
+  //         );
+  //       });
+  // }
+  //
+  // void _clearIncident() {
+  //   _incidentsModel
+  //       .resetTemporaryIncident(user.userId);
+  //   setState(() {
+  //     _incidentValue = 'Incident';
+  //     _isAnonymous = false;
+  //     _dateTimeController1.text = '';
+  //     _locationValue = 'Latitude/Longitude';
+  //     _postcodeController.text = '';
+  //     _projectNameController.text = '';
+  //     _routeValue = 'Select a Route';
+  //     _elrValue = 'Select an ELR';
+  //     _mileageTextController.text = '';
+  //     _summaryTextController.text = '';
+  //     _latitude = null;
+  //     _longitude = null;
+  //     _staticMapLocation = null;
+  //     _staticMapPostcode = null;
+  //     _locationController.text = '';
+  //     _temporaryPaths = [];
+  //     images[0] = null;
+  //     images[1] = null;
+  //     images[2] = null;
+  //     images[3] = null;
+  //     images[4] = null;
+  //     _customField1Controller.text = '';
+  //     _customField2Controller.text = '';
+  //     _customField3Controller.text = '';
+  //     _customLabel1 = '';
+  //     _customLabel2 = '';
+  //     _customLabel3 = '';
+  //     _customPlaceholder1 = '';
+  //     _customPlaceholder2 = '';
+  //     _customPlaceholder3 = '';
+  //     _customFieldCount = 0;
+  //     _currentMileage = '';
+  //     _currentElr = null;
+  //     _currentElrList = [];
+  //     _elrDrop = ['Select an ELR'];
+  //     _showElr = false;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
     print('[Raise Incident Page] - build page');
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: orangeDesign1,
-        title: Text(
-          'Raise Incident',
-          style: TextStyle(color: Colors.black),
-        ),
-        actions: <Widget>[
-          IconButton(icon: Icon(Icons.refresh), onPressed: _resetIncident)
-        ],
+    return _loadingTemporary
+        ? Center(
+      child: CircularProgressIndicator(
+        valueColor: new AlwaysStoppedAnimation<Color>(orangeDesign1),
       ),
-      drawer: SideDrawer(),
-      body: _loadingTemporary
-          ? Center(
-              child: CircularProgressIndicator(
-                valueColor: new AlwaysStoppedAnimation<Color>(orangeDesign1),
-              ),
-            )
-          : _buildPageContent(context, _incidentsModel, _usersModel),
-    );
+    )
+        : _buildPageContent(context, _incidentsModel, _usersModel);
   }
 
   @override
   void afterFirstLayout(BuildContext context) {
     // Calling the same function "after layout" to resolve the issue.
 
-    if (_usersModel.authenticatedUser.darkMode != null) {
-      if (_usersModel.authenticatedUser.darkMode)
-        GlobalFunctions.setDarkMode(context);
-    }
 
-    _incidentsModel.getCustomCameraToast().then((int value){
-
-      if(value == 1){
-        GlobalFunctions.showToast('Unable to take photo, please try again');
-        _incidentsModel.updateCustomCameraValue(1, 0);
-      }
-    });
   }
 }

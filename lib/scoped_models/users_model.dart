@@ -1,93 +1,141 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:rxdart/subjects.dart';
 import 'package:connectivity/connectivity.dart';
-
-import '../models/user.dart';
 import '../models/authenticated_user.dart';
-import '../scoped_models/incidents_model.dart';
 import '../shared/global_functions.dart';
 import '../shared/global_config.dart';
-import '../utils/database_helper.dart';
+import '../utils/database.dart';
+import '../locator.dart';
+import '../constants/route_paths.dart' as routes;
+import '../services/navigation_service.dart';
+import '../services/secure_storage.dart';
+import 'package:sembast/sembast.dart' as Db;
+import 'package:random_string/random_string.dart' as random_string;
 
 
 
 class UsersModel extends ChangeNotifier {
 
-  List<User> _users = [];
-  AuthenticatedUser _authenticatedUser;
-  int _selUserKey;
+  final SecureStorage _secureStorage = SecureStorage();
+  final NavigationService _navigationService = locator<NavigationService>();
   bool _isLoading = false;
-  Timer _authTimer;
   bool _loadingElrs = false;
+  bool _isLoadingLogin = false;
 
+  String _authenticationErrorMessage = '';
 
-  bool get isLoading {
-    return _isLoading;
+  String get loginErrorMessage => _authenticationErrorMessage;
+  bool get isLoading => _isLoading;
+  bool get loadingElrs => _loadingElrs;
+  bool get isLoadingLogin => _isLoadingLogin;
+
+  void setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
   }
 
-  bool get loadingElrs {
-    return _loadingElrs;
-  }
-
-
-  List<User> get allUsers {
-    return List.from(_users);
-  }
-
-  int get selectedUserIndex {
-    return _users.indexWhere((User user) {
-      return user.userId == _selUserKey;
-    });
-  }
-
-  int get selectedUserKey {
-    return _selUserKey;
-  }
-
-  User get selectedUser {
-    if (_selUserKey == null) {
-      return null;
-    }
-    return _users.firstWhere((User user) {
-      return user.userId == _selUserKey;
-    });
-  }
-
-  void selectUser(int userKey) {
-    _selUserKey = userKey;
-    if (userKey != null) {
-      notifyListeners();
-    }
+  void setLoadingElrs(bool value) {
+    _loadingElrs = value;
+    notifyListeners();
   }
 
 
-  AuthenticatedUser get authenticatedUser {
-    return _authenticatedUser;
-  }
-
-  PublishSubject<bool> _userSubject = PublishSubject();
-
-  PublishSubject<bool> get userSubject {
-    return _userSubject;
-  }
-
-  Future<Map<String, dynamic>> login(String username, String password, bool rememberMe, BuildContext context) async {
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  // Sembast database settings
+  static const String USERS_STORE_NAME = 'users_store';
+  static const String ELRS_STORE_NAME = 'elrs_store';
+  static const String ROUTES_STORE_NAME = 'routes_store';
+  final _usersStore = Db.intMapStoreFactory.store(USERS_STORE_NAME);
+  final _elrsStore = Db.intMapStoreFactory.store(ELRS_STORE_NAME);
+  final _routesStore = Db.intMapStoreFactory.store(ROUTES_STORE_NAME);
+  // Private getter to shorten the amount of code needed to get the
+  // singleton instance of an opened database.
+  Future<Db.Database> get _db async => await AppDatabase.instance.database;
 
 
+  Future <void> login(String username, String password) async {
 
-    _isLoading = true;
+    _isLoadingLogin = true;
+    _authenticationErrorMessage = '';
     notifyListeners();
 
-    bool success = false;
-    String message = 'Something went wrong!';
+    try {
 
+      ConnectivityResult connectivityResult = await Connectivity().checkConnectivity();
+
+      if(connectivityResult == ConnectivityResult.none) {
+        _authenticationErrorMessage = 'No data connection, unable to login';
+      } else {
+
+
+        bool hasSession = await getSession(username, password);
+
+        if(hasSession){
+
+          int elrCount = await _elrsStore.count(await _db);
+          if(elrCount == 0){
+            final Map<String, dynamic> elrResult = await getElrs();
+
+            if(!elrResult['success']){
+              logout();
+            }
+          }
+          int routeCount = await _routesStore.count(await _db);
+          if(routeCount == 0){
+
+            List<Map<String,dynamic>> routes = [
+              {'route_name': 'Anglia', 'route_code': 'QT'},
+              {'route_name': 'Southeast', 'route_code': 'QK'},
+              {'route_name': 'London North East', 'route_code': 'QG'},
+              {'route_name': 'London North West (North)', 'route_code': 'QR'},
+              {'route_name': 'London North West (South)', 'route_code': 'QS'},
+              {'route_name': 'East Midlands', 'route_code': 'QM'},
+              {'route_name': 'Scotland', 'route_code': 'QL'},
+              {'route_name': 'Wales', 'route_code': 'QC'},
+              {'route_name': 'Wessex', 'route_code': 'QW'},
+              {'route_name': 'Western (West)', 'route_code': 'QD'},
+              {'route_name': 'Western (Thames Valley)', 'route_code': 'QV'},
+            ];
+
+            for(Map<String, dynamic> route in routes) {
+
+              bool existingRoute = false;
+              final Db.Finder finder = Db.Finder(filter: Db.Filter.equals('route_name', route['route_name']));
+              List records = await _usersStore.find(
+                await _db,
+                finder: finder,
+              );
+
+              if(records.length > 0) existingRoute = true;
+
+              if(existingRoute){
+                await _usersStore.update(await _db, route,
+                    finder: finder);
+
+              } else {
+                int _id = DateTime.now().millisecondsSinceEpoch + int.parse(random_string.randomNumeric(2));
+                await _usersStore.record(_id).put(await _db,
+                    route);
+              }
+
+            }
+          }
+        }
+      }
+    } on TimeoutException catch (_) {
+
+      _authenticationErrorMessage = 'Request timeout, please try again later';
+      // A timeout occurred.
+    } catch(error){
+      _authenticationErrorMessage = 'Something went wrong';
+    }
+    _isLoadingLogin = false;
+    notifyListeners();
+  }
+
+  Future<bool> getSession(String username, String password) async{
+
+    bool success = false;
 
     final Map<String,dynamic> authData = {
       'loginData': {'username': username, 'password': password},
@@ -95,606 +143,133 @@ class UsersModel extends ChangeNotifier {
 
     try {
 
-      var connectivityResult = await (new Connectivity().checkConnectivity());
-
-      if(connectivityResult == ConnectivityResult.none) {
-        if (prefs.get('username') == null && prefs.get('password') == null) {
-          message = 'No data connection, please try again later';
-        } else {
-
-          print(prefs.setBool('rememberMe', rememberMe));
+      //Make the POST request to the server
+      Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
+          serverUrl + 'login', authData, false).timeout(Duration(seconds: 90));
 
 
-        if (username == GlobalFunctions.decryptString(prefs.get('username')) &&
-            password == GlobalFunctions.decryptString(prefs.get('password'))) {
-          _authenticatedUser = AuthenticatedUser(
-              userId: prefs.getInt('userId'),
-              firstName: GlobalFunctions.decryptString(prefs.get('firstName')),
-              lastName: GlobalFunctions.decryptString(prefs.get('lastName')),
-              username: GlobalFunctions.decryptString(prefs.get('username')),
-              password: GlobalFunctions.decryptString(prefs.get('password')),
-              suspended: prefs.getBool('suspended'),
-              organisationId: prefs.getInt('organisationId'),
-              organisationName: prefs.get('organisationName'),
-              session: GlobalFunctions.decryptString(prefs.get('session')),
-              deleted: prefs.getBool('deleted'),
-              isClientAdmin: prefs.getBool('isClientAdmin'),
-              isSuperAdmin: prefs.getBool('isSuperAdmin'),
-              termsAccepted: prefs.get('termsAccepted'),
-              forcePasswordReset: prefs.getBool('forcePasswordReset'),
-              darkMode: prefs.getBool('darkMode'));
+      if (serverResponse != null) {
+        if (serverResponse['error'] != null &&
+            serverResponse['error'] == 'incorrect_details') {
+          _authenticationErrorMessage = 'Incorrect username or password given';
+        } else if (serverResponse['error'] != null &&
+            serverResponse['error'] == 'terms_not_accepted') {
+          _authenticationErrorMessage =
+          'You need to accept the terms & conditions before using this app';
+        } else if (serverResponse['error'] != null &&
+            serverResponse['error'] == 'change_password') {
+          _authenticationErrorMessage = 'You are required to change your password';
+        } else if (serverResponse['response']['session'] != null) {
 
-          if (prefs.get('cookie') != null)
-            cookie = GlobalFunctions.decryptString(prefs.get('cookie'));
+          cookie = serverResponse['response']['session'];
+          sharedPreferences.setString('cookie', GlobalFunctions.encryptString(cookie));
+
+          final DateTime now = DateTime.now();
+
+          final DateTime cookieExpiryTime = now.add(Duration(minutes: 28));
+
+          user = AuthenticatedUser(
+              userId: int.parse(serverResponse['response']['id']),
+              firstName: serverResponse['response']['first_name'],
+              lastName: serverResponse['response']['last_name'],
+              username: username,
+              password: password,
+              suspended: serverResponse['response']['suspended'],
+              organisationId: int.parse(serverResponse['response']['organisation_id']),
+              organisationName: serverResponse['response']['organisation_name'],
+              session: serverResponse['response']['session'],
+              deleted: serverResponse['response']['deleted'],
+              isClientAdmin: serverResponse['response']['is_client_admin'],
+              isSuperAdmin: serverResponse['response']['is_super_admin'],
+              termsAccepted: serverResponse['response']['terms_accepted'],
+              forcePasswordReset: serverResponse['response']['force_password_reset']);
+
+
+          String encryptedFirstName = GlobalFunctions.encryptString(user.firstName);
+          String encryptedLastName = GlobalFunctions.encryptString(user.lastName);
+          String encryptedUsername = GlobalFunctions.encryptString(user.username);
+          String encryptedPassword = GlobalFunctions.encryptString(user.password);
+          String encryptedSession = GlobalFunctions.encryptString(user.session);
+
+          Map<String, dynamic> userData = {
+            'user_id': user.userId,
+            'first_name': encryptedFirstName,
+            'last_name': encryptedLastName,
+            'username': encryptedUsername,
+            'password': encryptedPassword,
+            'suspended': user.suspended,
+            'organisation_id': user.organisationId,
+            'organisation_name': user.organisationName,
+            'session': encryptedSession,
+            'deleted': user.deleted,
+            'is_client_admin': user.isClientAdmin,
+            'is_super_admin': user.isSuperAdmin,
+            'terms_accepted': user.termsAccepted,
+            'force_password_reset': user.forcePasswordReset,
+            'dark_mode': false,
+          };
+
+          sharedPreferences.setInt('userId', user.userId);
+          sharedPreferences.setString('firstName', encryptedFirstName);
+          sharedPreferences.setString('lastName', encryptedLastName);
+          sharedPreferences.setString('username', encryptedUsername);
+          sharedPreferences.setString('password', encryptedPassword);
+          sharedPreferences.setBool('suspended', user.suspended);
+          sharedPreferences.setInt(
+              'organisationId', user.organisationId);
+          sharedPreferences.setString('organisationName', user.organisationName);
+          sharedPreferences.setString('session', encryptedSession);
+          sharedPreferences.setBool('deleted', user.deleted);
+          sharedPreferences.setBool('isClientAdmin', user.isClientAdmin);
+          sharedPreferences.setBool('isSuperAdmin', user.isSuperAdmin);
+          sharedPreferences.setString('termsAccepted', user.termsAccepted);
+          sharedPreferences.setBool('forcePasswordReset', user.forcePasswordReset);
+          sharedPreferences.setBool('rememberMe', true);
+          sharedPreferences.setBool('darkMode', false);
+          sharedPreferences.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
+
+
+          //Sembast
+          bool existingUser = false;
+          final Db.Finder finder = Db.Finder(filter: Db.Filter.equals('userId', user.userId));
+          List records = await _usersStore.find(
+            await _db,
+            finder: finder,
+          );
+
+          if(records.length > 0) existingUser = true;
+
+          if(existingUser){
+            await _usersStore.update(await _db, userData,
+                finder: finder);
+
+          } else {
+            int _id = DateTime.now().millisecondsSinceEpoch + int.parse(random_string.randomNumeric(2));
+            await _usersStore.record(_id).put(await _db,
+                userData);
+          }
+
 
           success = true;
-          notifyListeners();
+
+
         } else {
-          message = 'No data connection, please try again later';
+          _authenticationErrorMessage = 'no valid session found';
         }
+
       }
 
-      } else {
+  } on TimeoutException catch (_) {
 
-        //Make the POST request to the server
-        Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
-            serverUrl + 'login', authData, false).timeout(Duration(seconds: 90));
-
-        if (serverResponse != null) {
-          if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'incorrect_details') {
-            message = 'Incorrect username or password given';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'terms_not_accepted') {
-            message =
-            'You need to accept the terms & conditions before using this app';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'change_password') {
-            message = 'You are required to change your password';
-          } else if (serverResponse['response']['session'] != null) {
-
-            cookie = serverResponse['response']['session'];
-            prefs.setString('cookie', GlobalFunctions.encryptString(cookie));
-
-            final DateTime now = DateTime.now();
-
-            final DateTime cookieExpiryTime =
-            now.add(Duration(minutes: 28));
-
-
-            _authenticatedUser = AuthenticatedUser(
-                userId: int.parse(serverResponse['response']['id']),
-                firstName: serverResponse['response']['first_name'],
-                lastName: serverResponse['response']['last_name'],
-                username: username,
-                password: password,
-                suspended: serverResponse['response']['suspended'],
-                organisationId: int.parse(
-                    serverResponse['response']['organisation_id']),
-                organisationName: serverResponse['response']['organisation_name'],
-                session: serverResponse['response']['session'],
-                deleted: serverResponse['response']['deleted'],
-                isClientAdmin: serverResponse['response']['is_client_admin'],
-                isSuperAdmin: serverResponse['response']['is_super_admin'],
-                termsAccepted: serverResponse['response']['terms_accepted'],
-                forcePasswordReset: serverResponse['response']['force_password_reset']);
-
-
-
-
-            DatabaseHelper databaseHelper = DatabaseHelper();
-
-            final int existingUser = await databaseHelper.checkUserExists(_authenticatedUser.userId);
-
-
-            //First Name
-            String encryptedFirstName = GlobalFunctions.encryptString(
-                authenticatedUser.firstName);
-            //Last Name
-            String encryptedLastName = GlobalFunctions.encryptString(
-                authenticatedUser.lastName);
-            //Username
-            String encryptedUsername = GlobalFunctions.encryptString(
-                authenticatedUser.username);
-            //Password
-            String encryptedPassword = GlobalFunctions.encryptString(
-                authenticatedUser.password);
-            //Session
-            String encryptedSession = GlobalFunctions.encryptString(
-                authenticatedUser.session);
-
-
-            if (existingUser == 0) {
-
-              authenticatedUser.darkMode = false;
-
-              Map<String, dynamic> userData = {
-                'user_id': _authenticatedUser.userId,
-                'first_name': encryptedFirstName,
-                'last_name': encryptedLastName,
-                'username': encryptedUsername,
-                'password': encryptedPassword,
-                'suspended': _authenticatedUser.suspended,
-                'organisation_id': _authenticatedUser.organisationId,
-                'organisation_name': _authenticatedUser.organisationName,
-                'session': encryptedSession,
-                'deleted': _authenticatedUser.deleted,
-                'is_client_admin': _authenticatedUser.isClientAdmin,
-                'is_super_admin': _authenticatedUser.isSuperAdmin,
-                'terms_accepted': _authenticatedUser.termsAccepted,
-                'force_password_reset': _authenticatedUser.forcePasswordReset,
-                'dark_mode': false,
-              };
-
-              int addedUser = await databaseHelper.addUser(userData);
-
-              if (addedUser == 0) {
-                message = 'Unable to add user locally to the device';
-              } else {
-                final SharedPreferences prefs = await SharedPreferences
-                    .getInstance();
-
-                prefs.setInt('userId', _authenticatedUser.userId);
-                prefs.setString('firstName', encryptedFirstName);
-                prefs.setString('lastName', encryptedLastName);
-                prefs.setString('username', encryptedUsername);
-                prefs.setString('password', encryptedPassword);
-                prefs.setBool('suspended', _authenticatedUser.suspended);
-                prefs.setInt(
-                    'organisationId', _authenticatedUser.organisationId);
-                prefs.setString('organisationName', _authenticatedUser.organisationName);
-                prefs.setString('session', encryptedSession);
-                prefs.setBool('deleted', _authenticatedUser.deleted);
-                prefs.setBool('isClientAdmin', _authenticatedUser.isClientAdmin);
-                prefs.setBool('isSuperAdmin', _authenticatedUser.isSuperAdmin);
-                prefs.setString('termsAccepted', _authenticatedUser.termsAccepted);
-                prefs.setBool('forcePasswordReset',
-                    _authenticatedUser.forcePasswordReset);
-                prefs.setBool('rememberMe', rememberMe);
-                prefs.setBool('darkMode', false);
-                prefs.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
-              }
-            } else {
-
-              Map<String, dynamic> userData = {
-
-
-                'user_id': _authenticatedUser.userId,
-                'first_name': encryptedFirstName,
-                'last_name': encryptedLastName,
-                'username': encryptedUsername,
-                'password': encryptedPassword,
-                'suspended': _authenticatedUser.suspended,
-                'organisation_id': _authenticatedUser.organisationId,
-                'organisation_name': _authenticatedUser.organisationName,
-                'session': encryptedSession,
-                'deleted': _authenticatedUser.deleted,
-                'is_client_admin': _authenticatedUser.isClientAdmin,
-                'is_super_admin': _authenticatedUser.isSuperAdmin,
-                'terms_accepted': _authenticatedUser.termsAccepted,
-                'force_password_reset': _authenticatedUser.forcePasswordReset,
-              };
-
-              int updatedUser = await databaseHelper.updateUser(userData);
-              if (updatedUser == 0) {
-                message = 'Unable to update user locally on the device';
-              } else {
-                Database database = await databaseHelper.database;
-
-                List<Map<String, dynamic>> user = await database.rawQuery(
-                    'SELECT dark_mode FROM users_table WHERE user_id = ${_authenticatedUser
-                        .userId}');
-
-                bool darkMode;
-
-                if(user[0]['dark_mode'] is String){
-                  darkMode = user[0]['dark_mode'] == 'true' ? true : false;
-
-                } else if (user[0]['dark_mode'] is int){
-                  darkMode = user[0]['dark_mode'] == 1 ? true : false;
-                }
-
-                authenticatedUser.darkMode = darkMode;
-
-                final SharedPreferences prefs = await SharedPreferences
-                    .getInstance();
-                prefs.setInt('userId', _authenticatedUser.userId);
-                prefs.setString('firstName', encryptedFirstName);
-                prefs.setString('lastName', encryptedLastName);
-                prefs.setString('username', encryptedUsername);
-                prefs.setString('password', encryptedPassword);
-                prefs.setBool('suspended', _authenticatedUser.suspended);
-                prefs.setInt(
-                    'organisationId', _authenticatedUser.organisationId);
-                prefs.setString('organisationName', _authenticatedUser.organisationName);
-                prefs.setString('session', encryptedSession);
-                prefs.setBool('deleted', _authenticatedUser.deleted);
-                prefs.setBool('isClientAdmin', _authenticatedUser.isClientAdmin);
-                prefs.setBool('isSuperAdmin', _authenticatedUser.isSuperAdmin);
-                prefs.setString('termsAccepted', _authenticatedUser.termsAccepted);
-                prefs.setBool('forcePasswordReset',
-                    _authenticatedUser.forcePasswordReset);
-                prefs.setBool('rememberMe', rememberMe);
-                prefs.setBool('darkMode', darkMode);
-                prefs.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
-
-              }
-            }
-
-            final int existingTemporaryIncident = await databaseHelper.checkTemporaryIncidentExists(_authenticatedUser.userId);
-
-            if(existingTemporaryIncident == 0){
-              int result = await databaseHelper.addTemporaryIncident({
-                'user_id' : _authenticatedUser.userId,
-                'organisation_id' : _authenticatedUser.organisationId,
-                'organisation_name' : _authenticatedUser.organisationName,
-                'anonymous' : false
-
-              });
-
-              if(result == 1){
-                print('successfully added a temporary incident');
-              } else {
-                print('unable to add temporary incident');
-              }
-
-            }
-
-            // final Map<String, dynamic> incidentTypes = await incidentsModel.getCustomIncidents(_authenticatedUser);
-            //
-            // if(incidentTypes['success']) success = true;
-
-            //Add the ELRs to the Database if the table count is 0
-            int elrCount = await databaseHelper.checkElrCount();
-
-            if(elrCount == 0){
-              print('going to get ELRs');
-              _loadingElrs = true;
-              notifyListeners();
-              final Map<String, dynamic> elrResult = await this.getElrs();
-
-              if(elrResult['success']){
-                success = true;
-              }  else {
-                success = false;
-              }
-              _loadingElrs = false;
-              notifyListeners();
-            }
-
-          } else {
-            message = 'no valid session found';
-          }
-
-        }
-      }
-
-    } on TimeoutException catch (_) {
-
-      message = 'Request timeout, please try again later';
-      // A timeout occurred.
-    } catch(error){
-      print(error);
-      message = 'Something went wrong';
-    }
-
-    _userSubject.add(true);
-    _isLoading = false;
-    notifyListeners();
-
-    return {'success': success, 'message': message};
+  _authenticationErrorMessage = 'Request timeout, please try again later';
+  // A timeout occurred.
+  } catch(error){
+  _authenticationErrorMessage = 'Something went wrong';
   }
 
-  Future<Map<String, dynamic>> loginTest(bool rememberMe, BuildContext context) async {
+  return success;
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    String username = 'callum.planner';
-    String password = 'Ontrac99';
-
-
-
-    _isLoading = true;
-    notifyListeners();
-
-    bool success = false;
-    String message = 'Something went wrong!';
-
-
-    final Map<String,dynamic> authData = {
-      'loginData': {'username': username, 'password': password},
-    };
-
-    try {
-
-      var connectivityResult = await (new Connectivity().checkConnectivity());
-
-      if(connectivityResult == ConnectivityResult.none) {
-        if (prefs.get('username') == null && prefs.get('password') == null) {
-          message = 'No data connection, please try again later';
-        } else {
-
-
-          if (username == GlobalFunctions.decryptString(prefs.get('username')) &&
-              password == GlobalFunctions.decryptString(prefs.get('password'))) {
-            _authenticatedUser = AuthenticatedUser(
-                userId: prefs.getInt('userId'),
-                firstName: GlobalFunctions.decryptString(prefs.get('firstName')),
-                lastName: GlobalFunctions.decryptString(prefs.get('lastName')),
-                username: GlobalFunctions.decryptString(prefs.get('username')),
-                password: GlobalFunctions.decryptString(prefs.get('password')),
-                suspended: prefs.getBool('suspended'),
-                organisationId: prefs.getInt('organisationId'),
-                organisationName: prefs.get('organisationName'),
-                session: GlobalFunctions.decryptString(prefs.get('session')),
-                deleted: prefs.getBool('deleted'),
-                isClientAdmin: prefs.getBool('isClientAdmin'),
-                isSuperAdmin: prefs.getBool('isSuperAdmin'),
-                termsAccepted: prefs.get('termsAccepted'),
-                forcePasswordReset: prefs.getBool('forcePasswordReset'),
-                darkMode: prefs.getBool('darkMode'));
-
-            if (prefs.get('cookie') != null)
-              cookie = GlobalFunctions.decryptString(prefs.get('cookie'));
-
-            success = true;
-            notifyListeners();
-          } else {
-            message = 'No data connection, please try again later';
-          }
-        }
-
-      } else {
-
-        //Make the POST request to the server
-        Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
-            serverUrl + 'login', authData, false).timeout(Duration(seconds: 90));
-
-        if (serverResponse != null) {
-          if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'incorrect_details') {
-            message = 'Incorrect username or password given';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'terms_not_accepted') {
-            message =
-            'You need to accept the terms & conditions before using this app';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'change_password') {
-            message = 'You are required to change your password';
-          } else if (serverResponse['response']['session'] != null) {
-
-            cookie = serverResponse['response']['session'];
-            prefs.setString('cookie', GlobalFunctions.encryptString(cookie));
-
-            final DateTime now = DateTime.now();
-
-            final DateTime cookieExpiryTime =
-            now.add(Duration(minutes: 28));
-
-
-            _authenticatedUser = AuthenticatedUser(
-                userId: int.parse(serverResponse['response']['id']),
-                firstName: serverResponse['response']['first_name'],
-                lastName: serverResponse['response']['last_name'],
-                username: username,
-                password: password,
-                suspended: serverResponse['response']['suspended'],
-                organisationId: int.parse(
-                    serverResponse['response']['organisation_id']),
-                organisationName: serverResponse['response']['organisation_name'],
-                session: serverResponse['response']['session'],
-                deleted: serverResponse['response']['deleted'],
-                isClientAdmin: serverResponse['response']['is_client_admin'],
-                isSuperAdmin: serverResponse['response']['is_super_admin'],
-                termsAccepted: serverResponse['response']['terms_accepted'],
-                forcePasswordReset: serverResponse['response']['force_password_reset']);
-
-
-
-
-            DatabaseHelper databaseHelper = DatabaseHelper();
-
-            final int existingUser = await databaseHelper.checkUserExists(_authenticatedUser.userId);
-
-
-            //First Name
-            String encryptedFirstName = GlobalFunctions.encryptString(
-                authenticatedUser.firstName);
-            //Last Name
-            String encryptedLastName = GlobalFunctions.encryptString(
-                authenticatedUser.lastName);
-            //Username
-            String encryptedUsername = GlobalFunctions.encryptString(
-                authenticatedUser.username);
-            //Password
-            String encryptedPassword = GlobalFunctions.encryptString(
-                authenticatedUser.password);
-            //Session
-            String encryptedSession = GlobalFunctions.encryptString(
-                authenticatedUser.session);
-
-
-            if (existingUser == 0) {
-
-              authenticatedUser.darkMode = false;
-
-              Map<String, dynamic> userData = {
-                'user_id': _authenticatedUser.userId,
-                'first_name': encryptedFirstName,
-                'last_name': encryptedLastName,
-                'username': encryptedUsername,
-                'password': encryptedPassword,
-                'suspended': _authenticatedUser.suspended,
-                'organisation_id': _authenticatedUser.organisationId,
-                'organisation_name': _authenticatedUser.organisationName,
-                'session': encryptedSession,
-                'deleted': _authenticatedUser.deleted,
-                'is_client_admin': _authenticatedUser.isClientAdmin,
-                'is_super_admin': _authenticatedUser.isSuperAdmin,
-                'terms_accepted': _authenticatedUser.termsAccepted,
-                'force_password_reset': _authenticatedUser.forcePasswordReset,
-                'dark_mode': false,
-              };
-
-              int addedUser = await databaseHelper.addUser(userData);
-
-              if (addedUser == 0) {
-                message = 'Unable to add user locally to the device';
-              } else {
-                final SharedPreferences prefs = await SharedPreferences
-                    .getInstance();
-
-                prefs.setInt('userId', _authenticatedUser.userId);
-                prefs.setString('firstName', encryptedFirstName);
-                prefs.setString('lastName', encryptedLastName);
-                prefs.setString('username', encryptedUsername);
-                prefs.setString('password', encryptedPassword);
-                prefs.setBool('suspended', _authenticatedUser.suspended);
-                prefs.setInt(
-                    'organisationId', _authenticatedUser.organisationId);
-                prefs.setString('organisationName', _authenticatedUser.organisationName);
-                prefs.setString('session', encryptedSession);
-                prefs.setBool('deleted', _authenticatedUser.deleted);
-                prefs.setBool('isClientAdmin', _authenticatedUser.isClientAdmin);
-                prefs.setBool('isSuperAdmin', _authenticatedUser.isSuperAdmin);
-                prefs.setString('termsAccepted', _authenticatedUser.termsAccepted);
-                prefs.setBool('forcePasswordReset',
-                    _authenticatedUser.forcePasswordReset);
-                prefs.setBool('rememberMe', rememberMe);
-                prefs.setBool('darkMode', false);
-                prefs.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
-              }
-            } else {
-
-              Map<String, dynamic> userData = {
-
-
-                'user_id': _authenticatedUser.userId,
-                'first_name': encryptedFirstName,
-                'last_name': encryptedLastName,
-                'username': encryptedUsername,
-                'password': encryptedPassword,
-                'suspended': _authenticatedUser.suspended,
-                'organisation_id': _authenticatedUser.organisationId,
-                'organisation_name': _authenticatedUser.organisationName,
-                'session': encryptedSession,
-                'deleted': _authenticatedUser.deleted,
-                'is_client_admin': _authenticatedUser.isClientAdmin,
-                'is_super_admin': _authenticatedUser.isSuperAdmin,
-                'terms_accepted': _authenticatedUser.termsAccepted,
-                'force_password_reset': _authenticatedUser.forcePasswordReset,
-              };
-
-              int updatedUser = await databaseHelper.updateUser(userData);
-              if (updatedUser == 0) {
-                message = 'Unable to update user locally on the device';
-              } else {
-                Database database = await databaseHelper.database;
-
-                List<Map<String, dynamic>> user = await database.rawQuery(
-                    'SELECT dark_mode FROM users_table WHERE user_id = ${_authenticatedUser
-                        .userId}');
-
-                bool darkMode;
-
-                if(user[0]['dark_mode'] is String){
-                  darkMode = user[0]['dark_mode'] == 'true' ? true : false;
-
-                } else if (user[0]['dark_mode'] is int){
-                  darkMode = user[0]['dark_mode'] == 1 ? true : false;
-                }
-
-                authenticatedUser.darkMode = darkMode;
-
-                final SharedPreferences prefs = await SharedPreferences
-                    .getInstance();
-                prefs.setInt('userId', _authenticatedUser.userId);
-                prefs.setString('firstName', encryptedFirstName);
-                prefs.setString('lastName', encryptedLastName);
-                prefs.setString('username', encryptedUsername);
-                prefs.setString('password', encryptedPassword);
-                prefs.setBool('suspended', _authenticatedUser.suspended);
-                prefs.setInt(
-                    'organisationId', _authenticatedUser.organisationId);
-                prefs.setString('organisationName', _authenticatedUser.organisationName);
-                prefs.setString('session', encryptedSession);
-                prefs.setBool('deleted', _authenticatedUser.deleted);
-                prefs.setBool('isClientAdmin', _authenticatedUser.isClientAdmin);
-                prefs.setBool('isSuperAdmin', _authenticatedUser.isSuperAdmin);
-                prefs.setString('termsAccepted', _authenticatedUser.termsAccepted);
-                prefs.setBool('forcePasswordReset',
-                    _authenticatedUser.forcePasswordReset);
-                prefs.setBool('rememberMe', rememberMe);
-                prefs.setBool('darkMode', darkMode);
-                prefs.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
-
-              }
-            }
-
-            final int existingTemporaryIncident = await databaseHelper.checkTemporaryIncidentExists(_authenticatedUser.userId);
-
-            if(existingTemporaryIncident == 0){
-              int result = await databaseHelper.addTemporaryIncident({
-                'user_id' : _authenticatedUser.userId,
-                'organisation_id' : _authenticatedUser.organisationId,
-                'organisation_name' : _authenticatedUser.organisationName,
-                'anonymous' : false
-
-              });
-
-              if(result == 1){
-                print('successfully added a temporary incident');
-              } else {
-                print('unable to add temporary incident');
-              }
-
-            }
-
-            // final Map<String, dynamic> incidentTypes = await incidentsModel.getCustomIncidents(_authenticatedUser);
-            //
-            // if(incidentTypes['success']) success = true;
-
-            //Add the ELRs to the Database if the table count is 0
-            int elrCount = await databaseHelper.checkElrCount();
-
-            if(elrCount == 0){
-              print('going to get ELRs');
-              _loadingElrs = true;
-              notifyListeners();
-              final Map<String, dynamic> elrResult = await this.getElrs();
-
-              if(elrResult['success']){
-                success = true;
-              }  else {
-                success = false;
-              }
-              _loadingElrs = false;
-              notifyListeners();
-            }
-
-          } else {
-            message = 'no valid session found';
-          }
-
-        }
-      }
-
-    } on TimeoutException catch (_) {
-
-      message = 'Request timeout, please try again later';
-      // A timeout occurred.
-    } catch(error){
-      print(error);
-      message = 'Something went wrong';
-    }
-
-    _userSubject.add(true);
-    _isLoading = false;
-    notifyListeners();
-
-    return {'success': success, 'message': message};
   }
-
 
   Future<Map<String, dynamic>> getElrs() async {
 
@@ -702,7 +277,7 @@ class UsersModel extends ChangeNotifier {
     String message = 'Something went wrong';
 
     try {
-      var connectivityResult = await (new Connectivity().checkConnectivity());
+      ConnectivityResult connectivityResult = await (new Connectivity().checkConnectivity());
 
       if (connectivityResult == ConnectivityResult.none) {
         message = 'No data connection, unable to fetch Elr Data';
@@ -713,45 +288,42 @@ class UsersModel extends ChangeNotifier {
         };
 
         bool isCookieExpired = await GlobalFunctions.isCookieExpired();
-        Map<String, dynamic> renewSession = {};
+        bool hasSession = true;
 
         if (isCookieExpired) {
-          renewSession = await this.renewSession(
-              authenticatedUser.username,
-              authenticatedUser.password);
-          message = renewSession['message'];
+          hasSession = await getSession(
+              user.username,
+              user.password);
         }
 
-        Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
-            serverUrl + 'getElrs', requestData)
-            .timeout(Duration(seconds: 90));
+        if(hasSession){
 
-        if (serverResponse != null) {
+          Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
+              serverUrl + 'getElrs', requestData)
+              .timeout(Duration(seconds: 90));
 
-          if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'Token missing or invalid') {
-            message = 'token missing or invalied';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'Access Denied.') {
+          if (serverResponse != null) {
 
-            Map<String, dynamic> renewSession = await this.renewSession(
-                authenticatedUser.username,
-                authenticatedUser.password);
+            if (serverResponse['error'] != null &&
+                serverResponse['error'] == 'Token missing or invalid') {
+              message = 'token missing or invalid';
+            } else if (serverResponse['error'] != null &&
+                serverResponse['error'] == 'Access Denied.') {
 
-            message = renewSession['message'];
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'terms_not_accepted') {
-            message =
-            'You need to accept the terms & conditions before using this app';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'change_password') {
-            message = 'You are required to change your password';
-          } else if (serverResponse['response']['elrs'] != null) {
-            List<dynamic> elrList = serverResponse['response']['elrs'];
+              message = 'access denied';
 
-            DatabaseHelper databaseHelper = DatabaseHelper();
 
-            for (Map<String, dynamic> elrData in elrList) {
+            } else if (serverResponse['error'] != null &&
+                serverResponse['error'] == 'terms_not_accepted') {
+              message =
+              'You need to accept the terms & conditions before using this app';
+            } else if (serverResponse['error'] != null &&
+                serverResponse['error'] == 'change_password') {
+              message = 'You are required to change your password';
+            } else if (serverResponse['response']['elrs'] != null) {
+              List<dynamic> elrList = serverResponse['response']['elrs'];
+
+              for (Map<String, dynamic> elrData in elrList) {
 
                 Map<String, dynamic> databaseData = {
                   'region_code': elrData['HdElrLookup']['region'],
@@ -761,444 +333,89 @@ class UsersModel extends ChangeNotifier {
                   'end_miles': elrData['HdElrLookup']['end_miles'],
                 };
 
-                int result = await databaseHelper.addElr(databaseData);
+                bool existingElr = false;
+                final Db.Finder finder = Db.Finder(filter: Db.Filter.equals('elr', elrData['HdElrLookup']['elr']));
+                List records = await _elrsStore.find(
+                  await _db,
+                  finder: finder,
+                );
 
-                if (result != 0) {
-                  message = 'Elr not added to the database';
+                if(records.length > 0) existingElr = true;
+
+                if(existingElr){
+                  await _elrsStore.update(await _db, databaseData,
+                      finder: finder);
+
+                } else {
+                  int count = await _elrsStore.count(await _db);
+                  int id;
+                  if (count == 0) {
+                    id = 1;
+                  } else {
+                    id = count + 1;
+                  }
+                  await _usersStore.record(id).put(await _db,
+                      databaseData);
                 }
-            }
-
-            int count = await databaseHelper.checkElrCount();
-            print('this is the count of the elrs: ' + count.toString());
-            success = true;
-            message = 'waheyyyyy';
-          }
-        } else {
-          message = 'no valid session found';
-        }
-      }
-    } on TimeoutException catch (_) {
-      message = 'Request timeout, unable to fetch Elr data';
-      // A timeout occurred.
-    } catch (error) {
-      print(error);
-      message = 'Unable to fetch Elr data';
-    }
-
-    return {'success': success, 'message': message};
-  }
-
-  Future<Map<String, dynamic>> updateElrs() async {
-
-    bool success = false;
-    String message = 'Something went wrong';
-
-    try {
-      var connectivityResult = await (new Connectivity().checkConnectivity());
-
-      if (connectivityResult == ConnectivityResult.none) {
-        message = 'No data connection, unable to fetch Elr Data';
-      } else {
-
-        final Map<String, dynamic> requestData = {
-          'incidentData': {},
-        };
-
-        bool isCookieExpired = await GlobalFunctions.isCookieExpired();
-        Map<String, dynamic> renewSession = {};
-
-        if (isCookieExpired) {
-          renewSession = await this.renewSession(
-              authenticatedUser.username,
-              authenticatedUser.password);
-          message = renewSession['message'];
-        }
-
-        Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
-            serverUrl + 'getElrs', requestData)
-            .timeout(Duration(seconds: 90));
-
-        if (serverResponse != null) {
-
-          if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'Token missing or invalid') {
-            message = 'token missing or invalied';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'Access Denied.') {
-            print('its in access denied, trying to renew the session');
-
-            Map<String, dynamic> renewSession = await this.renewSession(
-                authenticatedUser.username,
-                authenticatedUser.password);
-
-            message = renewSession['message'];
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'terms_not_accepted') {
-            message =
-            'You need to accept the terms & conditions before using this app';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'change_password') {
-            message = 'You are required to change your password';
-          } else if (serverResponse['response']['elrs'] != null) {
-            List<dynamic> elrList = serverResponse['response']['elrs'];
-
-            DatabaseHelper databaseHelper = DatabaseHelper();
-
-            for (Map<String, dynamic> elrData in elrList) {
-
-              Map<String, dynamic> databaseData = {
-                'region_code': elrData['HdElrLookup']['region'],
-                'elr': elrData['HdElrLookup']['elr'],
-                'description': elrData['HdElrLookup']['description'],
-                'start_miles': elrData['HdElrLookup']['start_miles'],
-                'end_miles': elrData['HdElrLookup']['end_miles'],
-              };
-
-              int alreadyExists = await databaseHelper.checkElrExists(databaseData['elr'], databaseData['region_code']);
-
-              if(alreadyExists == 0){
-
-                int result = await databaseHelper.addElr(databaseData);
-
-                if (result != 0) {
-                  message = 'Elr not added to the database';
-                }
-              } else {
-
-                int result = await databaseHelper.updateElr(databaseData, elrData['HdElrLookup']['elr'], elrData['HdElrLookup']['region']);
-
-                if (result != 0) {
-                  message = 'Elr not updated';
-                }
-
               }
 
+              success = true;
+              message = 'successfully got ELRs';
             }
-
-            int count = await databaseHelper.checkElrCount();
-            print('this is the count of the elrs: ' + count.toString());
-            success = true;
-            message = 'waheyyyyy';
-          }
-        } else {
-          message = 'no valid session found';
-        }
-      }
-    } on TimeoutException catch (_) {
-      message = 'Request timeout, unable to fetch Elr data';
-      // A timeout occurred.
-    } catch (error) {
-      print(error);
-      message = 'Unable to fetch Elr data';
-    }
-
-    return {'success': success, 'message': message};
-  }
-
-
-  Future<Map<String, dynamic>> renewSession(String username, String password) async {
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool rememberMe = prefs.getBool('rememberMe');
-
-
-    _isLoading = true;
-    notifyListeners();
-
-    bool success = false;
-    String message = 'Something went wrong!';
-
-
-    final Map<String,dynamic> authData = {
-      'loginData': {'username': username, 'password': password},
-    };
-
-    try {
-
-      var connectivityResult = await (new Connectivity().checkConnectivity());
-
-      if(connectivityResult == ConnectivityResult.none){
-
-        message = 'No data connection, please try again later';
-
-      } else {
-
-        //Make the POST request to the server
-        Map<String, dynamic> serverResponse = await GlobalFunctions.apiRequest(
-            serverUrl + 'login', authData, false).timeout(Duration(seconds: 90));
-
-        if (serverResponse != null) {
-          if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'incorrect_details') {
-            message = 'Your Username/Email and or Password have been changed';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'terms_not_accepted') {
-            message =
-            'You need to accept the terms & conditions before continuing to use this app';
-          } else if (serverResponse['error'] != null &&
-              serverResponse['error'] == 'change_password') {
-            message = 'You are required to change your password, unable to process this request';
-          } else if (serverResponse['response']['session'] != null) {
-
-            cookie = serverResponse['response']['session'];
-            prefs.setString('cookie', GlobalFunctions.encryptString(cookie));
-
-            final DateTime now = DateTime.now();
-
-            final DateTime cookieExpiryTime =
-            now.add(Duration(minutes: 28));
-
-
-            _authenticatedUser = AuthenticatedUser(
-                userId: int.parse(serverResponse['response']['id']),
-                firstName: serverResponse['response']['first_name'],
-                lastName: serverResponse['response']['last_name'],
-                username: username,
-                password: password,
-                suspended: serverResponse['response']['suspended'],
-                organisationId: int.parse(
-                    serverResponse['response']['organisation_id']),
-                organisationName: serverResponse['response']['organisation_name'],
-                session: serverResponse['response']['session'],
-                deleted: serverResponse['response']['deleted'],
-                isClientAdmin: serverResponse['response']['is_client_admin'],
-                isSuperAdmin: serverResponse['response']['is_super_admin'],
-                termsAccepted: serverResponse['response']['terms_accepted'],
-                forcePasswordReset: serverResponse['response']['force_password_reset'],
-            darkMode: prefs.getBool('darkMode'));
-
-
-
-            //Encrypt details of the incident
-            DatabaseHelper databaseHelper = DatabaseHelper();
-
-            final int existingUser = await databaseHelper.checkUserExists(_authenticatedUser.userId);
-
-
-            //First Name
-            String encryptedFirstName = GlobalFunctions.encryptString(
-                authenticatedUser.firstName);
-            //Last Name
-            String encryptedLastName = GlobalFunctions.encryptString(
-                authenticatedUser.lastName);
-            //Username
-            String encryptedUsername = GlobalFunctions.encryptString(
-                authenticatedUser.username);
-            //Password
-            String encryptedPassword = GlobalFunctions.encryptString(
-                authenticatedUser.password);
-            //Session
-            String encryptedSession = GlobalFunctions.encryptString(
-                authenticatedUser.session);
-
-            if (existingUser == 0) {
-              Map<String, dynamic> userData = {
-                'user_id': _authenticatedUser.userId,
-                'first_name': encryptedFirstName,
-                'last_name': encryptedLastName,
-                'username': encryptedUsername,
-                'password': encryptedPassword,
-                'suspended': _authenticatedUser.suspended,
-                'organisation_id': _authenticatedUser.organisationId,
-                'organisation_name': _authenticatedUser.organisationName,
-                'session': encryptedSession,
-                'deleted': _authenticatedUser.deleted,
-                'is_client_admin': _authenticatedUser.isClientAdmin,
-                'is_super_admin': _authenticatedUser.isSuperAdmin,
-                'terms_accepted': _authenticatedUser.termsAccepted,
-                'force_password_reset': _authenticatedUser.forcePasswordReset,
-                'dark_mode': false,
-              };
-
-              int addedUser = await databaseHelper.addUser(userData);
-
-              if (addedUser == 0) {
-                message = 'Unable to add user locally to the device';
-              } else {
-                final SharedPreferences prefs = await SharedPreferences
-                    .getInstance();
-                prefs.setInt('userId', _authenticatedUser.userId);
-                prefs.setString('firstName', encryptedFirstName);
-                prefs.setString('lastName', encryptedLastName);
-                prefs.setString('username', encryptedUsername);
-                prefs.setString('password', encryptedPassword);
-                prefs.setBool('suspended', _authenticatedUser.suspended);
-                prefs.setInt(
-                    'organisationId', _authenticatedUser.organisationId);
-                prefs.setString('organisationName', _authenticatedUser.organisationName);
-                prefs.setString('session', encryptedSession);
-                prefs.setBool('deleted', _authenticatedUser.deleted);
-                prefs.setBool('isClientAdmin', _authenticatedUser.isClientAdmin);
-                prefs.setBool('isSuperAdmin', _authenticatedUser.isSuperAdmin);
-                prefs.setString('termsAccepted', _authenticatedUser.termsAccepted);
-                prefs.setBool('forcePasswordReset',
-                    _authenticatedUser.forcePasswordReset);
-                prefs.setBool('rememberMe', rememberMe);
-                prefs.setBool('darkMode', false);
-                prefs.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
-              }
-            } else {
-              Map<String, dynamic> userData = {
-                'user_id': _authenticatedUser.userId,
-                'first_name': encryptedFirstName,
-                'last_name': encryptedLastName,
-                'username': encryptedUsername,
-                'password': encryptedPassword,
-                'suspended': _authenticatedUser.suspended,
-                'organisation_id': _authenticatedUser.organisationId,
-                'organisation_name': _authenticatedUser.organisationName,
-                'session': encryptedSession,
-                'deleted': _authenticatedUser.deleted,
-                'is_client_admin': _authenticatedUser.isClientAdmin,
-                'is_super_admin': _authenticatedUser.isSuperAdmin,
-                'terms_accepted': _authenticatedUser.termsAccepted,
-                'force_password_reset': _authenticatedUser.forcePasswordReset,
-              };
-
-              int updatedUser = await databaseHelper.updateUser(userData);
-              if (updatedUser == 0) {
-                message = 'Unable to update user locally on the device';
-              } else {
-                Database database = await databaseHelper.database;
-
-                List<Map<String, dynamic>> user = await database.rawQuery(
-                    'SELECT dark_mode FROM users_table WHERE user_id = ${_authenticatedUser
-                        .userId}');
-
-                bool darkMode;
-
-                if(user[0]['dark_mode'] is String){
-                  darkMode = user[0]['dark_mode'] == 'true' ? true : false;
-
-                } else if (user[0]['dark_mode'] is int){
-                  darkMode = user[0]['dark_mode'] == 1 ? true : false;
-                }
-
-                final SharedPreferences prefs = await SharedPreferences
-                    .getInstance();
-                prefs.setInt('userId', _authenticatedUser.userId);
-                prefs.setString('firstName', encryptedFirstName);
-                prefs.setString('lastName', encryptedLastName);
-                prefs.setString('username', encryptedUsername);
-                prefs.setString('password', encryptedPassword);
-                prefs.setBool('suspended', _authenticatedUser.suspended);
-                prefs.setInt(
-                    'organisationId', _authenticatedUser.organisationId);
-                prefs.setString('organisationName', _authenticatedUser.organisationName);
-                prefs.setString('session', encryptedSession);
-                prefs.setBool('deleted', _authenticatedUser.deleted);
-                prefs.setBool('isClientAdmin', _authenticatedUser.isClientAdmin);
-                prefs.setBool('isSuperAdmin', _authenticatedUser.isSuperAdmin);
-                prefs.setString('termsAccepted', _authenticatedUser.termsAccepted);
-                prefs.setBool('forcePasswordReset',
-                    _authenticatedUser.forcePasswordReset);
-                prefs.setBool('rememberMe', rememberMe);
-                prefs.setBool('darkMode', darkMode);
-                prefs.setString('cookieExpiryTime', cookieExpiryTime.toIso8601String());
-
-              }
-            }
-            message = 'successfully renewed the session, please try again';
-            success = true;
           } else {
             message = 'no valid session found';
           }
 
+
         }
+
+
       }
-
     } on TimeoutException catch (_) {
-      message = 'Request timeout, unable renew session';
-    } catch(error){
+      message = 'Request timeout, unable to fetch Elr data';
+      // A timeout occurred.
+    } catch (error) {
       print(error);
-      message = 'Something went wrong';
+      message = 'Unable to fetch Elr data';
     }
-
-    _userSubject.add(true);
-    _isLoading = false;
-    notifyListeners();
 
     return {'success': success, 'message': message};
   }
 
 
-    autoLogin(SharedPreferences prefs){
-    final bool rememberMe = prefs.getBool('rememberMe');
+
+    autoLogin(){
+    final bool rememberMe = sharedPreferences.getBool('rememberMe');
 
     if(rememberMe != null && rememberMe == true){
+      user = AuthenticatedUser(
+          userId: sharedPreferences.getInt('userId'),
+          firstName: GlobalFunctions.decryptString(sharedPreferences.get('firstName')),
+          lastName: GlobalFunctions.decryptString(sharedPreferences.get('lastName')),
+          username: GlobalFunctions.decryptString(sharedPreferences.get('username')),
+          password: GlobalFunctions.decryptString(sharedPreferences.get('password')),
+          suspended: sharedPreferences.getBool('suspended'),
+          organisationId: sharedPreferences.getInt('organisationId'),
+          organisationName: sharedPreferences.get('organisationName'),
+          session: GlobalFunctions.decryptString(sharedPreferences.get('session')),
+          deleted: sharedPreferences.getBool('deleted'),
+          isClientAdmin: sharedPreferences.getBool('isClientAdmin'),
+          isSuperAdmin: sharedPreferences.getBool('isSuperAdmin'),
+          termsAccepted: sharedPreferences.get('termsAccepted'),
+          forcePasswordReset: sharedPreferences.getBool('forcePasswordReset'),
+          darkMode: sharedPreferences.getBool('darkMode'));
 
-      _authenticatedUser = AuthenticatedUser(
-          userId: prefs.getInt('userId'),
-          firstName: GlobalFunctions.decryptString(prefs.get('firstName')),
-          lastName: GlobalFunctions.decryptString(prefs.get('lastName')),
-          username: GlobalFunctions.decryptString(prefs.get('username')),
-          password: GlobalFunctions.decryptString(prefs.get('password')),
-          suspended: prefs.getBool('suspended'),
-          organisationId: prefs.getInt('organisationId'),
-          organisationName: prefs.get('organisationName'),
-          session: GlobalFunctions.decryptString(prefs.get('session')),
-          deleted: prefs.getBool('deleted'),
-          isClientAdmin: prefs.getBool('isClientAdmin'),
-          isSuperAdmin: prefs.getBool('isSuperAdmin'),
-          termsAccepted: prefs.get('termsAccepted'),
-          forcePasswordReset: prefs.getBool('forcePasswordReset'),
-      darkMode: prefs.getBool('darkMode'));
-
-      if(prefs.get('cookie') != null) cookie = GlobalFunctions.decryptString(prefs.get('cookie'));
-
+      if(sharedPreferences.get('cookie') != null) cookie = GlobalFunctions.decryptString(sharedPreferences.get('cookie'));
       notifyListeners();
 
     }
-
-//    else {
-//      prefs.remove('userId');
-//      prefs.remove('firstName');
-//      prefs.remove('lastName');
-//      prefs.remove('username');
-//      prefs.remove('password');
-//      prefs.remove('suspended');
-//      prefs.remove('organisationId');
-//      prefs.remove('organisationName');
-//      prefs.remove('session');
-//      prefs.remove('deleted');
-//      prefs.remove('isClientAdmin');
-//      prefs.remove('isSuperAdmin');
-//      prefs.remove('termsAccepted');
-//      prefs.remove('forcePasswordReset');
-//      prefs.remove('cookie');
-//      prefs.remove('cookieExpiryTime');
-//    }
   }
 
 
-   void logout() async {
-    print('logout happened');
-    _selUserKey = null;
-    _authenticatedUser = null;
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove('rememberMe');
-//    prefs.remove('userId');
-//    prefs.remove('firstName');
-//    prefs.remove('lastName');
-//    prefs.remove('username');
-//    prefs.remove('password');
-//    prefs.remove('suspended');
-//    prefs.remove('organisationId');
-//    prefs.remove('organisationName');
-//    prefs.remove('session');
-//    prefs.remove('deleted');
-//    prefs.remove('isAdmin');
-//    prefs.remove('termsAccepted');
-//    prefs.remove('forcePasswordReset');
-//    prefs.remove('darkMode');
-
-//    prefs.remove('cookie');
-//    prefs.remove('cookieExpiryTime');
-  }
-
-  void setAuthTimeout(int time) {
-    print('this is the timer left in seconds: ' + time.toString());
-    _authTimer = Timer(Duration(seconds: time), logout);
+   void logout() {
+    user = null;
+    notifyListeners();
+    sharedPreferences.remove('rememberMe');
   }
 
 

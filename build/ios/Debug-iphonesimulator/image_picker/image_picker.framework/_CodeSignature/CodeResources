@@ -4,17 +4,37 @@
 <dict>
 	<key>files</key>
 	<dict>
+		<key>Headers/FLTImagePickerImageUtil.h</key>
+		<data>
+		4psxowtH2ZvLODf+tBgKJYuDX/M=
+		</data>
+		<key>Headers/FLTImagePickerMetaDataUtil.h</key>
+		<data>
+		zSOS6f5yY1LLDVrnjr2TmDCspYU=
+		</data>
+		<key>Headers/FLTImagePickerPhotoAssetUtil.h</key>
+		<data>
+		m1+hnaDML8QTN58Ul1U19kQsgm8=
+		</data>
+		<key>Headers/FLTImagePickerPlugin.h</key>
+		<data>
+		uFVm828TX1UmFmZPBE2YWBxQ4k8=
+		</data>
+		<key>Headers/FLTPHPickerSaveImageToPathOperation.h</key>
+		<data>
+		1sd/FHWcSiTannMFB3MjV0Es3hI=
+		</data>
 		<key>Headers/ImagePickerPlugin.h</key>
 		<data>
 		pTQUZ+gL7AqLwSD0d0JVGka9DCU=
 		</data>
 		<key>Headers/image_picker-umbrella.h</key>
 		<data>
-		W3VTEsOkvNeHTUdelu1fD1Pr8CQ=
+		IFl3SJc0H5TjqpRE2habfNghSxY=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		6sT258yZN9y0peACHIDhTixs6YA=
+		UGgyIOC9REG2cbaJouvb0GX7ta4=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -23,6 +43,61 @@
 	</dict>
 	<key>files2</key>
 	<dict>
+		<key>Headers/FLTImagePickerImageUtil.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			4psxowtH2ZvLODf+tBgKJYuDX/M=
+			</data>
+			<key>hash2</key>
+			<data>
+			iHYZCLrrJ9P+EICaLY7YhQUuGs8RnEnnZDGeju347bA=
+			</data>
+		</dict>
+		<key>Headers/FLTImagePickerMetaDataUtil.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			zSOS6f5yY1LLDVrnjr2TmDCspYU=
+			</data>
+			<key>hash2</key>
+			<data>
+			cO9lumGQK7vjRX2TSDwnmMWJZZINVs2zFdvpul+QC2M=
+			</data>
+		</dict>
+		<key>Headers/FLTImagePickerPhotoAssetUtil.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			m1+hnaDML8QTN58Ul1U19kQsgm8=
+			</data>
+			<key>hash2</key>
+			<data>
+			Ne2NeyR/GgW/ieixcr5Zpm0UonON8854oAr7FAgrb8g=
+			</data>
+		</dict>
+		<key>Headers/FLTImagePickerPlugin.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			uFVm828TX1UmFmZPBE2YWBxQ4k8=
+			</data>
+			<key>hash2</key>
+			<data>
+			x2pQ3urChPqb25FxG8Whl2uHSGH6pvtEW+I2lNisTmw=
+			</data>
+		</dict>
+		<key>Headers/FLTPHPickerSaveImageToPathOperation.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			1sd/FHWcSiTannMFB3MjV0Es3hI=
+			</data>
+			<key>hash2</key>
+			<data>
+			nqtpiLyh1wKHvWbIjntEKPHM+g/sT1+2TnTA7Njo0mg=
+			</data>
+		</dict>
 		<key>Headers/ImagePickerPlugin.h</key>
 		<dict>
 			<key>hash</key>
@@ -38,11 +113,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			W3VTEsOkvNeHTUdelu1fD1Pr8CQ=
+			IFl3SJc0H5TjqpRE2habfNghSxY=
 			</data>
 			<key>hash2</key>
 			<data>
-			BUcrmIwBLgbxNf0Dl1vit+SjQD38rYgz76j6gkcWZDc=
+			O5i0VPdcmotnzr2a3VMXa95t5L9lot6wFX9Etdnr3rQ=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

@@ -1,34 +1,30 @@
 import 'dart:async';
-import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ontrac_incident_reporting/constants/route_paths.dart' as routes;
+import 'package:ontrac_incident_reporting/pages/home_page.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:url_strategy/url_strategy.dart';
 import './pages/raise_incident_page.dart';
 import './pages/settings_page.dart';
-import './pages/my_incidents_list_page.dart';
+import './pages/incidents_list_page.dart';
 import './pages/login_page.dart';
 import 'shared/global_config.dart';
 import './scoped_models/incidents_model.dart';
 import './scoped_models/users_model.dart';
+import './locator.dart';
+import './services/navigation_service.dart';
+import 'package:bot_toast/bot_toast.dart';
+import './router.dart' as router;
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final SharedPreferences preferences = await SharedPreferences.getInstance();
-
-  String platformType;
-  if(Platform.isIOS)
-    platformType = 'ios';
-  else if(Platform.isAndroid)
-    platformType = 'android';
-
-  //MapView.setApiKey(apiKey[platformType]);
-
-  runApp(MyApp(
-    preferences: preferences,
-  ));
+  sharedPreferences = await SharedPreferences.getInstance();
+  setupLocator();
+  setPathUrlStrategy();
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -44,26 +40,32 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final UsersModel _usersModel = UsersModel();
-  bool _isAuthenticated = false;
 
   @override
   void initState() {
-    _usersModel.autoLogin(widget.preferences);
-
+    _usersModel.autoLogin();
     super.initState();
   }
 
   @override
   void dispose() {
     _usersModel.logout();
-    print('inside dispose');
     super.dispose();
+  }
+
+  Widget chooseHomePage(){
+    Widget returnedRoute;
+    if(user == null){
+      returnedRoute = LoginPage();
+    } else
+    {
+      returnedRoute = HomePage();
+    }
+    return returnedRoute;
   }
 
   @override
   Widget build(BuildContext context) {
-    print('rebuilding main widget build');
-
     // TODO: implement build
     return MultiProvider(providers: [
       ChangeNotifierProvider<UsersModel>(create: (_) => _usersModel),
@@ -86,38 +88,26 @@ class _MyAppState extends State<MyApp> {
           buttonColor: Color.fromARGB(255, 254, 147, 94),
         ),
         title: 'Incident Reporting',
-        routes: {
-          '/raiseIncident': (BuildContext context) =>
-              RaiseIncidentPage(),
-          '/login': (BuildContext context) => LoginPage(),
-          '/settings': (BuildContext context) => SettingsPage(widget.preferences),
-          '/myIncidents': (BuildContext context) =>
-              MyIncidentsListPage(),
-        },
-        onGenerateRoute: (RouteSettings settings) {
-          if (!_isAuthenticated) {
-            return MaterialPageRoute<bool>(
-              builder: (BuildContext context) => LoginPage(),
-            );
-          }
-
-          final List<String> pathElements =
-          settings.name.split('/');
-
-          if (pathElements[0] != '') {
-            return null;
-          }
-          return null;
-        },
-        onUnknownRoute: (RouteSettings settings) {
-          return MaterialPageRoute(
-              builder: (BuildContext context) =>
-              _usersModel.authenticatedUser == null
-                  ? LoginPage()
-                  : RaiseIncidentPage());
-        },
-        home: _usersModel.authenticatedUser == null
-            ? LoginPage()
-            : RaiseIncidentPage()),);
+        builder: BotToastInit(),
+        navigatorObservers: [
+          BotToastNavigatorObserver(),
+        ],
+        onGenerateRoute: router.generateRoute,
+        initialRoute: routes.HomePageRoute,
+        navigatorKey: locator<NavigationService>().navigatorKey,
+        home: Consumer<UsersModel>(
+            builder: (BuildContext context, model, child) {
+              return model.isLoading? Container(
+                decoration: BoxDecoration(gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [orangeGradient, purpleGradient])
+                ),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),) : chooseHomePage();
+            })),);
   }
 }

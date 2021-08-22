@@ -4,3 +4,4 @@ functions/incident-reporting.json
 shared/global_config.dart
 /lib/shared/global_config.dart
 /android/key.properties
+android/app/google-services.json

@@ -4,17 +4,21 @@
 <dict>
 	<key>files</key>
 	<dict>
+		<key>Headers/FLTPathProviderPlugin.h</key>
+		<data>
+		+07W1N145g6+kFz/ocqMqHbdR6M=
+		</data>
 		<key>Headers/PathProviderPlugin.h</key>
 		<data>
 		1BvM8ZqTxx18VX7+k5A3D4rll/g=
 		</data>
 		<key>Headers/path_provider-umbrella.h</key>
 		<data>
-		iyBjOdkX1v+5ybHczskIM05zHNI=
+		9jH0xmAzvuQrXPcB50h9KkvmApY=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		eXyE/2Adma0XYnc/Xz30pK7KYCo=
+		XJaxbAqhZw9ReIjVsf7o/nMFpOA=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -23,6 +27,17 @@
 	</dict>
 	<key>files2</key>
 	<dict>
+		<key>Headers/FLTPathProviderPlugin.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			+07W1N145g6+kFz/ocqMqHbdR6M=
+			</data>
+			<key>hash2</key>
+			<data>
+			eRnBn9tRArmcmJ9UN/gE8Lokm52lhAX0yeWEFxjMJUY=
+			</data>
+		</dict>
 		<key>Headers/PathProviderPlugin.h</key>
 		<dict>
 			<key>hash</key>
@@ -38,11 +53,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			iyBjOdkX1v+5ybHczskIM05zHNI=
+			9jH0xmAzvuQrXPcB50h9KkvmApY=
 			</data>
 			<key>hash2</key>
 			<data>
-			guJAJh5KZ//RjrH3Ja3a0ZnbAEG8ilTz3lXza7qgD8M=
+			KwdakBnpoYlwXeY1C4m2NGf5aS48+X2Fw+43z/Lx4EA=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

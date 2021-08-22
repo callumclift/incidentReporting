@@ -16,12 +16,9 @@ class LogoutListTile extends StatelessWidget {
           leading: Icon(Icons.exit_to_app),
           title: Text('Logout'),
           onTap: () {
-
             model.logout();
             Navigator.pop(context);
-
             //we do not need to do this anymore as it will be done automatically as the listener is fired on logout
-            Navigator.of(context).pushReplacementNamed('/login');
           },
         );
       },

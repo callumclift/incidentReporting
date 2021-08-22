@@ -10,7 +10,7 @@
 #endif
 #endif
 
-#import "ConnectivityPlugin.h"
+#import "FLTConnectivityPlugin.h"
 
 FOUNDATION_EXPORT double connectivityVersionNumber;
 FOUNDATION_EXPORT const unsigned char connectivityVersionString[];
